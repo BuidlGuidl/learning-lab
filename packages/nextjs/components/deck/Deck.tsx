@@ -16,7 +16,7 @@ export const Deck = ({ deck }: Props) => {
   const prev = useDeckStore(s => s.prev);
 
   useEffect(() => {
-    init(deck.skeleton);
+    init(deck);
   }, [deck, init]);
 
   const card = deck.cards[cardIndex];

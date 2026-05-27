@@ -7,14 +7,20 @@ type ProgressEntry = {
 };
 
 type DeckState = {
+  currentDeckId: string | null;
   cardIndex: number;
   skeleton: Record<string, string>;
   sources: Record<string, string>;
   progress: Record<string, ProgressEntry>;
 };
 
+type DeckSeed = {
+  id: string;
+  skeleton: Record<string, string>;
+};
+
 type DeckActions = {
-  init: (skeleton: Record<string, string>) => void;
+  init: (deck: DeckSeed) => void;
   next: () => void;
   prev: () => void;
   goTo: (i: number) => void;
@@ -23,6 +29,7 @@ type DeckActions = {
 };
 
 const initialState: DeckState = {
+  currentDeckId: null,
   cardIndex: 0,
   skeleton: {},
   sources: {},
@@ -43,11 +50,17 @@ const deriveSources = (skeleton: Record<string, string>, progress: Record<string
 
 export const useDeckStore = create<DeckState & DeckActions>(set => ({
   ...initialState,
-  init: skeleton =>
-    set({
-      ...initialState,
-      skeleton: { ...skeleton },
-      sources: { ...skeleton },
+  init: deck =>
+    set(s => {
+      // Idempotent: re-mounting the same deck (e.g. React strict-mode double-effect)
+      // must not wipe in-flight progress. Switching to a different deck restarts.
+      if (s.currentDeckId === deck.id) return s;
+      return {
+        ...initialState,
+        currentDeckId: deck.id,
+        skeleton: { ...deck.skeleton },
+        sources: { ...deck.skeleton },
+      };
     }),
   next: () => set(s => ({ cardIndex: s.cardIndex + 1 })),
   prev: () => set(s => ({ cardIndex: Math.max(0, s.cardIndex - 1) })),
