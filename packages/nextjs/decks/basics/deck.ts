@@ -8,7 +8,7 @@ contract Counter {
 `;
 
 export const deck: Deck = {
-  id: "example-basics",
+  id: "basics",
   title: "Basics of Ethereum",
   skeleton: {
     "Counter.sol": counterSkeleton,
