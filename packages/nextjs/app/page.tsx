@@ -1,9 +1,22 @@
+import Link from "next/link";
 import type { NextPage } from "next";
-import { Deck } from "~~/components/deck/Deck";
-import { deck } from "~~/decks/basics/deck";
+import { registry } from "~~/decks/registry";
 
 const Home: NextPage = () => {
-  return <Deck deck={deck} />;
+  return (
+    <div className="flex flex-col items-center gap-6 py-12 px-4">
+      <h1 className="text-2xl font-semibold">Pick a deck</h1>
+      <ul className="flex flex-col gap-3 w-full max-w-md">
+        {Object.entries(registry).map(([id, { title }]) => (
+          <li key={id}>
+            <Link href={`/decks/${id}`} className="btn btn-primary btn-block">
+              {title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };
 
 export default Home;
