@@ -4,28 +4,29 @@ Living state of the learning-lab repo. Anyone (future-me, future-Claude, future-
 
 ## Resume here (next session)
 
-**v0.01 just shipped.** The minimal render loop works: a typed `Deck` module exports an array of cards, the deck store holds running `sources` and per-card `progress`, three card components (`concept`, `your-turn`, `code`) render via discriminated-union dispatch, the example deck (basics of Ethereum, 3 cards) renders at `/`.
+**v0.01 + multi-deck plumbing shipped.** The minimal render loop works: typed `Deck` modules export ordered cards, the deck store holds running `sources` and per-card `progress`, three card components (`concept`, `your-turn`, `code`) render via discriminated-union dispatch. Two decks live in `decks/` — `basics` (basics of Ethereum) and `functions` (write a pure adder). Home `/` is a picker; each deck renders at `/decks/[id]`. The store restarts on deck switch — durable state will live in our own backend, not the in-memory store (ADR-0004).
 
-What's intentionally **not** in v0.01 (all deferred as issues — see §scope-NOT-in-v1 of the architecture brief):
+What's intentionally **not** here (all deferred as issues):
 
 - The other 4 card types (`think`, `try-it`, `ship-it`, `recap`) — types exist in the union, components are not implemented. Renderer dispatch throws "not implemented in v0.01" at runtime.
 - AI grading. `your-turn` captures input but never grades. Whatever the learner types threads forward into reveal cards verbatim.
 - Slot-fill skeleton machinery (`lib/deck/skeleton.ts`), solc-wasm compilation, tevm runtime. Reveal cards do a plain `source.replace(slot, learnerInput)`.
-- Persistence. Zustand store has no `persist` middleware — reload resets state. Decision deferred until storage architecture (localStorage vs backend vs SRE profile) is known.
-- Visual aesthetic. Indigo Study Deck (bone cards, saffron/teal, Instrument Serif) is its own scoped issue. v0.01 uses daisyUI defaults.
-- SE-2 chrome strip (Header, Footer, debug routes, example contracts). Out of scope — `app/page.tsx` is the only file replaced.
-- Multi-deck routing (`/decks/[id]`). Example renders at `/`.
+- Backend persistence. Store is a buffer; the backend that will hold durable state doesn't exist yet (ADR-0004). Reload + deck-switch both reset state.
+- Visual aesthetic. Indigo Study Deck (bone cards, saffron/teal, Instrument Serif) is its own scoped issue. daisyUI defaults for now.
+- SE-2 chrome strip (Header, Footer, debug routes, example contracts).
+- Anchor-aware `code` card (port the vox dim+hover effect from v0.6).
 
 **Next session candidates** (open issues):
 
 1. Add the remaining 4 card components (`think`, `try-it`, `ship-it`, `recap`).
-2. Indigo Study Deck aesthetic pass via `/frontend-design`.
-3. Slot-fill machinery + solc-wasm port from v0.6.
-4. Tevm runtime port — enables `try-it` and `ship-it`.
-5. AI grader port — enables `your-turn` verdicts and `think` Socratic feedback.
-6. Anchor-aware `code` card (port the vox dim+hover effect from v0.6).
-7. SE-2 chrome strip + multi-deck routing.
-8. Real lesson decks (start with second throwaway, then crowdfunding).
+2. Slot-fill machinery + solc-wasm port from v0.6.
+3. AI grader port — enables `your-turn` verdicts and `think` Socratic feedback.
+4. Backend persistence integration — `hydrateFromBackend` action on mount per ADR-0004.
+5. Tevm runtime port — enables `try-it` and `ship-it`.
+6. Indigo Study Deck aesthetic pass via `/frontend-design`.
+7. Anchor-aware `code` card (port the vox dim+hover effect from v0.6).
+8. SE-2 chrome strip (Header, Footer, debug routes, example contracts).
+9. Real lesson decks (crowdfunding port from v0.6, ERC-20 walk-through).
 
 ## Glossary
 
@@ -33,11 +34,15 @@ Terms that the code uses with specific meaning. Domain-experts only — implemen
 
 ### card
 
-A single screen of the learning experience. Discriminated on `type` — one of seven members of the `Card` union (`concept | code | your-turn | think | try-it | ship-it | recap`). Each card has an `id` (unique within a deck), a `tier1` (typed English label), and type-specific fields. The Sanskrit `tier2` is derived from `tier1` via `tier-map.ts` — never authored.
+A single screen of the learning experience. Discriminated on `type` — one of seven members of the `Card` union (`concept | code | your-turn | think | try-it | ship-it | recap`). Each card has an `id` (unique within a deck), a `label` (typed English literal pinned per type via the discriminated union), and type-specific fields.
 
 ### deck
 
-The whole curriculum for one challenge, exported as a typed `Deck` object from `decks/<id>/deck.ts`. A deck has an `id`, a `title`, a `skeleton` (the starting sources, keyed by filename), and an ordered `cards` array.
+The whole curriculum for one challenge, exported as a typed `Deck` object from `decks/<id>/deck.ts`. A deck has an `id`, a `title`, a `skeleton` (the starting sources, keyed by filename), and an ordered `cards` array. Decks are listed in `decks/registry.ts` — see *registry*.
+
+### registry
+
+`decks/registry.ts` — the single source of truth for which decks the app knows about. A `Record<deckId, { title, load }>` where `load` is a dynamic-import thunk so each deck ships in its own chunk. Adding a new deck means creating a folder under `decks/<id>/` and adding one entry here. The router and home picker read from the registry; no code outside it mentions specific deck ids.
 
 ### skeleton
 
@@ -67,7 +72,11 @@ The v0.01 rule for how the learner's text appears in reveal cards: whatever they
 
 ### CardFrame
 
-The component every card renders inside. Owns the tier1 badge + tier2 italic chip header (derived via `tier-map`), the card title, and the daisyUI card container. Card-type-specific components render the *body* only.
+The component every card renders inside. Owns the label badge, the card title, and the daisyUI card container. Card-type-specific components render the *body* only.
+
+### currentDeckId
+
+The store's marker for "which deck is currently in memory." Null on first mount; set by `init` on every deck mount. `init` is idempotent against the same id (re-mounting the same deck preserves state) and resets state when called with a different id (deck switch). Per ADR-0004, this exists so the store can be an ephemeral buffer — durable cross-device state will live in the backend, hydrated on mount via a future `hydrateFromBackend` action.
 
 ## Build log
 
@@ -88,3 +97,11 @@ Carryover decisions (recorded inline rather than as full ADRs, since v0.01 doesn
 - The 7 card types and the `sources`-as-running-state model carry from v0.6. The formal carryover ADR is deferred until the first real port (solc-wasm, skeleton-fill, or tevm runtime) when there's concrete evidence of what stayed vs changed.
 
 Post-shipping simplification (same session, same day): collapsed the two-tier sanskrit naming to a single English `label` per card. `tier-map.ts` deleted, `Tier2` type dropped, `tier1` renamed to `label`. Recorded as ADR-0003.
+
+Multi-deck plumbing folded into the same PR (same day):
+- Renamed `decks/example/` → `decks/basics/` and tightened the id from `"example-basics"` to `"basics"` now that it's one of two real decks.
+- Added `decks/functions/deck.ts` (write a pure adder, 3 cards, mirrors the `basics` shape) as the second deck.
+- Added `decks/registry.ts` as the single source of truth for which decks exist.
+- Added `app/decks/[id]/page.tsx` (server component, dynamic-import via registry, `notFound()` on unknown ids).
+- Rewrote `app/page.tsx` from "hardcoded deck render" to "minimal picker over registry entries."
+- Store: added `currentDeckId`; `init` now takes the full deck seed and is idempotent on same id, resets on different id. Restart-on-switch behavior. Recorded as ADR-0004 (store-as-buffer; backend will be the source of truth when it lands).
