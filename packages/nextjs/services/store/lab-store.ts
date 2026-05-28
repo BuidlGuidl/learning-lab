@@ -64,10 +64,9 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         sources: { ...lab.skeleton },
       };
     }),
-  // Chapter-aware nav. Advance within a chapter normally; cross into the
-  // next chapter's first card on overflow, or back to the previous
-  // chapter's last card on underflow. At the lab's edges, no-op so the
-  // Prev/Next buttons in the shell can disable cleanly.
+  // Chapter-aware nav. Within-chapter advance is the default; overflow
+  // crosses to next chapter's first card, underflow to previous chapter's
+  // last card. At lab edges, no-op so the shell can disable the button.
   next: lab =>
     set(s => {
       const chapter = lab.chapters[s.chapterIndex];
@@ -85,10 +84,9 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       }
       return s;
     }),
-  // Record the input as a progress entry, then rebuild sources from
-  // skeleton + all progress. Keeping raw text in progress separate from
-  // the mutated source leaves room for future grading to flip a verdict
-  // without losing what the learner typed.
+  // Append to progress, then rebuild sources from skeleton + progress.
+  // Raw text stays in progress so future grading can flip a verdict
+  // without losing what was typed.
   completeCodeExercise: (cardId, file, slot, learnerInput) =>
     set(s => {
       const progress = { ...s.progress, [cardId]: { learnerInput, file, slot } };

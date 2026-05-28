@@ -1,9 +1,6 @@
-// Textbook frame. Lab → Chapter → Card. Card types are nouns naming
-// what each card *is*, not what the learner *does*. When extending
-// the union, stay in the same lane (idea, summary, etc.), not do-it
-// patterns (try-it, your-turn). Label always equals the type
-// discriminant in caps; the union pins the pair so the rendered
-// string and the dispatch can't drift apart.
+// Label is the type discriminant in caps; the union pins the pair so
+// rendered string and dispatch can't drift. Adding a card type = pick
+// the type string + its caps label literal, both pinned together.
 
 export type CardLabel = "IDEA" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
 
