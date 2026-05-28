@@ -2,6 +2,10 @@ import Link from "next/link";
 import type { NextPage } from "next";
 import { registry } from "~~/labs/registry";
 
+// Server-render the picker by dynamically importing each lab module so
+// the chapter outline lives in one place (the lab's own definition).
+// Caching chapter titles on the registry entry would double the source
+// of truth and drift the first time someone renamed a chapter.
 const Home: NextPage = async () => {
   const labs = await Promise.all(
     Object.entries(registry).map(async ([id, { title, load }]) => {
