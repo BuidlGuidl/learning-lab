@@ -1,6 +1,6 @@
 import { CodeCard } from "./cards/CodeCard";
 import { CodeExerciseCard } from "./cards/CodeExerciseCard";
-import { IdeaCard } from "./cards/IdeaCard";
+import { ConceptCard } from "./cards/ConceptCard";
 import type { Card } from "~~/lib/lab/types";
 
 type Props = {
@@ -9,8 +9,8 @@ type Props = {
 
 export const CardRenderer = ({ card }: Props) => {
   switch (card.type) {
-    case "idea":
-      return <IdeaCard card={card} />;
+    case "concept":
+      return <ConceptCard card={card} />;
     case "code-exercise":
       return <CodeExerciseCard card={card} />;
     case "code":

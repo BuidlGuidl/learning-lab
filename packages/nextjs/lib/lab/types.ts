@@ -1,7 +1,7 @@
 // Label is type in caps, pinned by the union so it can't drift from
 // the dispatch. TODO: WE can probably drive from type in future
 
-export type CardLabel = "IDEA" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
+export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
 
 type CardBase = {
   id: string;
@@ -10,9 +10,9 @@ type CardBase = {
 
 // The mental-model knowledge nugget.
 // read-only, no interaction.
-export type IdeaCard = CardBase & {
-  type: "idea";
-  label: "IDEA";
+export type ConceptCard = CardBase & {
+  type: "concept";
+  label: "CONCEPT";
   body: string;
 };
 
@@ -78,7 +78,7 @@ export type SummaryCard = CardBase & {
 };
 
 export type Card =
-  | IdeaCard
+  | ConceptCard
   | CodeCard
   | CodeExerciseCard
   | QuestionCard

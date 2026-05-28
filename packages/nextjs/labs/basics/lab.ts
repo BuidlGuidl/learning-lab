@@ -19,9 +19,9 @@ export const lab: Lab = {
       title: "State on chain",
       cards: [
         {
-          type: "idea",
+          type: "concept",
           id: "what-is-state",
-          label: "IDEA",
+          label: "CONCEPT",
           title: "State lives on chain",
           body: "Every smart contract has state. Storage slots that live on chain, readable by anyone, only writable through the contract's own functions. Before the contract can do anything else, it needs somewhere to keep its data. A state variable is what claims that space.",
         },

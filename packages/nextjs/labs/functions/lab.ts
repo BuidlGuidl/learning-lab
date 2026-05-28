@@ -19,9 +19,9 @@ export const lab: Lab = {
       title: "Pure functions",
       cards: [
         {
-          type: "idea",
+          type: "concept",
           id: "what-is-a-function",
-          label: "IDEA",
+          label: "CONCEPT",
           title: "Functions are how the world talks to your contract",
           body: "A function is the entry point. Anyone with the contract's address can call one, and the contract decides what to do with the inputs. Some functions read state and return values without changing anything. Others mutate storage, emit events, move ETH around. The visibility keyword in the declaration is how you signal which functions the outside world is allowed to call.",
         },
