@@ -1,5 +1,5 @@
 // Label is type in caps, pinned by the union so it can't drift from
-// the dispatch.
+// the dispatch. TODO: WE can probably drive from type in future
 
 export type CardLabel = "IDEA" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
 
@@ -8,8 +8,8 @@ type CardBase = {
   title: string;
 };
 
-// Prose card that lands a single concept. Read-only, no interaction;
-// the mental-model beat before the learner does anything with it.
+// The mental-model knowledge nugget.
+// read-only, no interaction.
 export type IdeaCard = CardBase & {
   type: "idea";
   label: "IDEA";
@@ -29,7 +29,7 @@ export type CodeCard = CardBase & {
 
 // Closed-form code prompt. Learner writes a small unit (expression,
 // statement, fn body) that substitutes into __SLOT__ in the file.
-// Canonical answer pinned by the author; future grading checks against it.
+// TODO: Canonical answer pinned by the author; future AI grading checks against it.
 export type CodeExerciseCard = CardBase & {
   type: "code-exercise";
   label: "CODE EXERCISE";
@@ -41,7 +41,7 @@ export type CodeExerciseCard = CardBase & {
 };
 
 // Open-form prose prompt. Learner writes their own answer; no canonical.
-// Future grading scores the response against rubricConcepts.
+// TODO: Future AI grading scores the response against rubricConcepts.
 export type QuestionCard = CardBase & {
   type: "question";
   label: "QUESTION";
@@ -50,9 +50,10 @@ export type QuestionCard = CardBase & {
   hint?: string;
 };
 
+// TODO: Will be implemented in next iteration
 // Hands-on exploration. Learner pokes at the contract (calls a fn with
 // different inputs, watches state change) to build intuition. No
-// canonical, no required action to advance.
+// canonical, no required action to advance. Body can be probably react component
 export type ExperimentCard = CardBase & {
   type: "experiment";
   label: "EXPERIMENT";
