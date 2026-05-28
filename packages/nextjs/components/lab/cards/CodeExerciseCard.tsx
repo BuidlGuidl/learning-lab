@@ -2,22 +2,22 @@
 
 import { useState } from "react";
 import { CardFrame } from "../CardFrame";
-import type { YourTurnCard as YourTurnCardType } from "~~/lib/deck/types";
-import { useDeckStore } from "~~/services/store/deck-store";
+import type { CodeExerciseCard as CodeExerciseCardType } from "~~/lib/lab/types";
+import { useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
-  card: YourTurnCardType;
+  card: CodeExerciseCardType;
 };
 
-export const YourTurnCard = ({ card }: Props) => {
-  const completeYourTurn = useDeckStore(s => s.completeYourTurn);
-  const saved = useDeckStore(s => s.progress[card.id]?.learnerInput ?? "");
+export const CodeExerciseCard = ({ card }: Props) => {
+  const completeCodeExercise = useLabStore(s => s.completeCodeExercise);
+  const saved = useLabStore(s => s.progress[card.id]?.learnerInput ?? "");
   const [input, setInput] = useState(saved);
 
   const submitted = saved.length > 0;
 
   const handleSubmit = () => {
-    completeYourTurn(card.id, card.file, card.slot, input);
+    completeCodeExercise(card.id, card.file, card.slot, input);
   };
 
   return (

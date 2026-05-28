@@ -1,4 +1,4 @@
-import type { Card } from "~~/lib/deck/types";
+import type { Card } from "~~/lib/lab/types";
 
 type Props = {
   card: Card;

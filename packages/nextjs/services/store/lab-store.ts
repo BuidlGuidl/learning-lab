@@ -6,37 +6,37 @@ type ProgressEntry = {
   slot: string;
 };
 
-type DeckState = {
-  currentDeckId: string | null;
+type LabState = {
+  currentLabId: string | null;
   cardIndex: number;
   skeleton: Record<string, string>;
   sources: Record<string, string>;
   progress: Record<string, ProgressEntry>;
 };
 
-type DeckSeed = {
+type LabSeed = {
   id: string;
   skeleton: Record<string, string>;
 };
 
-type DeckActions = {
-  init: (deck: DeckSeed) => void;
+type LabActions = {
+  init: (lab: LabSeed) => void;
   next: () => void;
   prev: () => void;
   goTo: (i: number) => void;
-  completeYourTurn: (cardId: string, file: string, slot: string, learnerInput: string) => void;
+  completeCodeExercise: (cardId: string, file: string, slot: string, learnerInput: string) => void;
   reset: () => void;
 };
 
-const initialState: DeckState = {
-  currentDeckId: null,
+const initialState: LabState = {
+  currentLabId: null,
   cardIndex: 0,
   skeleton: {},
   sources: {},
   progress: {},
 };
 
-// Re-derive sources from skeleton + all progress entries so re-submitting a your-turn
+// Re-derive sources from skeleton + all progress entries so re-submitting a code-exercise
 // card replaces its slot freshly instead of becoming a no-op against an already-filled source.
 const deriveSources = (skeleton: Record<string, string>, progress: Record<string, ProgressEntry>) => {
   const sources: Record<string, string> = { ...skeleton };
@@ -48,24 +48,24 @@ const deriveSources = (skeleton: Record<string, string>, progress: Record<string
   return sources;
 };
 
-export const useDeckStore = create<DeckState & DeckActions>(set => ({
+export const useLabStore = create<LabState & LabActions>(set => ({
   ...initialState,
-  init: deck =>
+  init: lab =>
     set(s => {
-      // Idempotent: re-mounting the same deck (e.g. React strict-mode double-effect)
-      // must not wipe in-flight progress. Switching to a different deck restarts.
-      if (s.currentDeckId === deck.id) return s;
+      // Idempotent: re-mounting the same lab (e.g. React strict-mode double-effect)
+      // must not wipe in-flight progress. Switching to a different lab restarts.
+      if (s.currentLabId === lab.id) return s;
       return {
         ...initialState,
-        currentDeckId: deck.id,
-        skeleton: { ...deck.skeleton },
-        sources: { ...deck.skeleton },
+        currentLabId: lab.id,
+        skeleton: { ...lab.skeleton },
+        sources: { ...lab.skeleton },
       };
     }),
   next: () => set(s => ({ cardIndex: s.cardIndex + 1 })),
   prev: () => set(s => ({ cardIndex: Math.max(0, s.cardIndex - 1) })),
   goTo: i => set({ cardIndex: i }),
-  completeYourTurn: (cardId, file, slot, learnerInput) =>
+  completeCodeExercise: (cardId, file, slot, learnerInput) =>
     set(s => {
       const progress = { ...s.progress, [cardId]: { learnerInput, file, slot } };
       return { progress, sources: deriveSources(s.skeleton, progress) };

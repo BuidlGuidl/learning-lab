@@ -1,7 +1,7 @@
 import { CodeCard } from "./cards/CodeCard";
-import { ConceptCard } from "./cards/ConceptCard";
-import { YourTurnCard } from "./cards/YourTurnCard";
-import type { Card } from "~~/lib/deck/types";
+import { CodeExerciseCard } from "./cards/CodeExerciseCard";
+import { IdeaCard } from "./cards/IdeaCard";
+import type { Card } from "~~/lib/lab/types";
 
 type Props = {
   card: Card;
@@ -9,16 +9,16 @@ type Props = {
 
 export const CardRenderer = ({ card }: Props) => {
   switch (card.type) {
-    case "concept":
-      return <ConceptCard card={card} />;
-    case "your-turn":
-      return <YourTurnCard card={card} />;
+    case "idea":
+      return <IdeaCard card={card} />;
+    case "code-exercise":
+      return <CodeExerciseCard card={card} />;
     case "code":
       return <CodeCard card={card} />;
-    case "think":
-    case "try-it":
-    case "ship-it":
-    case "recap":
+    case "question":
+    case "experiment":
+    case "deployment":
+    case "summary":
       return (
         <div className="alert alert-warning max-w-3xl">
           <span>

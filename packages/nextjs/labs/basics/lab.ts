@@ -1,4 +1,4 @@
-import type { Deck } from "~~/lib/deck/types";
+import type { Lab } from "~~/lib/lab/types";
 
 const counterSkeleton = `pragma solidity ^0.8.20;
 
@@ -7,7 +7,7 @@ contract Counter {
 }
 `;
 
-export const deck: Deck = {
+export const lab: Lab = {
   id: "basics",
   title: "Basics of Ethereum",
   skeleton: {
@@ -15,16 +15,16 @@ export const deck: Deck = {
   },
   cards: [
     {
-      type: "concept",
+      type: "idea",
       id: "what-is-state",
-      label: "THE IDEA",
+      label: "IDEA",
       title: "State lives on chain",
       body: "Every smart contract has state. Storage slots that live on chain, readable by anyone, only writable through the contract's own functions. Before the contract can do anything else, it needs somewhere to keep its data. A state variable is what claims that space.",
     },
     {
-      type: "your-turn",
+      type: "code-exercise",
       id: "declare-storage",
-      label: "YOUR TURN",
+      label: "CODE EXERCISE",
       title: "Declare a state variable",
       file: "Counter.sol",
       slot: "__STORAGE__",
@@ -36,7 +36,7 @@ export const deck: Deck = {
     {
       type: "code",
       id: "storage-reveal",
-      label: "THE CODE",
+      label: "CODE",
       title: "Your contract",
       file: "Counter.sol",
       note: "Here's the contract with your line in it. That declaration runs once when the contract gets deployed, and the slot stays there as long as the contract exists.",

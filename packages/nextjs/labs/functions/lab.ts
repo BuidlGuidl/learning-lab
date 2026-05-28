@@ -1,4 +1,4 @@
-import type { Deck } from "~~/lib/deck/types";
+import type { Lab } from "~~/lib/lab/types";
 
 const adderSkeleton = `pragma solidity ^0.8.20;
 
@@ -7,7 +7,7 @@ contract Adder {
 }
 `;
 
-export const deck: Deck = {
+export const lab: Lab = {
   id: "functions",
   title: "Functions on a contract",
   skeleton: {
@@ -15,16 +15,16 @@ export const deck: Deck = {
   },
   cards: [
     {
-      type: "concept",
+      type: "idea",
       id: "what-is-a-function",
-      label: "THE IDEA",
+      label: "IDEA",
       title: "Functions are how the world talks to your contract",
       body: "A function is the entry point. Anyone with the contract's address can call one, and the contract decides what to do with the inputs. Some functions read state and return values without changing anything. Others mutate storage, emit events, move ETH around. The visibility keyword in the declaration is how you signal which functions the outside world is allowed to call.",
     },
     {
-      type: "your-turn",
+      type: "code-exercise",
       id: "write-add",
-      label: "YOUR TURN",
+      label: "CODE EXERCISE",
       title: "Write a pure adder",
       file: "Adder.sol",
       slot: "__ADD_FN__",
@@ -36,7 +36,7 @@ export const deck: Deck = {
     {
       type: "code",
       id: "adder-reveal",
-      label: "THE CODE",
+      label: "CODE",
       title: "Your contract",
       file: "Adder.sol",
       note: "There's the contract. Any address can call add(2, 3) on it and get 5 back. No gas spent on storage, no events emitted. Pure functions are the cheapest kind because they touch nothing the chain has to remember.",

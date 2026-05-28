@@ -2,15 +2,15 @@
 
 import { CardFrame } from "../CardFrame";
 import { CodeBlock } from "~~/components/code/CodeBlock";
-import type { CodeCard as CodeCardType } from "~~/lib/deck/types";
-import { useDeckStore } from "~~/services/store/deck-store";
+import type { CodeCard as CodeCardType } from "~~/lib/lab/types";
+import { useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
   card: CodeCardType;
 };
 
 export const CodeCard = ({ card }: Props) => {
-  const source = useDeckStore(s => s.sources[card.file] ?? "");
+  const source = useLabStore(s => s.sources[card.file] ?? "");
 
   return (
     <CardFrame card={card}>
