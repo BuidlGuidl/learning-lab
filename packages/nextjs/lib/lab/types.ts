@@ -66,9 +66,15 @@ export type Card =
   | DeploymentCard
   | SummaryCard;
 
+export type Chapter = {
+  id: string;
+  title: string;
+  cards: Card[];
+};
+
 export type Lab = {
   id: string;
   title: string;
   skeleton: Record<string, string>;
-  cards: Card[];
+  chapters: Chapter[];
 };

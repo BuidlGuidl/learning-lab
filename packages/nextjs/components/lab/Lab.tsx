@@ -10,6 +10,7 @@ type Props = {
 };
 
 export const Lab = ({ lab }: Props) => {
+  const chapterIndex = useLabStore(s => s.chapterIndex);
   const cardIndex = useLabStore(s => s.cardIndex);
   const init = useLabStore(s => s.init);
   const next = useLabStore(s => s.next);
@@ -19,25 +20,33 @@ export const Lab = ({ lab }: Props) => {
     init(lab);
   }, [lab, init]);
 
-  const card = lab.cards[cardIndex];
-  const total = lab.cards.length;
+  const chapter = lab.chapters[chapterIndex];
+  const card = chapter?.cards[cardIndex];
 
-  if (!card) return null;
+  if (!chapter || !card) return null;
+
+  const totalChapters = lab.chapters.length;
+  const totalCards = chapter.cards.length;
+  const atFirstCard = chapterIndex === 0 && cardIndex === 0;
+  const atLastCard = chapterIndex === totalChapters - 1 && cardIndex === totalCards - 1;
 
   return (
     <div className="flex flex-col items-center gap-6 py-8 px-4">
-      <div className="w-full max-w-3xl flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{lab.title}</h1>
-        <span className="text-sm text-base-content/60">
-          {cardIndex + 1} / {total}
-        </span>
+      <div className="w-full max-w-3xl flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold">{lab.title}</h1>
+          <span className="text-sm text-base-content/60">
+            chapter {chapterIndex + 1} of {totalChapters} · card {cardIndex + 1} of {totalCards}
+          </span>
+        </div>
+        <p className="text-sm text-base-content/60">{chapter.title}</p>
       </div>
       <CardRenderer card={card} />
       <div className="w-full max-w-3xl flex justify-between">
-        <button className="btn btn-ghost" onClick={prev} disabled={cardIndex === 0}>
+        <button className="btn btn-ghost" onClick={() => prev(lab)} disabled={atFirstCard}>
           Prev
         </button>
-        <button className="btn btn-primary" onClick={next} disabled={cardIndex >= total - 1}>
+        <button className="btn btn-primary" onClick={() => next(lab)} disabled={atLastCard}>
           Next
         </button>
       </div>

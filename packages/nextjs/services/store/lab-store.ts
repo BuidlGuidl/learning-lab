@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { Lab } from "~~/lib/lab/types";
 
 type ProgressEntry = {
   learnerInput: string;
@@ -8,6 +9,7 @@ type ProgressEntry = {
 
 type LabState = {
   currentLabId: string | null;
+  chapterIndex: number;
   cardIndex: number;
   skeleton: Record<string, string>;
   sources: Record<string, string>;
@@ -21,15 +23,15 @@ type LabSeed = {
 
 type LabActions = {
   init: (lab: LabSeed) => void;
-  next: () => void;
-  prev: () => void;
-  goTo: (i: number) => void;
+  next: (lab: Lab) => void;
+  prev: (lab: Lab) => void;
   completeCodeExercise: (cardId: string, file: string, slot: string, learnerInput: string) => void;
   reset: () => void;
 };
 
 const initialState: LabState = {
   currentLabId: null,
+  chapterIndex: 0,
   cardIndex: 0,
   skeleton: {},
   sources: {},
@@ -62,9 +64,23 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         sources: { ...lab.skeleton },
       };
     }),
-  next: () => set(s => ({ cardIndex: s.cardIndex + 1 })),
-  prev: () => set(s => ({ cardIndex: Math.max(0, s.cardIndex - 1) })),
-  goTo: i => set({ cardIndex: i }),
+  next: lab =>
+    set(s => {
+      const chapter = lab.chapters[s.chapterIndex];
+      if (!chapter) return s;
+      if (s.cardIndex < chapter.cards.length - 1) return { cardIndex: s.cardIndex + 1 };
+      if (s.chapterIndex < lab.chapters.length - 1) return { chapterIndex: s.chapterIndex + 1, cardIndex: 0 };
+      return s;
+    }),
+  prev: lab =>
+    set(s => {
+      if (s.cardIndex > 0) return { cardIndex: s.cardIndex - 1 };
+      if (s.chapterIndex > 0) {
+        const prevChapter = lab.chapters[s.chapterIndex - 1];
+        return { chapterIndex: s.chapterIndex - 1, cardIndex: prevChapter.cards.length - 1 };
+      }
+      return s;
+    }),
   completeCodeExercise: (cardId, file, slot, learnerInput) =>
     set(s => {
       const progress = { ...s.progress, [cardId]: { learnerInput, file, slot } };
