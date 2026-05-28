@@ -16,6 +16,7 @@ export type CompileResult =
 
 let worker: Worker | null = null;
 let nextId = 0;
+// id routes each response back to the right caller. without it, concurrent compiles race on arrival order.
 const pending = new Map<string, (r: CompileResult) => void>();
 
 function ensureWorker(): Worker {

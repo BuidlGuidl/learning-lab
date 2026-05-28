@@ -30,6 +30,7 @@ type CompileFailure = { id: string; ok: false; errors: string[] };
 
 const SOURCE_FILE = "Contract.sol";
 
+// the compile pipeline. standard JSON in, deployable contracts out; errors and warnings split by severity.
 self.onmessage = (event: MessageEvent<CompileRequest>) => {
   const { id, source } = event.data;
 

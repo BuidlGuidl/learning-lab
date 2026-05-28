@@ -1,9 +1,8 @@
 "use client";
 
-// Owns an in-memory EVM (tevm) for the lifetime of the component that uses it.
-// The chain is not persisted — reload resets it. State-changing calls go through
-// tevmContract with addToBlockchain:true; viem.writeContract mis-handles tevm
-// memory state across the deploy → call boundary.
+// In-memory EVM that lives for the component and dies on reload. State-changing calls
+// go through tevmContract because viem.writeContract trips on tevm's memory state
+// across the deploy/call boundary.
 import { useCallback, useMemo, useRef, useState } from "react";
 import { PREFUNDED_ACCOUNTS, createMemoryClient } from "tevm";
 import type { Abi } from "viem";
@@ -40,6 +39,7 @@ export function useTevm() {
     setLogs(prev => [...prev, { ts: Date.now(), kind, text }]);
   }, []);
 
+  // deploys the contract: abi + bytecode in, address out. stashes both into refs so later call/read can find them.
   const deploy = useCallback(
     async (abi: Abi, bytecode: `0x${string}`, args: readonly unknown[] = []) => {
       setStatus("deploying");
@@ -51,7 +51,7 @@ export function useTevm() {
           bytecode: bytecode as unknown as `0x${string}`,
           args,
           account: deployer,
-          chain: null,
+          chain: null, // the memory client has no viem chain identity, so null skips the check
         });
         appendLog("info", `tx ${hash}`);
         const receipt = await client.waitForTransactionReceipt({ hash });
@@ -74,6 +74,7 @@ export function useTevm() {
     [client, deployer, appendLog],
   );
 
+  // a state-changing call, routed through tevmContract. throws on revert and lets the caller handle it.
   const call = useCallback(
     async (functionName: string, args: readonly unknown[] = []) => {
       const abi = abiRef.current;
@@ -83,6 +84,7 @@ export function useTevm() {
       setError(null);
       appendLog("info", `${functionName}(${args.map(fmtArg).join(", ")})…`);
       try {
+        // using the legacy overload: the typed { contract, method } shape wants a typed contract object, and we only have raw abi here.
         const tevmContract = client.tevmContract as unknown as TevmContractFn;
         const r = await tevmContract({
           to: addr,

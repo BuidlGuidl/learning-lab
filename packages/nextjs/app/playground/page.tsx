@@ -9,12 +9,14 @@ import { type LogEntry, useTevm } from "~~/lib/tevm/useTevm";
 
 const Playground: NextPage = () => {
   const tevm = useTevm();
+  // the compile phase is solc's, not useTevm's. we merge it into displayStatus below.
   const [compiling, setCompiling] = useState(false);
 
   const displayStatus = compiling ? "compiling" : tevm.status;
   const busy = compiling || tevm.status === "deploying" || tevm.status === "calling";
   const deployed = tevm.address !== null;
 
+  // orchestrates the compile -> deploy flow. useTevm logs its own errors, so the catch here stays silent.
   async function onDeploy() {
     setCompiling(true);
     tevm.log("info", "compiling Counter.sol…");
@@ -24,8 +26,8 @@ const Playground: NextPage = () => {
         for (const err of result.errors) tevm.log("err", err.trim());
         return;
       }
-      const bytes = result.bytecode.length - 2; // strip 0x
-      tevm.log("ok", `compiled — abi ${result.abi.length} entries, bytecode ${Math.round(bytes / 2)} bytes`);
+      const bytes = (result.bytecode.length - 2) / 2; // strip 0x, 2 hex chars per byte
+      tevm.log("ok", `compiled — abi ${result.abi.length} entries, bytecode ${bytes} bytes`);
       for (const w of result.warnings) tevm.log("info", `warning: ${w.trim()}`);
       await tevm.deploy(result.abi as Abi, result.bytecode);
     } catch (e) {
