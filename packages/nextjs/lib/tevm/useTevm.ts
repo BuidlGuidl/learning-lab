@@ -22,6 +22,7 @@ type TevmContractParams = {
 };
 type TevmContractFn = (p: TevmContractParams) => Promise<{ errors?: Array<{ message?: string }> }>;
 
+// handles the memory client + deployment state for the component. returns live state (status, address, logs) plus deploy/call/read so callers drive the full flow without touching tevm directly.
 export function useTevm() {
   const client = useMemo(() => createMemoryClient({ miningConfig: { type: "auto" } }), []);
   const deployer = useMemo(() => PREFUNDED_ACCOUNTS[0], []);
