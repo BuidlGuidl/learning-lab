@@ -8,12 +8,16 @@ type CardBase = {
   title: string;
 };
 
+// Prose card that lands a single concept. Read-only, no interaction;
+// the mental-model beat before the learner does anything with it.
 export type IdeaCard = CardBase & {
   type: "idea";
   label: "IDEA";
   body: string;
 };
 
+// Code reveal. Renders a file from sources (skeleton with any
+// code-exercise slot-fills threaded in). Read-only.
 export type CodeCard = CardBase & {
   type: "code";
   label: "CODE";
@@ -23,6 +27,9 @@ export type CodeCard = CardBase & {
   note?: string;
 };
 
+// Closed-form code prompt. Learner writes a small unit (expression,
+// statement, fn body) that substitutes into __SLOT__ in the file.
+// Canonical answer pinned by the author; future grading checks against it.
 export type CodeExerciseCard = CardBase & {
   type: "code-exercise";
   label: "CODE EXERCISE";
@@ -33,6 +40,8 @@ export type CodeExerciseCard = CardBase & {
   canonical: string;
 };
 
+// Open-form prose prompt. Learner writes their own answer; no canonical.
+// Future grading scores the response against rubricConcepts.
 export type QuestionCard = CardBase & {
   type: "question";
   label: "QUESTION";
@@ -41,6 +50,9 @@ export type QuestionCard = CardBase & {
   hint?: string;
 };
 
+// Hands-on exploration. Learner pokes at the contract (calls a fn with
+// different inputs, watches state change) to build intuition. No
+// canonical, no required action to advance.
 export type ExperimentCard = CardBase & {
   type: "experiment";
   label: "EXPERIMENT";
@@ -48,12 +60,16 @@ export type ExperimentCard = CardBase & {
   body: string;
 };
 
+// Deploy beat. Learner ships the contract to a real evm and confirms it
+// runs there. The moment-of-truth before the chapter closes.
 export type DeploymentCard = CardBase & {
   type: "deployment";
   label: "DEPLOYMENT";
   body: string;
 };
 
+// End-of-chapter prose. Ties the chapter's cards together (what was
+// built, what the learner should now hold). Read-only.
 export type SummaryCard = CardBase & {
   type: "summary";
   label: "SUMMARY";
