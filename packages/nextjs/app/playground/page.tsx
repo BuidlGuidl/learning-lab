@@ -1,5 +1,6 @@
 "use client";
 
+// TODO: Remove this page after integration with Lab
 import { useState } from "react";
 import type { NextPage } from "next";
 import type { Abi } from "viem";
