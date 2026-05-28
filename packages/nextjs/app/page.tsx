@@ -2,9 +2,6 @@ import Link from "next/link";
 import type { NextPage } from "next";
 import { registry } from "~~/labs/registry";
 
-// Dynamic-import each lab on the server so chapter titles live only in
-// the lab definition. Caching them on the registry would double the
-// source of truth and drift on rename.
 const Home: NextPage = async () => {
   const labs = await Promise.all(
     Object.entries(registry).map(async ([id, { title, load }]) => {

@@ -1,6 +1,5 @@
-// Label is the type discriminant in caps; the union pins the pair so
-// rendered string and dispatch can't drift. Adding a card type = pick
-// the type string + its caps label literal, both pinned together.
+// Label is type in caps, pinned by the union so it can't drift from
+// the dispatch.
 
 export type CardLabel = "IDEA" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
 

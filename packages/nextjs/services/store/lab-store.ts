@@ -84,9 +84,8 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       }
       return s;
     }),
-  // Append to progress, then rebuild sources from skeleton + progress.
-  // Raw text stays in progress so future grading can flip a verdict
-  // without losing what was typed.
+  // Raw text stays in progress (not just the mutated source) so future
+  // grading can flip a verdict without losing what was typed.
   completeCodeExercise: (cardId, file, slot, learnerInput) =>
     set(s => {
       const progress = { ...s.progress, [cardId]: { learnerInput, file, slot } };
