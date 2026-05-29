@@ -6,9 +6,9 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { PREFUNDED_ACCOUNTS, createMemoryClient } from "tevm";
 import type { Abi } from "viem";
+import { TxnNotification } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
 
-export type LogKind = "info" | "ok" | "err";
-export type LogEntry = { ts: number; kind: LogKind; text: string };
 export type Status = "idle" | "deploying" | "calling" | "ready" | "error";
 
 type TevmContractParams = {
@@ -22,30 +22,27 @@ type TevmContractParams = {
 };
 type TevmContractFn = (p: TevmContractParams) => Promise<{ errors?: Array<{ message?: string }> }>;
 
-// handles the memory client + deployment state for the component. returns live state (status, address, logs) plus deploy/call/read so callers drive the full flow without touching tevm directly.
-export function useTevm() {
+// TODO: rework feedback surface when deck cards land. for now we mirror SE-2's useScaffoldWriteContract pattern (toast loading → toast result) inside the hook; cards may want per-card notifications or none.
+//
+// handles the memory client + deployment state for the component. returns live state (status, address, error) plus deploy/call/read so callers drive the full flow without touching tevm directly. toasts on completion via SE-2 notification helper.
+export function useTevmContract() {
   const client = useMemo(() => createMemoryClient({ miningConfig: { type: "auto" } }), []);
   const deployer = useMemo(() => PREFUNDED_ACCOUNTS[0], []);
 
   const [status, setStatus] = useState<Status>("idle");
   const [address, setAddress] = useState<`0x${string}` | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
 
   // refs so callbacks read the current deployment without stale closures
   const abiRef = useRef<Abi | null>(null);
   const addressRef = useRef<`0x${string}` | null>(null);
-
-  const appendLog = useCallback((kind: LogKind, text: string) => {
-    setLogs(prev => [...prev, { ts: Date.now(), kind, text }]);
-  }, []);
 
   // deploys the contract: abi + bytecode in, address out. stashes both into refs so later call/read can find them.
   const deploy = useCallback(
     async (abi: Abi, bytecode: `0x${string}`, args: readonly unknown[] = []) => {
       setStatus("deploying");
       setError(null);
-      appendLog("info", "deploying contract…");
+      const loadingId = notification.loading(<TxnNotification message="Deploying contract." />);
       try {
         const hash = await client.deployContract({
           abi,
@@ -54,7 +51,6 @@ export function useTevm() {
           account: deployer,
           chain: null, // the memory client has no viem chain identity, so null skips the check
         });
-        appendLog("info", `tx ${hash}`);
         const receipt = await client.waitForTransactionReceipt({ hash });
         const addr = receipt.contractAddress as `0x${string}` | null;
         if (!addr) throw new Error("deployment receipt has no contract address");
@@ -62,28 +58,30 @@ export function useTevm() {
         addressRef.current = addr;
         setAddress(addr);
         setStatus("ready");
-        appendLog("ok", `deployed at ${addr} (gas ${receipt.gasUsed})`);
+        notification.remove(loadingId);
+        notification.success(<TxnNotification message={`Contract deployed at ${shortAddr(addr)}`} />);
         return addr;
       } catch (e) {
-        const msg = (e as Error).message;
+        const msg = shortMsg((e as Error).message);
         setError(msg);
         setStatus("error");
-        appendLog("err", `deploy failed: ${shortMsg(msg)}`);
+        notification.remove(loadingId);
+        notification.error(msg);
         throw e;
       }
     },
-    [client, deployer, appendLog],
+    [client, deployer],
   );
 
   // a state-changing call, routed through tevmContract. throws on revert and lets the caller handle it.
-  const call = useCallback(
+  const writeContract = useCallback(
     async (functionName: string, args: readonly unknown[] = []) => {
       const abi = abiRef.current;
       const addr = addressRef.current;
       if (!abi || !addr) throw new Error("call() before deploy()");
       setStatus("calling");
       setError(null);
-      appendLog("info", `${functionName}(${args.map(fmtArg).join(", ")})…`);
+      const loadingId = notification.loading(<TxnNotification message="Waiting for transaction to complete." />);
       try {
         // using the legacy overload: the typed { contract, method } shape wants a typed contract object, and we only have raw abi here.
         const tevmContract = client.tevmContract as unknown as TevmContractFn;
@@ -99,53 +97,40 @@ export function useTevm() {
           throw new Error(r.errors[0]?.message ?? "transaction reverted");
         }
         setStatus("ready");
-        appendLog("ok", `${functionName} ok`);
+        notification.remove(loadingId);
+        notification.success(<TxnNotification message="Transaction completed successfully!" />);
       } catch (e) {
-        const msg = (e as Error).message;
+        const msg = shortMsg((e as Error).message);
         setError(msg);
         setStatus("error");
-        appendLog("err", `${functionName} failed: ${shortMsg(msg)}`);
+        notification.remove(loadingId);
+        notification.error(msg);
         throw e;
       }
     },
-    [client, deployer.address, appendLog],
+    [client, deployer.address],
   );
 
-  const read = useCallback(
+  const readContract = useCallback(
     async (functionName: string, args: readonly unknown[] = []) => {
       const abi = abiRef.current;
       const addr = addressRef.current;
       if (!abi || !addr) throw new Error("read() before deploy()");
-      appendLog("info", `read ${functionName}(${args.map(fmtArg).join(", ")})…`);
       try {
-        const result = await client.readContract({ address: addr, abi, functionName, args });
-        appendLog("ok", `${functionName} = ${fmtArg(result)}`);
-        return result;
+        return await client.readContract({ address: addr, abi, functionName, args });
       } catch (e) {
-        const msg = (e as Error).message;
-        appendLog("err", `read ${functionName} failed: ${shortMsg(msg)}`);
+        notification.error(shortMsg((e as Error).message));
         throw e;
       }
     },
-    [client, appendLog],
+    [client],
   );
 
-  const clearLogs = useCallback(() => setLogs([]), []);
-
-  return { status, address, error, logs, deploy, call, read, clearLogs, log: appendLog };
+  return { status, address, error, deploy, writeContract, readContract };
 }
 
-function fmtArg(v: unknown): string {
-  if (typeof v === "bigint") return v.toString();
-  if (v === null || v === undefined) return String(v);
-  if (typeof v === "object") {
-    try {
-      return JSON.stringify(v, (_, x) => (typeof x === "bigint" ? x.toString() : x));
-    } catch {
-      return String(v);
-    }
-  }
-  return String(v);
+function shortAddr(addr: `0x${string}`): string {
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
 function shortMsg(msg: string): string {
