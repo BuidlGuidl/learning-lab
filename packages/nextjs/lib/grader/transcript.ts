@@ -14,6 +14,7 @@ export type GradingEvent = {
   answer?: string; // absent on a bare skip
   feedback?: string; // absent on a skip
   missedConcepts?: string[]; // absent on a skip
+  compilerErrors?: string[]; // raw solc errors, only on a code-exercise that failed to compile
   happenedAt: number;
 };
 

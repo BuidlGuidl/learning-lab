@@ -12,5 +12,5 @@ export const GRADER_MODEL: OpenRouterModelId = "deepseek/deepseek-v4-pro";
 
 // Passed through to OpenRouter on the grade call.
 export const GRADER_PROVIDER_OPTIONS = {
-  openrouter: { reasoning: { effort: "high" } },
+  openrouter: { reasoning: { effort: "medium" } },
 };

@@ -43,6 +43,11 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
     : latest?.outcome;
   const feedback = isLoading ? object?.feedback : latest?.feedback;
   const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter(Boolean) as string[] | undefined;
+  const compilerErrors = isLoading
+    ? lastCompile && !lastCompile.ok
+      ? lastCompile.errors
+      : undefined
+    : latest?.compilerErrors;
 
   return (
     <CardFrame card={card}>
@@ -60,7 +65,14 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
           {isLoading ? "Grading…" : latest ? "Re-submit" : "Submit"}
         </button>
       </div>
-      <GradeFeedback pending={isLoading} error={error} verdict={verdict} feedback={feedback} missedConcepts={missed} />
+      <GradeFeedback
+        pending={isLoading}
+        error={error}
+        verdict={verdict}
+        feedback={feedback}
+        missedConcepts={missed}
+        compilerErrors={compilerErrors}
+      />
     </CardFrame>
   );
 };

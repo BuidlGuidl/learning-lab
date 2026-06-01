@@ -29,6 +29,7 @@ export function useGrade(card: Card, chapterId: string) {
       if (!object && !compiledFail) return;
 
       const verdict = compiledFail ? "fail" : object!.verdict;
+      const compilerErrors = ctx.compileResult && !ctx.compileResult.ok ? ctx.compileResult.errors : undefined;
       const event: GradingEvent = {
         cardId: card.id,
         chapterId,
@@ -37,6 +38,7 @@ export function useGrade(card: Card, chapterId: string) {
         answer: ctx.answer,
         feedback: object?.feedback ?? "Your code didn't compile yet. Work through the errors and try again.",
         missedConcepts: object?.missedConcepts ?? [],
+        compilerErrors,
         happenedAt: Date.now(),
       };
       appendGradingEvent(event);
