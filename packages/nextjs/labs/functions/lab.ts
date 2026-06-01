@@ -45,6 +45,20 @@ export const lab: Lab = {
           file: "Adder.sol",
           note: "There's the contract. Any address can call add(2, 3) on it and get 5 back. No gas spent on storage, no events emitted. Pure functions are the cheapest kind because they touch nothing the chain has to remember.",
         },
+        {
+          type: "question",
+          id: "why-pure",
+          label: "QUESTION",
+          title: "Why pure?",
+          question:
+            "You marked add as `pure`. What is that keyword actually promising, and what would change if you dropped it to `view` or left it off entirely?",
+          rubricConcepts: [
+            "pure promises the function reads no state and writes no state",
+            "view would allow reading state but still no writing",
+            "the keyword is a compiler-enforced guarantee, not a hint",
+          ],
+          hint: "Think about what each mutability keyword lets the function touch.",
+        },
       ],
     },
   ],
