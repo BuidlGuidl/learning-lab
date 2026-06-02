@@ -7,10 +7,22 @@ type ProgressEntry = {
   slot: string;
 };
 
+// A spot in the lab, addressed the way the store already thinks: chapter then card.
+export type Position = { chapterIndex: number; cardIndex: number };
+
+// Lab order is lexicographic — later chapter wins, else later card. The sidebar
+// uses this against maxReached to decide which cards still read as locked.
+export const isPositionAfter = (a: Position, b: Position) =>
+  a.chapterIndex > b.chapterIndex || (a.chapterIndex === b.chapterIndex && a.cardIndex > b.cardIndex);
+
 type LabState = {
   currentLabId: string | null;
   chapterIndex: number;
   cardIndex: number;
+  // Furthest the learner has legitimately walked via next(). goTo (free-jump) does
+  // not move this, so peeking ahead leaves later cards visibly locked. When the
+  // mastery gate lands, next() stops here and the locks past it become real.
+  maxReached: Position;
   skeleton: Record<string, string>;
   sources: Record<string, string>;
   progress: Record<string, ProgressEntry>;
@@ -25,6 +37,7 @@ type LabActions = {
   init: (lab: LabSeed) => void;
   next: (lab: Lab) => void;
   prev: (lab: Lab) => void;
+  goTo: (chapterIndex: number, cardIndex: number) => void;
   completeCodeExercise: (cardId: string, file: string, slot: string, learnerInput: string) => void;
   reset: () => void;
 };
@@ -33,6 +46,7 @@ const initialState: LabState = {
   currentLabId: null,
   chapterIndex: 0,
   cardIndex: 0,
+  maxReached: { chapterIndex: 0, cardIndex: 0 },
   skeleton: {},
   sources: {},
   progress: {},
@@ -71,10 +85,16 @@ export const useLabStore = create<LabState & LabActions>(set => ({
     set(s => {
       const chapter = lab.chapters[s.chapterIndex];
       if (!chapter) return s;
-      if (s.cardIndex < chapter.cards.length - 1) return { cardIndex: s.cardIndex + 1 };
-      if (s.chapterIndex < lab.chapters.length - 1) return { chapterIndex: s.chapterIndex + 1, cardIndex: 0 };
-      return s;
+      let to: Position;
+      if (s.cardIndex < chapter.cards.length - 1) to = { chapterIndex: s.chapterIndex, cardIndex: s.cardIndex + 1 };
+      else if (s.chapterIndex < lab.chapters.length - 1) to = { chapterIndex: s.chapterIndex + 1, cardIndex: 0 };
+      else return s;
+      // Sequential advance is what earns the unlock; bump the watermark when we pass it.
+      return { ...to, maxReached: isPositionAfter(to, s.maxReached) ? to : s.maxReached };
     }),
+  // Free-jump from the sidebar. Moves position only — the watermark stays put, so
+  // jumping ahead is a peek, not progress, and those cards keep their lock.
+  goTo: (chapterIndex, cardIndex) => set({ chapterIndex, cardIndex }),
   prev: lab =>
     set(s => {
       if (s.cardIndex > 0) return { cardIndex: s.cardIndex - 1 };
