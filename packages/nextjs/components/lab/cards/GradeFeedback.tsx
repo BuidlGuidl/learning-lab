@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import type { GradingOutcome } from "~~/lib/grader/transcript";
 
 // Plain pass/fail chip; the "you can recover" tone lives in the feedback, not the label.
@@ -61,15 +62,7 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
           {compilerErrors && compilerErrors.length > 0 && (
             <details className="group mt-3">
               <summary className="flex cursor-pointer select-none list-none items-center gap-1.5 text-xs uppercase tracking-wider text-base-content/40 transition-colors hover:text-base-content/70">
-                <svg
-                  viewBox="0 0 12 12"
-                  className="h-3 w-3 transition-transform group-open:rotate-90"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path d="M4.5 3l3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
                 compiler output
               </summary>
               <pre className="mt-2 overflow-x-auto rounded-md border border-base-300 bg-base-300/40 p-3 font-mono text-xs leading-relaxed text-base-content/70">
