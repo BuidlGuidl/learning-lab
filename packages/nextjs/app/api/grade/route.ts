@@ -62,6 +62,9 @@ export async function POST(req: Request) {
     prompt,
     output: Output.object({ schema: verdictSchema }),
     providerOptions: GRADER_PROVIDER_OPTIONS,
+    // streamText swallows mid-stream provider errors so the route can't crash; without this
+    // hook a rate-limit/5xx leaves zero server trace. The client surfaces its own retry.
+    onError: ({ error }) => console.error("[grade] stream error", error),
   });
 
   return result.toTextStreamResponse();
