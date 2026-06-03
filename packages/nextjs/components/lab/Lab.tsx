@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { Sidebar } from "./Sidebar";
-import { Bars3Icon } from "@heroicons/react/24/outline";
+import { Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import type { Lab as LabType } from "~~/lib/lab/types";
 import { useLabStore } from "~~/services/store/lab-store";
 
@@ -57,19 +57,19 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
-      <div className="flex flex-col px-4 py-6 overflow-y-auto drawer-content">
-        {!sidebarOpen && (
-          <div className="w-full max-w-3xl mx-auto shrink-0">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="gap-2 btn btn-ghost btn-sm"
-              aria-label="Show chapters"
-            >
-              <Bars3Icon className="w-4 h-4" />
-              <span className="text-xs">Chapters</span>
-            </button>
-          </div>
-        )}
+      <div className="flex flex-col gap-6 px-4 py-6 overflow-y-auto drawer-content">
+        {/* Always rendered (no layout jump on toggle); plain + unpadded so it lines
+            up with the title's left edge rather than sitting indented like a btn. */}
+        <div className="w-full max-w-3xl mx-auto shrink-0">
+          <button
+            onClick={() => setSidebarOpen(o => !o)}
+            className="flex items-center gap-1.5 text-sm font-medium cursor-pointer text-base-content/60 hover:text-base-content transition-colors"
+            aria-label={sidebarOpen ? "Hide chapters" : "Show chapters"}
+          >
+            {sidebarOpen ? <ChevronDoubleLeftIcon className="w-4 h-4" /> : <Bars3Icon className="w-4 h-4" />}
+            Chapters
+          </button>
+        </div>
 
         {/* my-auto centers the reading column in the leftover height, yet still
             scrolls cleanly once the content grows taller than the viewport. */}

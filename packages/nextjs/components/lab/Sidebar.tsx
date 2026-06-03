@@ -17,19 +17,19 @@ type Props = {
 // Pure projection of store position + lab shape — no nav state of its own beyond
 // which chapters are expanded.
 export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
-  const chapterIndex = useLabStore(s => s.chapterIndex);
-  const cardIndex = useLabStore(s => s.cardIndex);
+  const activeChapterIndex = useLabStore(s => s.chapterIndex);
+  const activeCardIndex = useLabStore(s => s.cardIndex);
   const maxReached = useLabStore(s => s.maxReached);
   const goTo = useLabStore(s => s.goTo);
 
   // Active chapter is always open; a peek into any other stays open until closed.
-  const [expanded, setExpanded] = useState<Set<number>>(() => new Set([chapterIndex]));
+  const [expanded, setExpanded] = useState<Set<number>>(() => new Set([activeChapterIndex]));
   useEffect(() => {
-    setExpanded(prev => (prev.has(chapterIndex) ? prev : new Set(prev).add(chapterIndex)));
-  }, [chapterIndex]);
+    setExpanded(prev => (prev.has(activeChapterIndex) ? prev : new Set(prev).add(activeChapterIndex)));
+  }, [activeChapterIndex]);
 
-  const select = (ci: number, card: number) => {
-    goTo(ci, card);
+  const select = (chapterIndex: number, cardIndex: number) => {
+    goTo(chapterIndex, cardIndex);
     onNavigate?.();
   };
 
@@ -42,8 +42,8 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
         </button>
       </div>
       <ul className="flex flex-col gap-1">
-        {lab.chapters.map((chapter, ci) => {
-          const open = expanded.has(ci);
+        {lab.chapters.map((chapter, chapterIndex) => {
+          const open = expanded.has(chapterIndex);
           return (
             <li key={chapter.id}>
               <details
@@ -53,8 +53,8 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
                   const isOpen = e.currentTarget.open;
                   setExpanded(prev => {
                     const next = new Set(prev);
-                    if (isOpen) next.add(ci);
-                    else next.delete(ci);
+                    if (isOpen) next.add(chapterIndex);
+                    else next.delete(chapterIndex);
                     return next;
                   });
                 }}
@@ -65,7 +65,7 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
                       open ? "bg-primary text-primary-content" : "bg-base-200 text-base-content/60"
                     }`}
                   >
-                    {ci + 1}
+                    {chapterIndex + 1}
                   </span>
                   <span className="flex-1 text-sm font-medium">{chapter.title}</span>
                   <ChevronRightIcon
@@ -74,14 +74,14 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
                 </summary>
 
                 <ul className="flex flex-col mt-1 ml-[1.4rem] border-l border-base-300">
-                  {chapter.cards.map((card, i) => {
-                    const active = ci === chapterIndex && i === cardIndex;
-                    const locked = isPositionAfter({ chapterIndex: ci, cardIndex: i }, maxReached);
+                  {chapter.cards.map((card, cardIndex) => {
+                    const active = chapterIndex === activeChapterIndex && cardIndex === activeCardIndex;
+                    const locked = isPositionAfter({ chapterIndex, cardIndex }, maxReached);
                     return (
                       <li key={card.id}>
                         <button
-                          onClick={() => select(ci, i)}
-                          className={`flex items-center w-full gap-2 py-1.5 pl-4 pr-2 -ml-px text-sm text-left border-l-2 rounded-r-md transition-colors ${
+                          onClick={() => select(chapterIndex, cardIndex)}
+                          className={`flex items-center w-full gap-2 py-1.5 pl-4 pr-2 -ml-px text-sm text-left border-l-2 rounded-r-md cursor-pointer transition-colors ${
                             active
                               ? "border-primary bg-primary text-primary-content font-medium"
                               : "border-transparent text-base-content/70 hover:text-base-content hover:bg-base-200 hover:border-base-content/20"
