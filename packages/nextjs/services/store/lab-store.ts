@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
-import { isCardCleared } from "~~/lib/grader/transcript";
+import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
 import type { Card, Lab } from "~~/lib/lab/types";
 
 type ProgressEntry = {
@@ -112,7 +112,7 @@ export const useLabStore = create<LabState & LabActions>(set => ({
   // TODO(remove-skip): drop before this is learner-facing.
   skipCard: (card, chapterId) =>
     set(s => {
-      const attempt = s.transcript.events.filter(e => e.cardId === card.id && e.outcome !== "skipped").length + 1;
+      const attempt = nextAttempt(s.transcript, card.id);
       const event: GradingEvent = { cardId: card.id, chapterId, attempt, outcome: "skipped", happenedAt: Date.now() };
       let progress = s.progress;
       if (card.type === "code-exercise") {

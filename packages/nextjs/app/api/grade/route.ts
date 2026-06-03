@@ -8,7 +8,8 @@ import type { LearningTranscript } from "~~/lib/grader/transcript";
 import { nextAttempt } from "~~/lib/grader/transcript";
 
 // Client submits raw inputs; the server loads the lab, builds the prompt, and streams the
-// verdict. Prompt construction stays server-side so a client can't shape its own grade.
+// verdict. Prompt construction stays server-side so canonical answers never ship to the
+// client — not an anti-cheat boundary, since the transcript and gate are client-trusted.
 export const maxDuration = 60;
 
 type GradeBody = {

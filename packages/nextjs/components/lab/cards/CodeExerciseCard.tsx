@@ -42,7 +42,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
       : object?.verdict
     : latest?.outcome;
   const feedback = isLoading ? object?.feedback : latest?.feedback;
-  const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter(Boolean) as string[] | undefined;
+  const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter((c): c is string => Boolean(c));
   const compilerErrors = isLoading
     ? lastCompile && !lastCompile.ok
       ? lastCompile.errors

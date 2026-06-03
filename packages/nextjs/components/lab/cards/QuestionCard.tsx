@@ -23,7 +23,7 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
 
   const verdict: GradingOutcome | undefined = isLoading ? object?.verdict : latest?.outcome;
   const feedback = isLoading ? object?.feedback : latest?.feedback;
-  const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter(Boolean) as string[] | undefined;
+  const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter((c): c is string => Boolean(c));
 
   return (
     <CardFrame card={card}>
