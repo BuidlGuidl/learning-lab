@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { Sidebar } from "./Sidebar";
 import { Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
+import { isCardCleared } from "~~/lib/grader/transcript";
 import type { Lab as LabType } from "~~/lib/lab/types";
 import { useLabStore } from "~~/services/store/lab-store";
 
@@ -13,13 +14,16 @@ type Props = {
 
 const DRAWER_ID = "lab-drawer";
 const isDesktop = () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches;
+const isGradable = (type: string) => type === "code-exercise" || type === "question";
 
 export const Lab = ({ lab }: Props) => {
   const chapterIndex = useLabStore(s => s.chapterIndex);
   const cardIndex = useLabStore(s => s.cardIndex);
+  const transcript = useLabStore(s => s.transcript);
   const init = useLabStore(s => s.init);
   const next = useLabStore(s => s.next);
   const prev = useLabStore(s => s.prev);
+  const skipCard = useLabStore(s => s.skipCard);
 
   // Rail starts open on desktop, closed on mobile. On desktop it's an in-flow
   // rail that collapses for a focused read; on mobile it's an overlay drawer.
@@ -38,6 +42,10 @@ export const Lab = ({ lab }: Props) => {
   const totalCards = chapter.cards.length;
   const atFirstCard = chapterIndex === 0 && cardIndex === 0;
   const atLastCard = chapterIndex === totalChapters - 1 && cardIndex === totalCards - 1;
+
+  // Gate: a gradable card locks forward nav until cleared (pass or skip). prev and
+  // the sidebar's free-jump stay open — the gate is only on the Next button.
+  const gated = isGradable(card.type) && !isCardCleared(transcript, card.id);
 
   // A pick dismisses the overlay on mobile; on desktop the rail stays put.
   const handleNavigate = () => {
@@ -84,16 +92,31 @@ export const Lab = ({ lab }: Props) => {
             <p className="text-sm text-base-content/60">{chapter.title}</p>
           </div>
 
-          <CardRenderer card={card} />
+          <CardRenderer card={card} chapterId={chapter.id} />
 
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between">
             <button className="btn btn-ghost" onClick={() => prev(lab)} disabled={atFirstCard}>
               Prev
             </button>
-            <button className="btn btn-primary" onClick={() => next(lab)} disabled={atLastCard}>
-              Next
-            </button>
+            <div className="flex items-center gap-3">
+              {gated && (
+                // TODO: (remove-skip) dev-only escape hatch; remove before learner-facing.
+                <button
+                  className="btn btn-ghost btn-sm text-base-content/50"
+                  onClick={() => {
+                    skipCard(card, chapter.id);
+                    next(lab);
+                  }}
+                >
+                  skip for now
+                </button>
+              )}
+              <button className="btn btn-primary" onClick={() => next(lab)} disabled={atLastCard || gated}>
+                Next
+              </button>
+            </div>
           </div>
+          {gated && <p className="text-sm text-base-content/50">Pass this card to unlock the next one.</p>}
         </div>
       </div>
 
