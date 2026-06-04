@@ -46,19 +46,7 @@ const getContractData = async (address: Address) => {
     return null;
   }
 
-  const artifactsDirectory = path.join(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
-    "..",
-    "..",
-    "..",
-    "hardhat",
-    "artifacts",
-    "build-info",
-  );
+  const artifactsDirectory = path.join(process.cwd(), "..", "hardhat", "artifacts", "build-info");
 
   if (!fs.existsSync(artifactsDirectory)) {
     throw new Error(`Directory ${artifactsDirectory} not found.`);
