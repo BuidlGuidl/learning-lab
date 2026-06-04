@@ -27,17 +27,15 @@ type LabState = {
   maxReached: Position;
   skeleton: Record<string, string>;
   sources: Record<string, string>;
+  // Every slot token this lab declares (one per code-exercise card). Captured at
+  // init so the compile path can tell a real slot from arbitrary learner text.
+  slotTokens: string[];
   progress: Record<string, ProgressEntry>;
   transcript: LearningTranscript;
 };
 
-type LabSeed = {
-  id: string;
-  skeleton: Record<string, string>;
-};
-
 type LabActions = {
-  init: (lab: LabSeed) => void;
+  init: (lab: Lab) => void;
   next: (lab: Lab) => void;
   prev: (lab: Lab) => void;
   goTo: (chapterIndex: number, cardIndex: number) => void;
@@ -56,8 +54,22 @@ const initialState: LabState = {
   maxReached: { chapterIndex: 0, cardIndex: 0 },
   skeleton: {},
   sources: {},
+  slotTokens: [],
   progress: {},
   transcript: emptyTranscript,
+};
+
+// The source handed to the compiler for a file. A code-exercise fills one slot,
+// but later slots in the same file are still bare `__SLOT__` tokens — not valid
+// Solidity, so the whole file would fail to compile and wrongly fail a correct
+// answer. Strip every still-present declared slot token so the file compiles
+// against what the learner has actually written so far. Only ever removes tokens
+// the lab declared (slotTokens), never learner code; the display path keeps the
+// raw tokens so the peek still shows the honest "not written yet" state.
+export const compileSourceOf = (s: LabState, file: string) => {
+  let src = s.sources[file] ?? "";
+  for (const token of s.slotTokens) src = src.split(token).join("");
+  return src;
 };
 
 // Gradable cards gate forward nav; read-only types advance freely.
@@ -82,11 +94,17 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       // Idempotent: re-mounting the same lab (e.g. React strict-mode double-effect)
       // must not wipe in-flight progress. Switching to a different lab restarts.
       if (s.currentLabId === lab.id) return s;
+      // Each code-exercise declares one slot; collect them so the compile path
+      // can strip the unfilled ones (see compileSourceOf).
+      const slotTokens = lab.chapters
+        .flatMap(ch => ch.cards)
+        .flatMap(c => (c.type === "code-exercise" ? [c.slot] : []));
       return {
         ...initialState,
         currentLabId: lab.id,
         skeleton: { ...lab.skeleton },
         sources: { ...lab.skeleton },
+        slotTokens,
         transcript: { labId: lab.id, events: [] },
       };
     }),
