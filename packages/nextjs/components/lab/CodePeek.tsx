@@ -133,9 +133,9 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
           </button>
         </div>
 
-        {/* The running source. CodeBlock owns the shiki render + its own scroll. */}
-        <div className="flex-1 p-4 overflow-auto">
-          {shownFile && <CodeBlock code={sources[shownFile] ?? ""} lang="solidity" />}
+        {/* The running source, as a line-numbered editor pane filling the sheet. */}
+        <div className="flex-1 overflow-auto">
+          {shownFile && <CodeBlock code={sources[shownFile] ?? ""} lang="solidity" showLineNumbers />}
         </div>
       </aside>
     </>
