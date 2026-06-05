@@ -9,7 +9,7 @@ import type { CompileCheckResult } from "~~/lib/grader/compile-check";
 import { latestEvent } from "~~/lib/grader/transcript";
 import type { GradingOutcome } from "~~/lib/grader/transcript";
 import type { CodeExerciseCard as CodeExerciseCardType } from "~~/lib/lab/types";
-import { compileSourceOf, useLabStore } from "~~/services/store/lab-store";
+import { gradingSourceOf, useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
   card: CodeExerciseCardType;
@@ -27,11 +27,11 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const { object, grade, isLoading, error } = useGrade(card, chapterId);
 
   const handleSubmit = async () => {
-    // Thread input into sources so the assembled file is current, then compile
-    // against what's written so far — compileSourceOf strips later unfilled slots
-    // that would otherwise break the build and fail a correct answer.
+    // Record the input for the display path (peek + reveal cards), then compile an
+    // isolated file for grading: only this slot under test, every other slot backfilled
+    // with its canonical so a broken neighbour can't fail a correct answer.
     completeCodeExercise(card.id, card.file, card.slot, input);
-    const assembled = compileSourceOf(useLabStore.getState(), card.file);
+    const assembled = gradingSourceOf(useLabStore.getState(), card.file, card.slot, input);
     const compileResult = await compileCheck(assembled);
     setLastCompile(compileResult);
     grade(input, compileResult);

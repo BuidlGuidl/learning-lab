@@ -30,6 +30,10 @@ type LabState = {
   // Every slot token this lab declares (one per code-exercise card). Captured at
   // init so the compile path can tell a real slot from arbitrary learner text.
   slotTokens: string[];
+  // slot token -> its canonical answer. The grading compile backfills every slot
+  // except the one under test with these, so a broken neighbour can't fail the
+  // answer being graded (see gradingSourceOf).
+  slotCanonicals: Record<string, string>;
   progress: Record<string, ProgressEntry>;
   transcript: LearningTranscript;
 };
@@ -55,20 +59,27 @@ const initialState: LabState = {
   skeleton: {},
   sources: {},
   slotTokens: [],
+  slotCanonicals: {},
   progress: {},
   transcript: emptyTranscript,
 };
 
-// The source handed to the compiler for a file. A code-exercise fills one slot,
-// but later slots in the same file are still bare `__SLOT__` tokens — not valid
-// Solidity, so the whole file would fail to compile and wrongly fail a correct
-// answer. Strip every still-present declared slot token so the file compiles
-// against what the learner has actually written so far. Only ever removes tokens
-// the lab declared (slotTokens), never learner code; the display path keeps the
-// raw tokens so the peek still shows the honest "not written yet" state.
-export const compileSourceOf = (s: LabState, file: string) => {
-  let src = s.sources[file] ?? "";
-  for (const token of s.slotTokens) src = src.split(token).join("");
+// The source handed to the compiler when grading one exercise. The learner only
+// ever writes one slot; placing it and the rest of the file is the platform's job.
+// So we isolate the slot under test — learner input in its slot, every other slot
+// backfilled with its canonical — and compile that. A broken or not-yet-written
+// neighbour can't fail this answer, which is what stops a correct re-submit from
+// tripping over a wrong later card (and lets a slot that depends on a later one,
+// like the setter emitting an event, still grade). Same bargain SpeedRunEthereum
+// makes — every checkpoint ships a reference solution — here that reference also
+// backfills the file. Built from the skeleton, never sources, so the peek keeps
+// showing the learner's real, honest assembly.
+export const gradingSourceOf = (s: LabState, file: string, slot: string, learnerInput: string) => {
+  let src = s.skeleton[file] ?? "";
+  for (const token of s.slotTokens) {
+    if (!src.includes(token)) continue; // tokens from other files
+    src = src.split(token).join(token === slot ? learnerInput : (s.slotCanonicals[token] ?? ""));
+  }
   return src;
 };
 
@@ -97,17 +108,19 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       // Idempotent: re-mounting the same lab (e.g. React strict-mode double-effect)
       // must not wipe in-flight progress. Switching to a different lab restarts.
       if (s.currentLabId === lab.id) return s;
-      // Each code-exercise declares one slot; collect them so the compile path
-      // can strip the unfilled ones (see compileSourceOf).
-      const slotTokens = lab.chapters
-        .flatMap(ch => ch.cards)
-        .flatMap(c => (c.type === "code-exercise" ? [c.slot] : []));
+      // Each code-exercise owns one slot and the canonical that fills it. Captured
+      // here so the grading compile can isolate the slot under test and backfill the
+      // rest of the file with canonicals (see gradingSourceOf).
+      const exercises = lab.chapters.flatMap(ch => ch.cards).flatMap(c => (c.type === "code-exercise" ? [c] : []));
+      const slotTokens = exercises.map(c => c.slot);
+      const slotCanonicals = Object.fromEntries(exercises.map(c => [c.slot, c.canonical]));
       return {
         ...initialState,
         currentLabId: lab.id,
         skeleton: { ...lab.skeleton },
         sources: { ...lab.skeleton },
         slotTokens,
+        slotCanonicals,
         transcript: { labId: lab.id, events: [] },
       };
     }),
