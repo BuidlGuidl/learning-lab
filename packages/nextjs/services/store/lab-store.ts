@@ -81,7 +81,10 @@ const deriveSources = (skeleton: Record<string, string>, progress: Record<string
   const sources: Record<string, string> = { ...skeleton };
   for (const { file, slot, learnerInput } of Object.values(progress)) {
     if (sources[file] !== undefined) {
-      sources[file] = sources[file].replace(slot, learnerInput);
+      // split/join, not String.replace: replace() treats `$&`, `$1` etc. in the
+      // replacement as special patterns, so a learner answer containing `$` would
+      // mangle. split/join inserts the text verbatim.
+      sources[file] = sources[file].split(slot).join(learnerInput);
     }
   }
   return sources;

@@ -92,7 +92,10 @@ export const Lab = ({ lab }: Props) => {
             <p className="text-sm text-base-content/60">{chapter.title}</p>
           </div>
 
-          <CardRenderer card={card} chapterId={chapter.id} />
+          {/* key on card.id remounts the card subtree on every navigation. Without it React
+              reuses the same component instance across two same-type cards (e.g. jumping
+              exercise→exercise), so the prior card's textarea + grade state leaks in. */}
+          <CardRenderer key={card.id} card={card} chapterId={chapter.id} />
 
           <div className="flex items-center justify-between">
             <button className="btn btn-ghost" onClick={() => prev(lab)} disabled={atFirstCard}>
