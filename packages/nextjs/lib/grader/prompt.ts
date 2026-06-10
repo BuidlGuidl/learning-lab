@@ -26,15 +26,17 @@ You always return a structured object: { verdict, feedback, missedConcepts }. "m
 
 // One card's content for the prompt. Includes canonical/rubric — the assessor judges against
 // them and is told above not to leak them.
-function serializeCard(card: Card): string {
+function serializeCard(card: Card, lab: Lab): string {
   switch (card.type) {
     case "concept":
     case "summary":
       return card.body;
     case "code":
       return `Reveals file ${card.file}.${card.note ? ` Note: ${card.note}` : ""}`;
-    case "code-exercise":
-      return `Prompt: ${card.prompt}\nFile: ${card.file} (fills slot ${card.slot})\nCanonical answer (never reveal): ${card.canonical}`;
+    case "code-exercise": {
+      const region = lab.regions[card.region];
+      return `Prompt: ${card.prompt}\nFills the "${card.region}" part of ${region.file}.\nCanonical answer (never reveal): ${region.canonical}`;
+    }
     case "question":
       return `Question: ${card.question}\nA good answer should touch on: ${card.rubricConcepts.join("; ")}`;
     case "experiment":
@@ -50,7 +52,7 @@ function serializeLab(lab: Lab): string {
   lab.chapters.forEach((chapter, ci) => {
     parts.push(`\nChapter ${ci + 1}: ${chapter.title} (id: ${chapter.id})`);
     chapter.cards.forEach((card, ki) => {
-      parts.push(`\n  Card ${ki + 1} [${card.label}] "${card.title}" (id: ${card.id})\n  ${serializeCard(card)}`);
+      parts.push(`\n  Card ${ki + 1} [${card.label}] "${card.title}" (id: ${card.id})\n  ${serializeCard(card, lab)}`);
     });
   });
   return parts.join("\n");

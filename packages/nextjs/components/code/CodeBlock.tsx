@@ -6,21 +6,37 @@ import { getHighlighter } from "./highlighter";
 type Props = {
   code: string;
   lang?: string;
+  // 1-based lines rendered quieter than real code (placeholder comments for
+  // not-yet-written exercises)
+  softLines?: number[];
 };
 
-export const CodeBlock = ({ code, lang = "solidity" }: Props) => {
+export const CodeBlock = ({ code, lang = "solidity", softLines }: Props) => {
   const [html, setHtml] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
+    const soft = new Set(softLines ?? []);
     getHighlighter().then(h => {
       if (cancelled) return;
-      setHtml(h.codeToHtml(code, { lang, theme: "github-dark-dimmed" }));
+      setHtml(
+        h.codeToHtml(code, {
+          lang,
+          theme: "github-dark-dimmed",
+          transformers: [
+            {
+              line(node, line) {
+                if (soft.has(line)) node.properties.style = "opacity:.45;font-style:italic";
+              },
+            },
+          ],
+        }),
+      );
     });
     return () => {
       cancelled = true;
     };
-  }, [code, lang]);
+  }, [code, lang, softLines]);
 
   if (!html) {
     return (

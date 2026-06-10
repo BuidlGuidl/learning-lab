@@ -27,11 +27,11 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const { object, grade, isLoading, error } = useGrade(card, chapterId);
 
   const handleSubmit = async () => {
-    // Record the input for the display path (peek + reveal cards), then compile an
-    // isolated file for grading: only this slot under test, every other slot backfilled
-    // with its canonical so a broken neighbour can't fail a correct answer.
-    completeCodeExercise(card.id, card.file, card.slot, input);
-    const assembled = gradingSourceOf(useLabStore.getState(), card.file, card.slot, input);
+    // Record the input for the display path (reveal cards), then compile an
+    // isolated file for grading: only this region under test, every other region
+    // backfilled with its canonical so a broken neighbour can't fail a correct answer.
+    completeCodeExercise(card.id, card.region, input);
+    const assembled = gradingSourceOf(useLabStore.getState(), card.region, input);
     const compileResult = await compileCheck(assembled);
     setLastCompile(compileResult);
     grade(input, compileResult);
