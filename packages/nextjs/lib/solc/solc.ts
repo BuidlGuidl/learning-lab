@@ -5,13 +5,7 @@
 export type CompiledContract = { name: string; abi: unknown[]; bytecode: `0x${string}` };
 
 export type CompileResult =
-  | {
-      ok: true;
-      abi: unknown[];
-      bytecode: `0x${string}`;
-      contracts: Record<string, CompiledContract>;
-      warnings: string[];
-    }
+  | { ok: true; contracts: Record<string, CompiledContract>; warnings: string[] }
   | { ok: false; errors: string[] };
 
 let worker: Worker | null = null;
@@ -30,8 +24,6 @@ function ensureWorker(): Worker {
     if (rest.ok === true) {
       resolver({
         ok: true,
-        abi: rest.abi as unknown[],
-        bytecode: rest.bytecode as `0x${string}`,
         contracts: (rest.contracts as Record<string, CompiledContract>) ?? {},
         warnings: (rest.warnings as string[]) ?? [],
       });
@@ -42,11 +34,11 @@ function ensureWorker(): Worker {
   return worker;
 }
 
-export function compileSolidity(source: string): Promise<CompileResult> {
+export function compileContracts(sources: Record<string, string>): Promise<CompileResult> {
   const w = ensureWorker();
   const id = String(nextId++);
   return new Promise(resolve => {
     pending.set(id, resolve);
-    w.postMessage({ id, source });
+    w.postMessage({ id, sources });
   });
 }

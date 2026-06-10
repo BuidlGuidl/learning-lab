@@ -1,5 +1,6 @@
 // Label is type in caps, pinned by the union so it can't drift from
 // the dispatch. TODO: WE can probably drive from type in future
+import type { DeployFn, LabTests } from "./harness";
 import type { Region, Segment } from "./regions";
 
 export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
@@ -99,5 +100,9 @@ export type Lab = {
   // every region (file, scope, canonical) keyed by id
   files: Record<string, Segment[]>;
   regions: Record<string, Region>;
+  // how this lab's world boots, and the behavioural tests per region — the
+  // same functions run in validate-labs (node) and at grade time (browser)
+  deploy: DeployFn;
+  tests: LabTests;
   chapters: Chapter[];
 };

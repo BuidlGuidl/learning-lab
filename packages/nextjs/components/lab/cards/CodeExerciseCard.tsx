@@ -4,12 +4,12 @@ import { useState } from "react";
 import { CardFrame } from "../CardFrame";
 import { GradeFeedback } from "./GradeFeedback";
 import { useGrade } from "./useGrade";
-import { compileCheck } from "~~/lib/grader/compile-check";
-import type { CompileCheckResult } from "~~/lib/grader/compile-check";
 import { latestEvent } from "~~/lib/grader/transcript";
 import type { GradingOutcome } from "~~/lib/grader/transcript";
+import { gradeRegion } from "~~/lib/lab/grade";
+import type { RunReport } from "~~/lib/lab/run";
 import type { CodeExerciseCard as CodeExerciseCardType } from "~~/lib/lab/types";
-import { gradingSourceOf, useLabStore } from "~~/services/store/lab-store";
+import { useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
   card: CodeExerciseCardType;
@@ -21,35 +21,36 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const saved = useLabStore(s => s.progress[card.id]?.learnerInput ?? "");
   const latest = useLabStore(s => latestEvent(s.transcript, card.id));
   const [input, setInput] = useState(saved);
-  // Lets the chip read "fail" the instant compilation fails, before coaching streams in.
-  const [lastCompile, setLastCompile] = useState<CompileCheckResult | null>(null);
+  // The behavioural run's result. The verdict chip reads this the moment the
+  // tests finish — coaching streams in after, but never decides anything.
+  const [report, setReport] = useState<RunReport | null>(null);
+  const [running, setRunning] = useState(false);
 
   const { object, grade, isLoading, error } = useGrade(card, chapterId);
 
   const handleSubmit = async () => {
-    // Record the input for the display path (reveal cards), then compile an
-    // isolated file for grading: only this region under test, every other region
-    // backfilled with its canonical so a broken neighbour can't fail a correct answer.
+    // Record the input for the display path (reveal cards), then run the real
+    // thing: assemble this region against canonicals, compile in the worker,
+    // deploy in tevm, run the region's tests. That run IS the verdict.
     completeCodeExercise(card.id, card.region, input);
-    const assembled = gradingSourceOf(useLabStore.getState(), card.region, input);
-    const compileResult = await compileCheck(assembled);
-    setLastCompile(compileResult);
-    grade(input, compileResult);
+    setRunning(true);
+    setReport(null);
+    try {
+      const result = await gradeRegion(card.region, input);
+      setReport(result);
+      grade(input, result);
+    } finally {
+      setRunning(false);
+    }
   };
 
-  // grading: compile-fail pins "fail", else the streamed verdict. idle: last recorded result.
-  const verdict: GradingOutcome | undefined = isLoading
-    ? lastCompile && !lastCompile.ok
-      ? "fail"
-      : object?.verdict
-    : latest?.outcome;
-  const feedback = isLoading ? object?.feedback : latest?.feedback;
+  // The report owns the verdict from the moment it exists; idle shows the last recorded event.
+  const verdict: GradingOutcome | undefined = report ? report.verdict : isLoading ? undefined : latest?.outcome;
+  const feedback = isLoading || report ? object?.feedback : latest?.feedback;
   const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter((c): c is string => Boolean(c));
-  const compilerErrors = isLoading
-    ? lastCompile && !lastCompile.ok
-      ? lastCompile.errors
-      : undefined
-    : latest?.compilerErrors;
+  const compilerErrors =
+    report?.stage === "compile" ? report.errors : isLoading || report ? undefined : latest?.compilerErrors;
+  const testResults = report?.stage === "tests" ? report.results : isLoading ? undefined : latest?.testResults;
 
   return (
     <CardFrame card={card}>
@@ -60,20 +61,25 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
         placeholder={card.placeholder}
         value={input}
         onChange={e => setInput(e.target.value)}
-        disabled={isLoading}
+        disabled={running || isLoading}
       />
       <div className="card-actions justify-end mt-3">
-        <button className="btn btn-primary" onClick={handleSubmit} disabled={isLoading || input.trim().length === 0}>
-          {isLoading ? "Grading…" : latest ? "Re-submit" : "Submit"}
+        <button
+          className="btn btn-primary"
+          onClick={handleSubmit}
+          disabled={running || isLoading || input.trim().length === 0}
+        >
+          {running ? "Running tests…" : isLoading ? "Grading…" : latest ? "Re-submit" : "Submit"}
         </button>
       </div>
       <GradeFeedback
-        pending={isLoading}
+        pending={running || isLoading}
         error={error}
         verdict={verdict}
         feedback={feedback}
         missedConcepts={missed}
         compilerErrors={compilerErrors}
+        testResults={testResults}
       />
     </CardFrame>
   );

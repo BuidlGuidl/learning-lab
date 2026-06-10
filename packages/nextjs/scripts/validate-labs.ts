@@ -12,7 +12,7 @@
 //
 // Red here = the lab is incoherent and must not ship. Run:
 //   yarn validate-labs
-import { type CompileFn, type Compiled, type DeployFn, type LabTests } from "../lib/lab/harness";
+import { type CompileFn, type Compiled } from "../lib/lab/harness";
 import { extractLabContracts } from "../lib/lab/regions";
 import { runRegionTests } from "../lib/lab/run";
 import type { CodeExerciseCard, Lab } from "../lib/lab/types";
@@ -102,9 +102,8 @@ async function validateLab(labId: string) {
   if (failures > failuresBefore) return;
   console.log(`  ✓ every region referenced by exactly one code-exercise card`);
 
-  // 4. tests cover regions, keys are real
-  const { tests } = (await import(path.join(labDir, "tests.ts"))) as { tests: LabTests };
-  const { deploy } = (await import(path.join(labDir, "deploy.ts"))) as { deploy: DeployFn };
+  // 4. tests cover regions, keys are real (off the lab object — single source)
+  const { tests, deploy } = lab;
   for (const key of Object.keys(tests)) {
     if (!regions[key]) fail(labId, `tests.ts key "${key}" names no region`);
   }
@@ -115,8 +114,9 @@ async function validateLab(labId: string) {
   console.log(`  ✓ every region has tests, every test key is a region`);
 
   // 5 + 6. canonical assembly compiles and passes every region's tests
+  const { files } = extractLabContracts(contracts);
   for (const id of regionIds) {
-    const report = await runRegionTests({ contracts, deploy, tests, compile, regionId: id });
+    const report = await runRegionTests({ files, regions, deploy, tests, compile, regionId: id });
     if (report.verdict === "fail") {
       const detail =
         report.stage === "compile"

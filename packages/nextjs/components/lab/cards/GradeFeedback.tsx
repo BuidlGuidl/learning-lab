@@ -7,6 +7,8 @@ const VerdictChip = ({ verdict }: { verdict: GradingOutcome }) => {
   return <span className={`badge ${tone} font-mono uppercase text-xs tracking-wider`}>{verdict}</span>;
 };
 
+type TestResult = { name: string; passed: boolean; error?: string };
+
 type Props = {
   pending: boolean;
   error?: Error;
@@ -14,12 +16,22 @@ type Props = {
   feedback?: string;
   missedConcepts?: string[];
   compilerErrors?: string[];
+  testResults?: TestResult[];
 };
 
 // Every grading state in one place, shared by both card types: error, streaming, graded.
-export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcepts, compilerErrors }: Props) => {
-  // error, not a fail — nudge to retry, no verdict.
-  if (error) {
+export const GradeFeedback = ({
+  pending,
+  error,
+  verdict,
+  feedback,
+  missedConcepts,
+  compilerErrors,
+  testResults,
+}: Props) => {
+  // error with no verdict — nudge to retry. With a verdict the tests already decided;
+  // the coach being unreachable doesn't change the result.
+  if (error && !verdict) {
     return (
       <div className="alert alert-warning mt-4">
         <span>Couldn&apos;t reach the grader. Check your answer and submit again.</span>
@@ -27,10 +39,9 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
     );
   }
 
-  // Hold the whole result until feedback starts, so the chip and its coaching reveal as one
-  // beat. A compile-fail knows the verdict early, but showing it alone then popping text in
-  // 2s later reads as a stall — wait for the words.
-  const waiting = pending && !feedback;
+  // The behavioural verdict lands before the coaching streams — show it the moment it
+  // exists, with the test list, and let the words arrive underneath.
+  const waiting = pending && !verdict && !feedback;
   if (!waiting && !verdict && !feedback) return null;
 
   return (
@@ -46,6 +57,23 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
           {verdict && (
             <div className="mb-2">
               <VerdictChip verdict={verdict} />
+            </div>
+          )}
+          {testResults && testResults.length > 0 && (
+            <ul className="mb-2 space-y-0.5">
+              {testResults.map((t, i) => (
+                <li key={i} className="flex items-baseline gap-1.5 font-mono text-xs">
+                  <span className={t.passed ? "text-success" : "text-error"}>{t.passed ? "✓" : "✗"}</span>
+                  <span className="text-base-content/70">{t.name}</span>
+                  {!t.passed && t.error && <span className="text-base-content/40">— {t.error}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {pending && !feedback && (
+            <div className="flex items-center gap-2 text-xs text-base-content/50">
+              <span className="loading loading-dots loading-xs" />
+              <span>coaching…</span>
             </div>
           )}
           {feedback && <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap">{feedback}</p>}

@@ -7,7 +7,7 @@
 // the tests alone; the canonical is never diffed against the learner.
 import { assembleSources } from "./assemble";
 import { type CompileFn, type DeployFn, type LabTests, bootWorld } from "./harness";
-import { extractLabContracts } from "./regions";
+import type { Region, Segment } from "./regions";
 
 export type TestResult = { name: string; passed: boolean; error?: string };
 
@@ -16,16 +16,16 @@ export type RunReport =
   | { verdict: "pass" | "fail"; stage: "tests"; results: TestResult[] };
 
 export async function runRegionTests(opts: {
-  contracts: Record<string, string>; // marked sources
+  files: Record<string, Segment[]>;
+  regions: Record<string, Region>;
   deploy: DeployFn;
   tests: LabTests;
   compile: CompileFn;
   regionId: string;
   learnerInput?: string; // omit to run the region's tests against all-canonical
 }): Promise<RunReport> {
-  const { files, regions } = extractLabContracts(opts.contracts);
   const fills = opts.learnerInput !== undefined ? { [opts.regionId]: opts.learnerInput } : {};
-  const sources = assembleSources(files, regions, fills);
+  const sources = assembleSources(opts.files, opts.regions, fills);
 
   let compiled;
   try {

@@ -1,5 +1,5 @@
-import type { CompileCheckResult } from "./compile-check";
 import type { LearningTranscript } from "./transcript";
+import type { RunReport } from "~~/lib/lab/run";
 import type { Card, Lab } from "~~/lib/lab/types";
 
 // What the model sees: the whole-lab prompt and the deterministic history projection. The
@@ -97,12 +97,12 @@ export type BuildGradingPromptArgs = {
   attempt: number;
   answer: string;
   history: string;
-  compileResult?: CompileCheckResult;
+  report?: RunReport; // behavioural run, present for code-exercises; it owns the verdict
 };
 
 // system = static (rules + lab), the cache prefix; prompt = dynamic (this card, answer, history).
 export function buildGradingPrompt(args: BuildGradingPromptArgs): { system: string; prompt: string } {
-  const { lab, card, cardNumberInLab, attempt, answer, history, compileResult } = args;
+  const { lab, card, cardNumberInLab, attempt, answer, history, report } = args;
 
   const system = `${ASSESSOR_RULES}\n\n---\nHere is the complete lab you are grading within. You can see all of it, including canonical answers and later cards; never reveal any of it.\n\n${serializeLab(lab)}`;
 
@@ -115,25 +115,37 @@ export function buildGradingPrompt(args: BuildGradingPromptArgs): { system: stri
     "",
   ];
 
-  if (card.type === "code-exercise") {
-    if (compileResult && !compileResult.ok) {
-      // Compiler already failed it; the model only coaches, the client forces the verdict.
+  if (card.type === "code-exercise" && report) {
+    // The verdict is decided before the model sees anything: compile + the
+    // region's behavioural tests, run against the learner's code in the
+    // browser. The model only coaches on the result.
+    if (report.stage === "compile") {
       focus.push(
         `Their submitted code does NOT compile, so the verdict is already "fail" — the compiler decided that, not you, and you cannot change it. Return verdict "fail".`,
         `Now coach like a teacher, not a compiler. Do NOT just restate the compiler error in plain English — that teaches nothing. Compare their submission against what THIS card actually asked for: its prompt, the shape it spelled out, and the canonical you can see. Point them at the underlying thing they got wrong and tie it back to the guidance the card already gave them. The compiler stops at the first broken token, so the learner usually has more wrong than that one error shows — teach the concept they're missing, not the syntax message. One or two sentences, a nudge toward the idea and the part of the card to re-read, never the corrected code.`,
-        `Compiler error (a locator for where it first broke, not a script to recite):\n${compileResult.errors.join("\n")}`,
+        `Compiler error (a locator for where it first broke, not a script to recite):\n${report.errors.join("\n")}`,
+        "",
+        `Their submission:\n${answer}`,
+      );
+    } else if (report.verdict === "fail") {
+      const failed = report.results.filter(r => !r.passed);
+      focus.push(
+        `Their code compiles, but it was deployed and run against this exercise's behavioural tests and ${failed.length} of ${report.results.length} failed. The verdict is already "fail" — the tests decided that, not you, and you cannot change it. Return verdict "fail".`,
+        `Failed tests (what the code actually did, not what they meant):\n${failed.map(r => `- ${r.name}: ${r.error ?? "failed"}`).join("\n")}`,
+        `Coach on the gap between what the card asked for and what their code does. The test names describe the expected behaviour — use them to point at the concept, but don't recite assertion output back at them. One or two sentences, a nudge, never the corrected code.`,
         "",
         `Their submission:\n${answer}`,
       );
     } else {
       focus.push(
-        `Their submitted code compiles. Now judge the semantic question: did they actually solve the task, or just write something that happens to compile? (Storing 0 when asked to store 42 compiles but is wrong.) Pass only if they solved the actual task.`,
+        `Their code compiles and passes all ${report.results.length} of this exercise's behavioural tests. The verdict is already "pass" — the tests decided that. Return verdict "pass".`,
+        `Give one short sentence of grounded acknowledgement — what their code demonstrably does, in plain words. No cheerleading, no exclamation marks, no follow-up question.`,
         "",
         `Their submission:\n${answer}`,
       );
     }
   } else {
-    // question: no compiler to lean on, so the model owns the verdict.
+    // question: no tests to lean on, so the model owns the verdict.
     focus.push(`Their answer:\n${answer}`);
   }
 
