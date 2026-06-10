@@ -1,10 +1,14 @@
 import { contracts } from "./contracts.gen";
+import { deploy } from "./deploy";
+import { tests } from "./tests";
 import { defineLab } from "~~/lib/lab/define";
 
 export const lab = defineLab({
   id: "basics",
   title: "Basics of Ethereum",
   contracts,
+  deploy,
+  tests,
   chapters: [
     {
       id: "state",
@@ -108,9 +112,32 @@ export const lab = defineLab({
           title: "Emit it from a setter",
           region: "setter",
           prompt:
-            "Write a function `setNumber` that takes a `uint256 newNumber`, assigns it to `number`, then announces the change with `emit NumberChanged(newNumber);`. Mark it `public`. The `emit` keyword is what fires the log. This goes in the last placeholder in the contract.",
+            "Write a function `setNumber` that takes a `uint256 newNumber`, assigns it to `number`, then announces the change with `emit NumberChanged(newNumber);`. Mark it `public`. The `emit` keyword is what fires the log.",
           placeholder:
             "function setNumber(uint256 newNumber) public {\n  number = newNumber;\n  emit NumberChanged(newNumber);\n}",
+        },
+      ],
+    },
+    {
+      id: "ownership",
+      title: "Who's allowed to call what",
+      cards: [
+        {
+          type: "concept",
+          id: "why-ownership",
+          label: "CONCEPT",
+          title: "Some functions belong to the owner",
+          body: "Right now anyone can call anything on Counter. That's fine for reading and even for bumping a number, but most real contracts have actions that should belong to whoever deployed them, like pausing, withdrawing fees, or wiping state. Nobody writes that access control by hand. You import OpenZeppelin's Ownable, audited code that thousands of contracts already run, and inherit from it. Look at the contract: the import line at the top pulls it in, `contract Counter is Ownable` mixes it in, and `constructor() Ownable(msg.sender)` tells it the deployer is the owner. From then on, any function you mark with the `onlyOwner` modifier rejects every other caller before your code even runs.",
+        },
+        {
+          type: "code-exercise",
+          id: "write-reset",
+          label: "CODE EXERCISE",
+          title: "Write an owner-only reset",
+          region: "reset",
+          prompt:
+            "Write a function `reset` that sets `number` back to 0, and make it owner-only by adding the `onlyOwner` modifier after the visibility: `function reset() public onlyOwner { ... }`. You didn't write that modifier, Ownable did, but your function gets the check for free. When it's graded, the tests actually deploy your contract and try to call reset from a stranger's account, so the modifier has to really be there.",
+          placeholder: "function reset() public onlyOwner {\n  number = 0;\n}",
         },
         {
           type: "code",
@@ -118,7 +145,7 @@ export const lab = defineLab({
           label: "CODE",
           title: "The finished contract",
           file: "Counter.sol",
-          note: "That's the whole thing. A slot to remember a number, an event to announce changes, a function to bump it, and one to set it outright. It's small, but every piece here, state, functions, gas, events, is something you'll meet in every contract you ever read.",
+          note: "That's the whole thing. A slot to remember a number, an event to announce changes, functions to change it, and an owner-only reset guarded by code you imported instead of wrote. Every piece here, state, functions, gas, events, access control, shows up in every contract you'll read from now on.",
         },
       ],
     },

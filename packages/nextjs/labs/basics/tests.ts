@@ -3,7 +3,7 @@
 // functions run in validate-labs (against the canonical contract) and at
 // grade time (against the learner's fill).
 import { decodeEventLog } from "viem";
-import { type LabTests, expect, expectEq, expectOk, test } from "~~/lib/lab/harness";
+import { type LabTests, expect, expectEq, expectOk, expectRevert, test } from "~~/lib/lab/harness";
 
 // decode a write's logs against the contract's own abi; undecodable logs are skipped
 const decodedEvents = (logs: { topics: `0x${string}`[]; data: `0x${string}` }[] | undefined, abi: unknown[]) =>
@@ -56,6 +56,19 @@ export const tests: LabTests = {
       const events = decodedEvents(tx.logs, contracts.Counter.abi);
       const hit = events.find(e => e.eventName === "NumberChanged" && Object.values(e.args ?? {})[0] === 123n);
       expect(!!hit, "expected setNumber to emit NumberChanged with the new value");
+    }),
+  ],
+
+  reset: [
+    // accounts[0] deployed the contract, so it's the owner; accounts[1] is a stranger
+    test("a stranger can't reset", async ({ contracts, write, accounts }) => {
+      const tx = await write(contracts.Counter, "reset", { from: accounts[1] });
+      expectRevert(tx, "reset() from a non-owner");
+    }),
+    test("the owner resets number to 0", async ({ contracts, read, write }) => {
+      expectOk(await write(contracts.Counter, "setNumber", { args: [55n] }), "setNumber(55)");
+      expectOk(await write(contracts.Counter, "reset"), "reset()");
+      expectEq(await read(contracts.Counter, "number"), 0n, "number() after reset");
     }),
   ],
 };

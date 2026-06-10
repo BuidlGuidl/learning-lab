@@ -1,6 +1,8 @@
 pragma solidity ^0.8.20;
 
-contract Counter {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract Counter is Ownable {
   // <region id="storage" scope="member">
   uint256 public number = 42;
   // </region>
@@ -8,6 +10,8 @@ contract Counter {
   // <region id="event" scope="member">
   event NumberChanged(uint256 newNumber);
   // </region>
+
+  constructor() Ownable(msg.sender) {}
 
   // <region id="increment" scope="member">
   function increment() public {
@@ -19,6 +23,12 @@ contract Counter {
   function setNumber(uint256 newNumber) public {
     number = newNumber;
     emit NumberChanged(newNumber);
+  }
+  // </region>
+
+  // <region id="reset" scope="member">
+  function reset() public onlyOwner {
+    number = 0;
   }
   // </region>
 }

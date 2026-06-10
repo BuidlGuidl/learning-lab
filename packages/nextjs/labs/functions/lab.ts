@@ -1,10 +1,14 @@
 import { contracts } from "./contracts.gen";
+import { deploy } from "./deploy";
+import { tests } from "./tests";
 import { defineLab } from "~~/lib/lab/define";
 
 export const lab = defineLab({
   id: "functions",
   title: "Functions on a contract",
   contracts,
+  deploy,
+  tests,
   chapters: [
     {
       id: "pure-functions",
