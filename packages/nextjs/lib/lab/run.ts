@@ -1,0 +1,51 @@
+// The grade-runner: assemble → compile → deploy → run a region's tests.
+//
+// One entry point for both consumers. The ci validator calls it with no
+// learner input (all-canonical — the lab grading itself) across every region;
+// grade time calls it with the learner's fill for the region under test and
+// every other region canonical-backfilled (ADR-0015). The verdict comes from
+// the tests alone; the canonical is never diffed against the learner.
+import { assembleSources } from "./assemble";
+import { type CompileFn, type DeployFn, type LabTests, bootWorld } from "./harness";
+import { extractLabContracts } from "./regions";
+
+export type TestResult = { name: string; passed: boolean; error?: string };
+
+export type RunReport =
+  | { verdict: "fail"; stage: "compile"; errors: string[] }
+  | { verdict: "pass" | "fail"; stage: "tests"; results: TestResult[] };
+
+export async function runRegionTests(opts: {
+  contracts: Record<string, string>; // marked sources
+  deploy: DeployFn;
+  tests: LabTests;
+  compile: CompileFn;
+  regionId: string;
+  learnerInput?: string; // omit to run the region's tests against all-canonical
+}): Promise<RunReport> {
+  const { files, regions } = extractLabContracts(opts.contracts);
+  const fills = opts.learnerInput !== undefined ? { [opts.regionId]: opts.learnerInput } : {};
+  const sources = assembleSources(files, regions, fills);
+
+  let compiled;
+  try {
+    compiled = await opts.compile(sources);
+  } catch (e) {
+    return { verdict: "fail", stage: "compile", errors: [(e as Error).message] };
+  }
+
+  const tests = opts.tests[opts.regionId] ?? [];
+  const results: TestResult[] = [];
+  for (const t of tests) {
+    // fresh chain per test so no test depends on another's state
+    try {
+      const world = await bootWorld(compiled, opts.deploy);
+      await t.run(world);
+      results.push({ name: t.name, passed: true });
+    } catch (e) {
+      results.push({ name: t.name, passed: false, error: (e as Error).message });
+    }
+  }
+
+  return { verdict: results.every(r => r.passed) ? "pass" : "fail", stage: "tests", results };
+}

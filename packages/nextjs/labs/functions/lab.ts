@@ -1,18 +1,10 @@
-import type { Lab } from "~~/lib/lab/types";
+import { contracts } from "./contracts.gen";
+import { defineLab } from "~~/lib/lab/define";
 
-const adderSkeleton = `pragma solidity ^0.8.20;
-
-contract Adder {
-  __ADD_FN__
-}
-`;
-
-export const lab: Lab = {
+export const lab = defineLab({
   id: "functions",
   title: "Functions on a contract",
-  skeleton: {
-    "Adder.sol": adderSkeleton,
-  },
+  contracts,
   chapters: [
     {
       id: "pure-functions",
@@ -30,12 +22,10 @@ export const lab: Lab = {
           id: "write-add",
           label: "CODE EXERCISE",
           title: "Write a pure adder",
-          file: "Adder.sol",
-          slot: "__ADD_FN__",
+          region: "add-fn",
           prompt:
             "A `pure` function reads no state and writes none, just takes inputs and returns outputs. Declare one called `add` that takes two `uint256` arguments and returns their sum. Mark it `public` so callers from outside can hit it, `pure` to promise it doesn't touch storage. The shape is `function name(args) visibility mutability returns (type) { ... }`.",
           placeholder: "function add(uint256 a, uint256 b) public pure returns (uint256) {\n  return a + b;\n}",
-          canonical: "function add(uint256 a, uint256 b) public pure returns (uint256) {\n  return a + b;\n}",
         },
         {
           type: "code",
@@ -62,4 +52,4 @@ export const lab: Lab = {
       ],
     },
   ],
-};
+});

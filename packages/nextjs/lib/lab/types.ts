@@ -1,5 +1,6 @@
 // Label is type in caps, pinned by the union so it can't drift from
 // the dispatch. TODO: WE can probably drive from type in future
+import type { Region, Segment } from "./regions";
 
 export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
 
@@ -16,8 +17,8 @@ export type ConceptCard = CardBase & {
   body: string;
 };
 
-// Code reveal. Renders a file from sources (skeleton with any
-// code-exercise slot-fills threaded in). Read-only.
+// Code reveal. Renders a file from the lab's segments with the learner's
+// region fills threaded in (unfilled regions show a placeholder). Read-only.
 export type CodeCard = CardBase & {
   type: "code";
   label: "CODE";
@@ -28,16 +29,15 @@ export type CodeCard = CardBase & {
 };
 
 // Closed-form code prompt. Learner writes a small unit (expression,
-// statement, fn body) that substitutes into __SLOT__ in the file.
-// TODO: Canonical answer pinned by the author; future AI grading checks against it.
+// statement, fn body) that fills a region of the lab's contracts. The
+// region's file and canonical live on Lab.regions, derived from the marked
+// .sol source — the card only points at the region.
 export type CodeExerciseCard = CardBase & {
   type: "code-exercise";
   label: "CODE EXERCISE";
-  file: string;
-  slot: string;
+  region: string;
   prompt: string;
   placeholder?: string;
-  canonical: string;
 };
 
 // Open-form prose prompt. Learner writes their own answer; no canonical.
@@ -95,6 +95,9 @@ export type Chapter = {
 export type Lab = {
   id: string;
   title: string;
-  skeleton: Record<string, string>;
+  // derived from the marked contracts by defineLab — segments per file, and
+  // every region (file, scope, canonical) keyed by id
+  files: Record<string, Segment[]>;
+  regions: Record<string, Region>;
   chapters: Chapter[];
 };

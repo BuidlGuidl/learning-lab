@@ -1,24 +1,10 @@
-import type { Lab } from "~~/lib/lab/types";
+import { contracts } from "./contracts.gen";
+import { defineLab } from "~~/lib/lab/define";
 
-const counterSkeleton = `pragma solidity ^0.8.20;
-
-contract Counter {
-  __STORAGE__
-
-  __EVENT__
-
-  __INCREMENT__
-
-  __SETTER__
-}
-`;
-
-export const lab: Lab = {
+export const lab = defineLab({
   id: "basics",
   title: "Basics of Ethereum",
-  skeleton: {
-    "Counter.sol": counterSkeleton,
-  },
+  contracts,
   chapters: [
     {
       id: "state",
@@ -36,12 +22,10 @@ export const lab: Lab = {
           id: "declare-storage",
           label: "CODE EXERCISE",
           title: "Declare a state variable",
-          file: "Counter.sol",
-          slot: "__STORAGE__",
+          region: "storage",
           prompt:
-            "Time to declare one. The shape is `type visibility name = value;`. Use `uint256` for an unsigned integer, mark it `public` so anyone can read it from the outside, and give it a starting value. Name it `number`, since the functions you'll write later read and write that exact name and it has to match. The line goes inside the Counter contract, where the __STORAGE__ token sits.",
+            "Time to declare one. The shape is `type visibility name = value;`. Use `uint256` for an unsigned integer, mark it `public` so anyone can read it from the outside, and give it a starting value. Name it `number`, since the functions you'll write later read and write that exact name and it has to match. The line goes inside the Counter contract, in the first placeholder.",
           placeholder: `string public greeting = "Hello world";`,
-          canonical: "uint256 public number = 42;",
         },
         {
           type: "code",
@@ -49,7 +33,7 @@ export const lab: Lab = {
           label: "CODE",
           title: "Your contract",
           file: "Counter.sol",
-          note: "Here's the contract with your line in it. That declaration runs once when the contract gets deployed, and the slot stays there as long as the contract exists. The other tokens below are the pieces you'll fill in over the next chapters.",
+          note: "Here's the contract with your line in it. That declaration runs once when the contract gets deployed, and the slot stays there as long as the contract exists. The faded lines below are the pieces you'll fill in over the next chapters.",
         },
       ],
     },
@@ -69,12 +53,10 @@ export const lab: Lab = {
           id: "write-increment",
           label: "CODE EXERCISE",
           title: "Write increment()",
-          file: "Counter.sol",
-          slot: "__INCREMENT__",
+          region: "increment",
           prompt:
-            "Write a function called `increment` that bumps `number` up by one. No arguments, no return value. Mark it `public` so anyone can call it. The shape is `function name() visibility { ... }`, and inside, `number += 1;` does the work. This goes where the __INCREMENT__ token sits.",
+            "Write a function called `increment` that bumps `number` up by one. No arguments, no return value. Mark it `public` so anyone can call it. The shape is `function name() visibility { ... }`, and inside, `number += 1;` does the work. This goes in the increment placeholder in the contract.",
           placeholder: "function increment() public {\n  number += 1;\n}",
-          canonical: "function increment() public {\n  number += 1;\n}",
         },
       ],
     },
@@ -114,25 +96,20 @@ export const lab: Lab = {
           id: "declare-event",
           label: "CODE EXERCISE",
           title: "Declare an event",
-          file: "Counter.sol",
-          slot: "__EVENT__",
+          region: "event",
           prompt:
-            "Declare an event named `NumberChanged` that carries the new value. The shape is `event Name(type paramName);`. Give it one `uint256` parameter, call it `newNumber`. This goes where the __EVENT__ token sits, up near the top with the state, since an event is a declaration, not a function.",
+            "Declare an event named `NumberChanged` that carries the new value. The shape is `event Name(type paramName);`. Give it one `uint256` parameter, call it `newNumber`. This goes up near the top with the state, since an event is a declaration, not a function.",
           placeholder: "event NumberChanged(uint256 newNumber);",
-          canonical: "event NumberChanged(uint256 newNumber);",
         },
         {
           type: "code-exercise",
           id: "write-setter",
           label: "CODE EXERCISE",
           title: "Emit it from a setter",
-          file: "Counter.sol",
-          slot: "__SETTER__",
+          region: "setter",
           prompt:
-            "Write a function `setNumber` that takes a `uint256 newNumber`, assigns it to `number`, then announces the change with `emit NumberChanged(newNumber);`. Mark it `public`. The `emit` keyword is what fires the log. This goes where the __SETTER__ token sits.",
+            "Write a function `setNumber` that takes a `uint256 newNumber`, assigns it to `number`, then announces the change with `emit NumberChanged(newNumber);`. Mark it `public`. The `emit` keyword is what fires the log. This goes in the last placeholder in the contract.",
           placeholder:
-            "function setNumber(uint256 newNumber) public {\n  number = newNumber;\n  emit NumberChanged(newNumber);\n}",
-          canonical:
             "function setNumber(uint256 newNumber) public {\n  number = newNumber;\n  emit NumberChanged(newNumber);\n}",
         },
         {
@@ -146,4 +123,4 @@ export const lab: Lab = {
       ],
     },
   ],
-};
+});
