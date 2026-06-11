@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
+import { CodePeek } from "./CodePeek";
 import { Sidebar } from "./Sidebar";
 import { Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import { isCardCleared } from "~~/lib/grader/transcript";
@@ -127,6 +128,8 @@ export const Lab = ({ lab }: Props) => {
         <label htmlFor={DRAWER_ID} aria-label="close chapters" className="drawer-overlay"></label>
         <Sidebar lab={lab} onNavigate={handleNavigate} onClose={() => setSidebarOpen(false)} />
       </div>
+
+      <CodePeek lab={lab} />
     </div>
   );
 };
