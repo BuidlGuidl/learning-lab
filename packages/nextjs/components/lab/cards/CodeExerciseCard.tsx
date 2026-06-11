@@ -20,6 +20,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const completeCodeExercise = useLabStore(s => s.completeCodeExercise);
   const saved = useLabStore(s => s.progress[card.id]?.learnerInput ?? "");
   const latest = useLabStore(s => latestEvent(s.transcript, card.id));
+  const regionTests = useLabStore(s => s.tests?.[card.region]);
   const [input, setInput] = useState(saved);
   // The behavioural run's result. The verdict chip reads this the moment the
   // tests finish — coaching streams in after, but never decides anything.
@@ -88,7 +89,13 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
                     : "Submit"}
         </button>
       </div>
-      <TestRunPanel progress={progress} verdict={runVerdict} results={testResults} compilerErrors={compilerErrors} />
+      <TestRunPanel
+        testNames={regionTests?.map(t => t.name) ?? []}
+        progress={progress}
+        verdict={runVerdict}
+        results={testResults}
+        compilerErrors={compilerErrors}
+      />
       <GradeFeedback
         variant="coach"
         pending={isLoading || (report !== null && !feedback)}
