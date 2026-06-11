@@ -120,3 +120,29 @@
 .link:hover {
   opacity: 80%;
 }
+
+/*
+  Line numbers for the code peek. shiki wraps every line in <span class="line">;
+  a CSS counter (shiki's own documented approach) prepends the number as
+  ::before content, so it's unselectable and never lands in a copy of the code.
+  Scoped to .code-numbered so inline lesson code blocks stay gutter-free.
+*/
+.code-numbered code {
+  counter-reset: step;
+  counter-increment: step 0;
+}
+
+.code-numbered .line {
+  line-height: 1.7;
+}
+
+.code-numbered .line::before {
+  content: counter(step);
+  counter-increment: step;
+  display: inline-block;
+  width: 1.75rem;
+  margin-right: 1.5rem;
+  text-align: right;
+  color: #545d68;
+  user-select: none;
+}
