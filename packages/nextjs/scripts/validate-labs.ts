@@ -78,9 +78,7 @@ async function validateLab(labId: string) {
     contracts: Record<string, string>;
   };
   const stale =
-    JSON.stringify(fromDisk) !== JSON.stringify(contracts)
-      ? "contracts.gen.ts is stale — run: node scripts/gen-lab-sources.mjs"
-      : null;
+    JSON.stringify(fromDisk) !== JSON.stringify(contracts) ? "contracts.gen.ts is stale — run: yarn gen:labs" : null;
   if (stale) return fail(labId, stale);
   console.log(`  ✓ contracts.gen.ts in sync (${solFiles.join(", ")})`);
 
