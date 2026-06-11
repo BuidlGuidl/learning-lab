@@ -1,4 +1,4 @@
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 import type { GradingOutcome } from "~~/lib/grader/transcript";
 
 // Plain pass/fail chip; the "you can recover" tone lives in the feedback, not the label.
@@ -7,7 +7,16 @@ const VerdictChip = ({ verdict }: { verdict: GradingOutcome }) => {
   return <span className={`badge ${tone} font-mono uppercase text-xs tracking-wider`}>{verdict}</span>;
 };
 
-type TestResult = { name: string; passed: boolean; error?: string };
+const MissedConcepts = ({ concepts }: { concepts: string[] }) => (
+  <div className="mt-3 flex flex-wrap items-center gap-1.5">
+    <span className="text-xs text-base-content/50 uppercase tracking-wider">missed</span>
+    {concepts.map((concept, i) => (
+      <span key={i} className="badge badge-ghost badge-sm">
+        {concept}
+      </span>
+    ))}
+  </div>
+);
 
 type Props = {
   pending: boolean;
@@ -15,22 +24,38 @@ type Props = {
   verdict?: GradingOutcome;
   feedback?: string;
   missedConcepts?: string[];
-  compilerErrors?: string[];
-  testResults?: TestResult[];
+  // "grader" owns the verdict (question cards); "coach" never shows a chip —
+  // the test panel above it already decided, these are just the words.
+  variant?: "grader" | "coach";
 };
 
-// Every grading state in one place, shared by both card types: error, streaming, graded.
-export const GradeFeedback = ({
-  pending,
-  error,
-  verdict,
-  feedback,
-  missedConcepts,
-  compilerErrors,
-  testResults,
-}: Props) => {
-  // error with no verdict — nudge to retry. With a verdict the tests already decided;
-  // the coach being unreachable doesn't change the result.
+export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcepts, variant = "grader" }: Props) => {
+  if (variant === "coach") {
+    // tests own the verdict; an unreachable coach is a footnote, not an alert
+    if (error && !feedback) {
+      return (
+        <p className="mt-3 text-xs text-base-content/50">Couldn&apos;t reach the coach — the result above stands.</p>
+      );
+    }
+    if (!pending && !feedback && (!missedConcepts || missedConcepts.length === 0)) return null;
+
+    return (
+      <div className="mt-3 rounded-box border-l-2 border-accent/70 bg-base-200/40 px-4 py-3 transition-opacity duration-300 opacity-100 starting:opacity-0">
+        <div className="mb-1.5 flex items-center gap-1.5 text-base-content/50">
+          <SparklesIcon className="h-3 w-3" />
+          <span className="text-[10px] uppercase tracking-[0.2em]">coach</span>
+        </div>
+        {feedback ? (
+          <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap">{feedback}</p>
+        ) : (
+          <span className="loading loading-dots loading-xs text-base-content/50" />
+        )}
+        {missedConcepts && missedConcepts.length > 0 && <MissedConcepts concepts={missedConcepts} />}
+      </div>
+    );
+  }
+
+  // error with no verdict — nudge to retry.
   if (error && !verdict) {
     return (
       <div className="alert alert-warning mt-4">
@@ -39,8 +64,6 @@ export const GradeFeedback = ({
     );
   }
 
-  // The behavioural verdict lands before the coaching streams — show it the moment it
-  // exists, with the test list, and let the words arrive underneath.
   const waiting = pending && !verdict && !feedback;
   if (!waiting && !verdict && !feedback) return null;
 
@@ -59,45 +82,8 @@ export const GradeFeedback = ({
               <VerdictChip verdict={verdict} />
             </div>
           )}
-          {testResults && testResults.length > 0 && (
-            <ul className="mb-2 space-y-0.5">
-              {testResults.map((t, i) => (
-                <li key={i} className="flex items-baseline gap-1.5 font-mono text-xs">
-                  <span className={t.passed ? "text-success" : "text-error"}>{t.passed ? "✓" : "✗"}</span>
-                  <span className="text-base-content/70">{t.name}</span>
-                  {!t.passed && t.error && <span className="text-base-content/40">— {t.error}</span>}
-                </li>
-              ))}
-            </ul>
-          )}
-          {pending && !feedback && (
-            <div className="flex items-center gap-2 text-xs text-base-content/50">
-              <span className="loading loading-dots loading-xs" />
-              <span>coaching…</span>
-            </div>
-          )}
           {feedback && <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap">{feedback}</p>}
-          {missedConcepts && missedConcepts.length > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-base-content/50 uppercase tracking-wider">missed</span>
-              {missedConcepts.map((concept, i) => (
-                <span key={i} className="badge badge-ghost badge-sm">
-                  {concept}
-                </span>
-              ))}
-            </div>
-          )}
-          {compilerErrors && compilerErrors.length > 0 && (
-            <details className="group mt-3">
-              <summary className="flex cursor-pointer select-none list-none items-center gap-1.5 text-xs uppercase tracking-wider text-base-content/40 transition-colors hover:text-base-content/70">
-                <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
-                compiler output
-              </summary>
-              <pre className="mt-2 overflow-x-auto rounded-md border border-base-300 bg-base-300/40 p-3 font-mono text-xs leading-relaxed text-base-content/70">
-                {compilerErrors.join("\n\n")}
-              </pre>
-            </details>
-          )}
+          {missedConcepts && missedConcepts.length > 0 && <MissedConcepts concepts={missedConcepts} />}
         </div>
       )}
     </div>

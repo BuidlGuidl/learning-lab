@@ -7,6 +7,7 @@ import { Sidebar } from "./Sidebar";
 import { Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import { isCardCleared } from "~~/lib/grader/transcript";
 import type { Lab as LabType } from "~~/lib/lab/types";
+import { warmCompiler } from "~~/lib/solc/solc";
 import { useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
@@ -32,6 +33,8 @@ export const Lab = ({ lab }: Props) => {
   useEffect(() => {
     init(lab);
     if (isDesktop()) setSidebarOpen(true);
+    // kick off the soljson download (~7MB) now, so the first submit doesn't eat the whole wait
+    warmCompiler();
   }, [lab, init]);
 
   const chapter = lab.chapters[chapterIndex];
