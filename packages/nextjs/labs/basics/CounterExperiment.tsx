@@ -82,14 +82,23 @@ export const CounterExperiment = ({ world }: Props) => {
     }
   };
 
-  const handleSetNumber = () => {
-    let value: bigint;
+  // BigInt is the validator: "abc" / "1.5" / "1e5" all throw. A negative value
+  // parses fine and is sent on purpose — the uint256 range revert it produces
+  // is an honest red row, not a bug.
+  const trimmedSet = setInput.trim();
+  const parsedSet = (() => {
+    if (trimmedSet === "") return null;
     try {
-      value = BigInt(setInput.trim());
+      return BigInt(trimmedSet);
     } catch {
-      return;
+      return null;
     }
-    send("setNumber", strangerA, "setNumber", [value]);
+  })();
+  const setInputInvalid = trimmedSet !== "" && parsedSet === null;
+
+  const handleSetNumber = () => {
+    if (parsedSet === null) return;
+    send("setNumber", strangerA, "setNumber", [parsedSet]);
   };
 
   return (
@@ -135,22 +144,24 @@ export const CounterExperiment = ({ world }: Props) => {
         </span>
         <div className="join max-w-xs">
           <input
-            className="input input-bordered input-sm join-item font-mono w-32"
+            className={`input input-bordered input-sm join-item font-mono w-32 ${setInputInvalid ? "input-error" : ""}`}
             placeholder="7"
             inputMode="numeric"
             value={setInput}
             onChange={e => setSetInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSetNumber()}
             disabled={busy !== null}
           />
           <button
-            className="btn btn-sm join-item normal-case font-mono"
+            className="btn btn-sm btn-outline join-item normal-case font-mono"
             onClick={handleSetNumber}
-            disabled={busy !== null || setInput.trim() === ""}
+            disabled={busy !== null || parsedSet === null}
           >
             {busy === "setNumber" && <span className="loading loading-spinner loading-xs" />}
             as {strangerA.label}
           </button>
         </div>
+        {setInputInvalid && <span className="text-xs text-error">whole numbers only — try something like 7</span>}
       </div>
 
       {/* reset — the onlyOwner beat */}

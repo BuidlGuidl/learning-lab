@@ -74,13 +74,19 @@ export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string,
 // submit — including ones that then failed grading — so it can't be used raw;
 // failed and unreached regions backfill canonical in assembleSources, and a
 // skip already wrote canonical into progress so excluding it changes nothing.
+// The verdict must also be about THIS text: progress updates at submit but the
+// event lands at stream-finish, so a resubmit-then-jump-ahead on an already-
+// cleared card could otherwise ride a stale pass into the experiment.
 export const passedFillsOf = (
   progress: Record<string, ProgressEntry>,
   transcript: LearningTranscript,
 ): Record<string, string> =>
   Object.fromEntries(
     Object.entries(progress)
-      .filter(([cardId]) => latestEvent(transcript, cardId)?.outcome === "pass")
+      .filter(([cardId, p]) => {
+        const event = latestEvent(transcript, cardId);
+        return event?.outcome === "pass" && event.answer === p.learnerInput;
+      })
       .map(([, p]) => [p.region, p.learnerInput]),
   );
 
