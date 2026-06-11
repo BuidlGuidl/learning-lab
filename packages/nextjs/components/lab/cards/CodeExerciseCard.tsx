@@ -31,7 +31,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const [progress, setProgress] = useState<RunProgress | null>(null);
   const running = progress !== null;
 
-  const { object, grade, isLoading, error } = useGrade(card, chapterId);
+  const { object, grade, isLoading, error, settledFeedback } = useGrade(card, chapterId);
 
   const handleSubmit = async () => {
     // Record the input for the display path (reveal cards), then run the real
@@ -52,7 +52,9 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   // The report owns the verdict from the moment it exists; idle shows the last recorded event.
   const settled = report ? report.verdict : running || isLoading ? undefined : latest?.outcome;
   const runVerdict = settled === "pass" || settled === "fail" ? settled : undefined;
-  const feedback = isLoading || report ? object?.feedback : latest?.feedback;
+  // settledFeedback covers a truncated coach stream: the event recorded a fallback
+  // line the live object never carried, and without it the dots spin until remount.
+  const feedback = isLoading || report ? (object?.feedback ?? settledFeedback) : latest?.feedback;
   const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter((c): c is string => Boolean(c));
   const compilerErrors =
     report?.stage === "compile" ? report.errors : isLoading || report ? undefined : latest?.compilerErrors;

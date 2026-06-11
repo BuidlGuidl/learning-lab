@@ -24,6 +24,11 @@ export function useGrade(card: Card, chapterId: string) {
   // onFinish with no object and never sets useObject's error. Track it ourselves to recover.
   const [streamFailed, setStreamFailed] = useState(false);
 
+  // The feedback the recorded event settled on. When the stream truncates, the
+  // fallback line lives only in the transcript — the live object stays empty —
+  // so the card needs this to stop showing loading dots and display something.
+  const [settledFeedback, setSettledFeedback] = useState<string | undefined>(undefined);
+
   const recordEvent = (object?: { verdict?: "pass" | "fail"; feedback?: string; missedConcepts?: string[] }) => {
     const ctx = pending.current;
     if (!ctx) return false;
@@ -51,6 +56,7 @@ export function useGrade(card: Card, chapterId: string) {
       happenedAt: Date.now(),
     };
     appendGradingEvent(event);
+    setSettledFeedback(event.feedback);
     pending.current = null;
     return true;
   };
@@ -73,6 +79,7 @@ export function useGrade(card: Card, chapterId: string) {
   const grade = (answer: string, report?: RunReport) => {
     const { currentLabId, transcript } = useLabStore.getState();
     setStreamFailed(false);
+    setSettledFeedback(undefined);
     pending.current = { answer, report, attempt: nextAttempt(transcript, card.id) };
     submit({ labId: currentLabId, cardId: card.id, answer, report, transcript });
   };
@@ -81,5 +88,5 @@ export function useGrade(card: Card, chapterId: string) {
   // silent mid-stream truncation. Both land on GradeFeedback's "submit again" alert.
   const gradeError = error ?? (streamFailed ? new Error("grader returned no verdict") : undefined);
 
-  return { object, grade, isLoading, error: gradeError, stop };
+  return { object, grade, isLoading, error: gradeError, settledFeedback, stop };
 }
