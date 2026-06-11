@@ -53,6 +53,19 @@ function ensureWorker(): Worker {
       resolver({ ok: false, errors: (rest.errors as string[]) ?? ["unknown error"] });
     }
   };
+  // A worker that dies before posting (the soljson CDN blocked or unreachable)
+  // would otherwise leave every request pending forever — and stay cached, so
+  // even retries hang. Fail what's in flight and let the next call respawn.
+  worker.onerror = () => {
+    for (const resolve of pending.values()) {
+      resolve({ ok: false, errors: ["the Solidity compiler failed to load — check your connection and resubmit"] });
+    }
+    pending.clear();
+    phaseWatchers.clear();
+    worker?.terminate();
+    worker = null;
+    ready = false;
+  };
   return worker;
 }
 
