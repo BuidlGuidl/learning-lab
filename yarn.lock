@@ -5119,6 +5119,7 @@ __metadata:
     "@ai-sdk/react": "npm:^3.0.192"
     "@heroicons/react": "npm:~2.2.0"
     "@openrouter/ai-sdk-provider": "npm:^2.9.0"
+    "@openzeppelin/contracts": "npm:5.4.0"
     "@rainbow-me/rainbowkit": "npm:2.2.9"
     "@react-native-async-storage/async-storage": "npm:~2.2.0"
     "@scaffold-ui/components": "npm:^0.1.10"

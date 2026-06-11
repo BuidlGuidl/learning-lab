@@ -7,23 +7,23 @@
 // node_modules. We crawl the import graph from the entry points below, snapshot
 // every file as a string, and resolve imports against that map before compiling.
 //
-// Run from packages/nextjs:  yarn gen:oz
+// Run:  yarn gen:oz
 import { collectImportGraph } from "../lib/solc/resolve-imports";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const nextjsRoot = path.resolve(here, "..");
 
-// OZ lives in the hardhat workspace's deps; check the likely roots in order.
-const candidates = [
-  path.join(nextjsRoot, "node_modules"),
-  path.resolve(nextjsRoot, "../hardhat/node_modules"),
-  path.resolve(nextjsRoot, "../../node_modules"),
-];
-const ozRoot = candidates.find(c => fs.existsSync(path.join(c, "@openzeppelin/contracts/package.json")));
-if (!ozRoot) throw new Error("Could not find @openzeppelin/contracts in node_modules");
+// @openzeppelin/contracts is a build-time-only devDependency of this workspace
+// (the browser compiles against the vendored map this script emits, never
+// node_modules). Resolve it through node module resolution rather than guessing
+// paths, so vendoring doesn't depend on hoisting or on the hardhat workspace —
+// the learning lab is a frontend project and hardhat will eventually be dropped.
+const require = createRequire(import.meta.url);
+const ozRoot = path.resolve(path.dirname(require.resolve("@openzeppelin/contracts/package.json")), "../..");
 
 const OUT = path.join(nextjsRoot, "lib/solc/oz-sources.ts");
 
