@@ -1,6 +1,7 @@
 // Label is type in caps, pinned by the union so it can't drift from
 // the dispatch. TODO: WE can probably drive from type in future
-import type { DeployFn, LabTests } from "./harness";
+import type { ComponentType } from "react";
+import type { DeployFn, LabTests, World } from "./harness";
 import type { Region, Segment } from "./regions";
 
 export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
@@ -51,15 +52,16 @@ export type QuestionCard = CardBase & {
   hint?: string;
 };
 
-// TODO: Will be implemented in next iteration
-// Hands-on exploration. Learner pokes at the contract (calls a fn with
-// different inputs, watches state change) to build intuition. No
-// canonical, no required action to advance. Body can be probably react component
+// Hands-on exploration. Learner pokes at their own assembled contract in a
+// fresh tevm world to build intuition. No canonical, no required action to
+// advance. The interactive surface is a per-lab react component (ADR-0018)
+// that receives the booted World — the shared shell owns assemble → compile
+// → boot and the card chrome.
 export type ExperimentCard = CardBase & {
   type: "experiment";
   label: "EXPERIMENT";
   scenario: string;
-  body: string;
+  component: ComponentType<{ world: World }>;
 };
 
 // Deploy beat. Learner ships the contract to a real evm and confirms it

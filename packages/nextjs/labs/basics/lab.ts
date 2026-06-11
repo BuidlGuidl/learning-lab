@@ -1,3 +1,4 @@
+import { CounterExperiment } from "./CounterExperiment";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -146,6 +147,15 @@ export const lab = defineLab({
           title: "The finished contract",
           file: "Counter.sol",
           note: "That's the whole thing. A slot to remember a number, an event to announce changes, functions to change it, and an owner-only reset guarded by code you imported instead of wrote. Every piece here, state, functions, gas, events, access control, shows up in every contract you'll read from now on.",
+        },
+        {
+          type: "experiment",
+          id: "drive-your-counter",
+          label: "EXPERIMENT",
+          title: "Drive your counter",
+          scenario:
+            "This is your contract, compiled and deployed to a throwaway chain right here in the browser. Nothing to pass, nothing graded — just drive it. Bump the number from a few different accounts, set it directly and watch your NumberChanged event land in the log. Then the real test of the chapter: call reset() as the owner, and call it again as a stranger. One of those goes through and one gets rejected by the modifier you wrote — see it happen for real.",
+          component: CounterExperiment,
         },
       ],
     },

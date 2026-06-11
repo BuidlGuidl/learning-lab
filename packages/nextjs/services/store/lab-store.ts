@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
-import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
+import { isCardCleared, latestEvent, nextAttempt } from "~~/lib/grader/transcript";
 import { assembleSources } from "~~/lib/lab/assemble";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 import type { Region, Segment } from "~~/lib/lab/regions";
@@ -68,6 +68,21 @@ const initialState: LabState = {
 // part for code; display and grading both render from it.
 export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
   Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
+
+// The fills an experiment world assembles with (ADR-0018): the learner's text
+// only where the exercise's latest verdict was a pass. progress records every
+// submit — including ones that then failed grading — so it can't be used raw;
+// failed and unreached regions backfill canonical in assembleSources, and a
+// skip already wrote canonical into progress so excluding it changes nothing.
+export const passedFillsOf = (
+  progress: Record<string, ProgressEntry>,
+  transcript: LearningTranscript,
+): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(progress)
+      .filter(([cardId]) => latestEvent(transcript, cardId)?.outcome === "pass")
+      .map(([, p]) => [p.region, p.learnerInput]),
+  );
 
 // The source handed to the compiler when grading one exercise. The learner only
 // ever writes one region; placing it and the rest of the file is the platform's
