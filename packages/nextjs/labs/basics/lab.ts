@@ -39,8 +39,8 @@ export const lab: Lab = {
           file: "Counter.sol",
           slot: "__STORAGE__",
           prompt:
-            "Time to declare one. The shape is `type visibility name = value;`. Use `uint256` for an unsigned integer, mark it `public` so anyone can read it from the outside, and give it a starting value. The line goes inside the Counter contract, where the __STORAGE__ token sits.",
-          placeholder: "uint256 public number = 42;",
+            "Time to declare one. The shape is `type visibility name = value;`. Use `uint256` for an unsigned integer, mark it `public` so anyone can read it from the outside, and give it a starting value. Name it `number`, since the functions you'll write later read and write that exact name and it has to match. The line goes inside the Counter contract, where the __STORAGE__ token sits.",
+          placeholder: `string public greeting = "Hello world";`,
           canonical: "uint256 public number = 42;",
         },
         {
