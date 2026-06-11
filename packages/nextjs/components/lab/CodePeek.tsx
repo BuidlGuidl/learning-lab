@@ -6,10 +6,15 @@ import { CodeBlock } from "~~/components/code/CodeBlock";
 import type { Lab } from "~~/lib/lab/types";
 import { useLabStore } from "~~/services/store/lab-store";
 
-// A `c` typed into an answer field is a literal c, not the peek shortcut.
+// A `c` typed into an answer field is a literal c, not the peek shortcut. Only
+// text-entry fields swallow letters though — a checkbox/radio/toggle (the daisyUI
+// theme switcher is one) shouldn't block the shortcut while it holds focus.
+const NON_TEXT_INPUT_TYPES = new Set(["checkbox", "radio", "range", "button", "submit", "reset", "file", "color"]);
 const isEditable = (el: EventTarget | null) => {
   if (!(el instanceof HTMLElement)) return false;
-  return el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable;
+  if (el.tagName === "TEXTAREA" || el.isContentEditable) return true;
+  if (el.tagName === "INPUT") return !NON_TEXT_INPUT_TYPES.has((el as HTMLInputElement).type);
+  return false;
 };
 
 // Always-available view of the running code. Reads sources straight from the
