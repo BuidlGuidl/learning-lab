@@ -13,6 +13,11 @@ self.importScripts(SOLJSON_URL);
 
 const compiler = wrapper((self as unknown as { Module: unknown }).Module);
 
+// importScripts blocks this whole module while soljson downloads, and the
+// browser queues any compile requests sent in the meantime. This signal is how
+// the main thread tells "still fetching the compiler" apart from "compiling".
+self.postMessage({ type: "ready" });
+
 type CompileRequest = { id: string; source: string };
 
 type CompiledContract = { name: string; abi: unknown[]; bytecode: `0x${string}` };

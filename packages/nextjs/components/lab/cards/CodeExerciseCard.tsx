@@ -9,6 +9,7 @@ import type { CompileCheckResult } from "~~/lib/grader/compile-check";
 import { latestEvent } from "~~/lib/grader/transcript";
 import type { GradingOutcome } from "~~/lib/grader/transcript";
 import type { CodeExerciseCard as CodeExerciseCardType } from "~~/lib/lab/types";
+import type { CompilerPhase } from "~~/lib/solc/solc";
 import { gradingSourceOf, useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
@@ -23,6 +24,10 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const [input, setInput] = useState(saved);
   // Lets the chip read "fail" the instant compilation fails, before coaching streams in.
   const [lastCompile, setLastCompile] = useState<CompileCheckResult | null>(null);
+  // What solc is doing right now — null outside the compile window. On a cold
+  // page the first submit sits behind a ~7MB soljson download, and a silent
+  // button for those seconds reads as broken.
+  const [compilerPhase, setCompilerPhase] = useState<CompilerPhase | null>(null);
 
   const { object, grade, isLoading, error } = useGrade(card, chapterId);
 
@@ -32,9 +37,13 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
     // backfilled with its canonical so a broken neighbour can't fail a correct answer.
     completeCodeExercise(card.id, card.region, input);
     const assembled = gradingSourceOf(useLabStore.getState(), card.region, input);
-    const compileResult = await compileCheck(assembled);
-    setLastCompile(compileResult);
-    grade(input, compileResult);
+    try {
+      const compileResult = await compileCheck(assembled, setCompilerPhase);
+      setLastCompile(compileResult);
+      grade(input, compileResult);
+    } finally {
+      setCompilerPhase(null);
+    }
   };
 
   // grading: compile-fail pins "fail", else the streamed verdict. idle: last recorded result.
@@ -60,11 +69,23 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
         placeholder={card.placeholder}
         value={input}
         onChange={e => setInput(e.target.value)}
-        disabled={isLoading}
+        disabled={compilerPhase !== null || isLoading}
       />
       <div className="card-actions justify-end mt-3">
-        <button className="btn btn-primary" onClick={handleSubmit} disabled={isLoading || input.trim().length === 0}>
-          {isLoading ? "Grading…" : latest ? "Re-submit" : "Submit"}
+        <button
+          className="btn btn-primary"
+          onClick={handleSubmit}
+          disabled={compilerPhase !== null || isLoading || input.trim().length === 0}
+        >
+          {compilerPhase === "downloading"
+            ? "Fetching compiler…"
+            : compilerPhase === "compiling"
+              ? "Compiling…"
+              : isLoading
+                ? "Grading…"
+                : latest
+                  ? "Re-submit"
+                  : "Submit"}
         </button>
       </div>
       <GradeFeedback
