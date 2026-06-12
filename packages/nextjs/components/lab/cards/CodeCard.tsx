@@ -72,7 +72,7 @@ export const CodeCard = ({ card }: Props) => {
 
   return (
     <CardFrame card={card}>
-      {card.note && <p className="text-base-content/90 leading-relaxed mb-4">{card.note}</p>}
+      {card.note && <p className="text-base-content/90 leading-relaxed mt-0 mb-4">{card.note}</p>}
       <CodeBlock code={code} lang="solidity" softLines={softLines} />
     </CardFrame>
   );

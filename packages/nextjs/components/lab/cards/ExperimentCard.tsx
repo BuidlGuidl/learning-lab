@@ -109,7 +109,7 @@ export const ExperimentCard = ({ card, lab }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed mb-4 whitespace-pre-wrap">{card.scenario}</p>
+      <p className="text-base-content/90 leading-relaxed mt-0 mb-4 whitespace-pre-wrap">{card.scenario}</p>
 
       {crash && (
         <div className="alert alert-error text-sm mb-3">

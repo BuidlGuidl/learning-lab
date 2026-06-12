@@ -34,7 +34,9 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
     // tests own the verdict; an unreachable coach is a footnote, not an alert
     if (error && !feedback) {
       return (
-        <p className="mt-3 text-xs text-base-content/50">Couldn&apos;t reach the coach — the result above stands.</p>
+        <p className="mt-3 mb-0 text-xs text-base-content/50">
+          Couldn&apos;t reach the coach — the result above stands.
+        </p>
       );
     }
     if (!pending && !feedback && (!missedConcepts || missedConcepts.length === 0)) return null;
@@ -46,7 +48,7 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
           <span className="text-[10px] uppercase tracking-[0.2em]">coach</span>
         </div>
         {feedback ? (
-          <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap">{feedback}</p>
+          <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap m-0">{feedback}</p>
         ) : (
           <span className="loading loading-dots loading-xs text-base-content/50" />
         )}
@@ -82,7 +84,7 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
               <VerdictChip verdict={verdict} />
             </div>
           )}
-          {feedback && <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap">{feedback}</p>}
+          {feedback && <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap m-0">{feedback}</p>}
           {missedConcepts && missedConcepts.length > 0 && <MissedConcepts concepts={missedConcepts} />}
         </div>
       )}

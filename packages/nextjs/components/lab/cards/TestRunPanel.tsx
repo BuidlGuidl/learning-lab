@@ -76,7 +76,7 @@ export const TestRunPanel = ({ testNames, progress, verdict, results, compilerEr
       <div className="px-4 py-3">
         {compileFailed && (
           <div className="mb-2.5">
-            <p className="flex items-baseline gap-2 font-mono text-xs">
+            <p className="my-0 flex items-baseline gap-2 font-mono text-xs">
               <span className="flex w-3.5 justify-center text-error">✗</span>
               <span className="text-base-content/80">compile</span>
             </p>

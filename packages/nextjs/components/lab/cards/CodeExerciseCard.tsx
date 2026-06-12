@@ -63,7 +63,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed mb-4 whitespace-pre-wrap">{card.prompt}</p>
+      <p className="text-base-content/90 leading-relaxed mt-0 mb-4 whitespace-pre-wrap">{card.prompt}</p>
       <textarea
         className="textarea textarea-bordered font-mono text-sm w-full"
         rows={3}

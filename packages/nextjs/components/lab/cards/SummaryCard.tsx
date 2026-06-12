@@ -8,7 +8,7 @@ type Props = {
 export const SummaryCard = ({ card }: Props) => {
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap">{card.body}</p>
+      <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap m-0">{card.body}</p>
     </CardFrame>
   );
 };
