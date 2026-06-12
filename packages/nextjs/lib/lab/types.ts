@@ -4,7 +4,7 @@ import type { ComponentType } from "react";
 import type { DeployFn, LabTests, World } from "./harness";
 import type { Region, Segment } from "./regions";
 
-export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "SUMMARY";
+export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
 
 type CardBase = {
   id: string;
@@ -66,6 +66,19 @@ export type ExperimentCard = CardBase & {
   component: ComponentType<{ world: World }>;
 };
 
+// The ship-it beat: deploy the learner's contract and run every check
+// earned so far against it. Pure data — the shell is generic (no per-lab
+// component). Grading isolates each region against canonical neighbours;
+// this card is the one place the learner's regions are tested TOGETHER.
+// Red is shown with the suspect regions named, but never gates Next —
+// gates guard knowledge, not state. Anything interactive (read-backs,
+// buttons) belongs in an experiment card placed after.
+export type DeploymentCard = CardBase & {
+  type: "deployment";
+  label: "DEPLOYMENT";
+  scenario: string;
+};
+
 // End-of-chapter prose. Ties the chapter's cards together (what was
 // built, what the learner should now hold). Read-only.
 export type SummaryCard = CardBase & {
@@ -74,7 +87,14 @@ export type SummaryCard = CardBase & {
   body: string;
 };
 
-export type Card = ConceptCard | CodeCard | CodeExerciseCard | QuestionCard | ExperimentCard | SummaryCard;
+export type Card =
+  | ConceptCard
+  | CodeCard
+  | CodeExerciseCard
+  | QuestionCard
+  | ExperimentCard
+  | DeploymentCard
+  | SummaryCard;
 
 export type Chapter = {
   id: string;

@@ -42,12 +42,20 @@ export const lab = defineLab({
           note: "Here's the contract with your line in it. That declaration runs once when the contract gets deployed, and the slot stays there as long as the contract exists. The faded lines below are the pieces you'll fill in over the next chapters.",
         },
         {
+          type: "deployment",
+          id: "deploy-it",
+          label: "DEPLOYMENT",
+          title: "Deploy it",
+          scenario:
+            "That contract is real Solidity, and this tab has a real EVM in it. Press deploy: your source gets compiled to bytecode and shipped to a fresh chain, right here, nothing leaves the browser. While it ships, every check you've earned so far runs against it, the same ones that graded your code, now hitting the contract as a whole.",
+        },
+        {
           type: "experiment",
           id: "first-deploy",
           label: "EXPERIMENT",
-          title: "Deploy it",
+          title: "Read it back",
           scenario:
-            "That contract is real Solidity, and this tab has a real EVM in it. Press deploy: your source gets compiled to bytecode and shipped to a fresh chain, right here, nothing leaves the browser. Then read your storage slot back from the live contract — the value you picked, answering from the chain.",
+            "Your contract is live on this tab's chain. Now read your storage slot back from it — the value you picked, answering from the chain.",
           component: FirstDeploy,
         },
       ],
@@ -157,6 +165,14 @@ export const lab = defineLab({
           title: "The finished contract",
           file: "Counter.sol",
           note: "That's the whole thing. A slot to remember a number, an event to announce changes, functions to change it, and an owner-only reset guarded by code you imported instead of wrote. Every piece here, state, functions, gas, events, access control, shows up in every contract you'll read from now on.",
+        },
+        {
+          type: "deployment",
+          id: "ship-it",
+          label: "DEPLOYMENT",
+          title: "Ship it",
+          scenario:
+            "The whole contract, every line of it yours. Press deploy and the full suite runs against it: storage, increment, the event, the setter, the owner-only reset. Until now each line was checked on its own, with reference code standing in for the rest. This run tests them together, on the contract you actually wrote.",
         },
         {
           type: "experiment",
