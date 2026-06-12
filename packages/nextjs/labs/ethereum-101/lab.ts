@@ -1,5 +1,6 @@
 import { ReadGoal } from "./ReadGoal";
 import { ShipIt } from "./ShipIt";
+import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -236,11 +237,13 @@ export const lab = defineLab({
           component: ShipIt,
         },
         {
-          type: "concept",
+          type: "experiment",
           id: "use-it-like-an-app",
-          label: "CONCEPT",
+          label: "EXPERIMENT",
           title: "Use it like an app",
-          body: "The natural next step is a UI: fund from a few browser accounts, watch a progress bar crawl toward the goal, fast-forward past the deadline, pull a refund. That interactive playground isn't built yet — it's coming in a later iteration — but everything it needs is already in the contract you just shipped.",
+          scenario:
+            "This is what your contract looks like from the outside — an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the fund() you wrote.",
+          component: UseIt,
         },
         {
           type: "summary",
