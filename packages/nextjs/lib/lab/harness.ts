@@ -5,7 +5,7 @@
 // the helpers below — throwing is failing. The same functions run in the ci
 // validator (node) and at grade time (browser); tevm is isomorphic, so there
 // is exactly one copy of every test.
-import { type MemoryClient, PREFUNDED_ACCOUNTS, createMemoryClient } from "tevm";
+import { type MemoryClient, PREFUNDED_ACCOUNTS, createMemoryClient, encodeDeployData } from "tevm";
 
 export type Address = `0x${string}`;
 export type Abi = unknown[];
@@ -67,7 +67,10 @@ export async function bootWorld(compiled: Compiled, deploy: DeployFn): Promise<W
   // runtime (learner-compiled), so the call boundary is typed loosely here
   // and the World surface stays the typed one
   const tevmContract = client.tevmContract as unknown as (p: Record<string, unknown>) => Promise<CallResult>;
-  const tevmDeploy = client.tevmDeploy as unknown as (
+  // deploys go through tevmCall, not tevmDeploy: tevm's deployHandler
+  // internally forwards the deprecated createTransaction param and warns on
+  // every deploy — tevmCall with the same deploy data takes the modern path
+  const tevmCall = client.tevmCall as unknown as (
     p: Record<string, unknown>,
   ) => Promise<CallResult & { createdAddress?: Address }>;
 
@@ -99,10 +102,9 @@ export async function bootWorld(compiled: Compiled, deploy: DeployFn): Promise<W
     const def = compiled[name];
     if (!def)
       throw new Error(`deploy: no compiled contract named "${name}" (have: ${Object.keys(compiled).join(", ")})`);
-    const result = await tevmDeploy({
-      abi: def.abi,
-      bytecode: def.bytecode,
-      args,
+    const encodeDeploy = encodeDeployData as unknown as (p: Record<string, unknown>) => `0x${string}`;
+    const result = await tevmCall({
+      data: encodeDeploy({ abi: def.abi, bytecode: def.bytecode, args }),
       from: opts.from ?? accounts[0],
       addToBlockchain: true,
       throwOnFail: false,
