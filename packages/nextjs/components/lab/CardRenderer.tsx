@@ -1,7 +1,9 @@
 import { CodeCard } from "./cards/CodeCard";
 import { CodeExerciseCard } from "./cards/CodeExerciseCard";
 import { ConceptCard } from "./cards/ConceptCard";
+import { DeploymentCard } from "./cards/DeploymentCard";
 import { QuestionCard } from "./cards/QuestionCard";
+import { SummaryCard } from "./cards/SummaryCard";
 import type { Card } from "~~/lib/lab/types";
 
 type Props = {
@@ -19,9 +21,11 @@ export const CardRenderer = ({ card, chapterId }: Props) => {
       return <CodeCard card={card} />;
     case "question":
       return <QuestionCard card={card} chapterId={chapterId} />;
-    case "experiment":
     case "deployment":
+      return <DeploymentCard card={card} />;
     case "summary":
+      return <SummaryCard card={card} />;
+    case "experiment":
       return (
         <div className="alert alert-warning max-w-3xl">
           <span>

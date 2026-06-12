@@ -17,7 +17,12 @@ export type Compiled = Record<string, CompiledContract>;
 // messages on compile errors.
 export type CompileFn = (sources: Record<string, string>) => Promise<Compiled>;
 
-export type ContractHandle = { address: Address; abi: Abi };
+export type ContractHandle = {
+  address: Address;
+  abi: Abi;
+  // populated by deployContract; undefined for handles created elsewhere
+  deployment?: { gasUsed?: bigint; txHash?: `0x${string}` };
+};
 
 export type CallResult = {
   data?: unknown;
@@ -72,7 +77,9 @@ export async function bootWorld(compiled: Compiled, deploy: DeployFn): Promise<W
   // every deploy — tevmCall with the same deploy data takes the modern path
   const tevmCall = client.tevmCall as unknown as (
     p: Record<string, unknown>,
-  ) => Promise<CallResult & { createdAddress?: Address }>;
+  ) => Promise<
+    CallResult & { createdAddress?: Address; executionGasUsed?: bigint; totalGasSpent?: bigint; txHash?: `0x${string}` }
+  >;
 
   const write: World["write"] = async (contract, functionName, opts = {}) =>
     tevmContract({
@@ -110,7 +117,12 @@ export async function bootWorld(compiled: Compiled, deploy: DeployFn): Promise<W
       throwOnFail: false,
     });
     if (result.errors?.length) throw new Error(`deploy ${name} failed: ${result.errors[0].message}`);
-    return { address: result.createdAddress as Address, abi: def.abi };
+    const gasUsed = result.totalGasSpent ?? result.executionGasUsed;
+    return {
+      address: result.createdAddress as Address,
+      abi: def.abi,
+      deployment: { gasUsed, txHash: result.txHash },
+    };
   };
 
   const contracts = await deploy({ client, compiled, accounts, deployContract, write });

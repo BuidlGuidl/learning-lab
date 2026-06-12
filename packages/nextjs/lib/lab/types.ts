@@ -19,6 +19,17 @@ export type ConceptCard = CardBase & {
 
 // Code reveal. Renders a file from the lab's segments with the learner's
 // region fills threaded in (unfilled regions show a placeholder). Read-only.
+//
+// Anchor slicing: after renderDisplay produces the full file text, fromAnchor
+// and toAnchor trim it to the interesting excerpt.
+//   fromAnchor — the FIRST line whose text case-insensitively includes this
+//                substring starts the excerpt (inclusive).
+//   toAnchor   — the first line AFTER fromAnchor whose text case-insensitively
+//                includes this substring ends it (exclusive — that line is not
+//                shown). Leading/trailing blank lines are trimmed from the
+//                slice. softLines outside the slice are dropped; the rest are
+//                re-offset to the sliced coordinates. If an anchor doesn't
+//                match, fall back to the whole file (never throw).
 export type CodeCard = CardBase & {
   type: "code";
   label: "CODE";
@@ -67,6 +78,10 @@ export type DeploymentCard = CardBase & {
   type: "deployment";
   label: "DEPLOYMENT";
   body: string;
+  // Values read off the live contract after deploy — the proof it's real,
+  // not a screenshot of source. Each entry calls one view function and
+  // renders the result with an optional label and format hint.
+  readbacks?: { contract: string; fn: string; args?: unknown[]; label: string; format?: "eth" }[];
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was
