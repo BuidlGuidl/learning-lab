@@ -4,7 +4,7 @@
 // assembled from the learner's ACTUAL fills — whatever they last submitted,
 // passing or not — with canonical only for regions they never touched, and
 // every check earned so far runs against that assembly before the surface
-// opens. Grading isolates one region with canonical neighbours (ADR-0015);
+// opens. Grading isolates one region with canonical neighbours;
 // this run is its complement — the one place the learner's regions are
 // tested together, on the contract they actually wrote. Failures come back
 // as data, never a silent canonical fallback: the learner sees their own
@@ -32,8 +32,8 @@ export type ExperimentBoot =
 
 // The regions an experiment checks before its surface opens: those of
 // code-exercise cards that come before it in lab order. Future regions stay
-// invisible, down to their test names — the ADR-0019 surface rule applied
-// to tests.
+// invisible, down to their test names.
+// The surface shows only what was earned; so do the checks.
 export function regionsBeforeCard(lab: Lab, cardId: string): string[] {
   const regions: string[] = [];
   for (const chapter of lab.chapters) {

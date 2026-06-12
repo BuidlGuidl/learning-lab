@@ -3,7 +3,7 @@
 // One entry point for both consumers. The ci validator calls it with no
 // learner input (all-canonical — the lab grading itself) across every region;
 // grade time calls it with the learner's fill for the region under test and
-// every other region canonical-backfilled (ADR-0015). The verdict comes from
+// every other region canonical-backfilled. The verdict comes from
 // the tests alone; the canonical is never diffed against the learner.
 import { assembleSources } from "./assemble";
 import { type CompileFn, type DeployFn, type LabTests, bootWorld } from "./harness";

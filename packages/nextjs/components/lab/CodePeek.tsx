@@ -20,7 +20,7 @@ const isEditable = (el: EventTarget | null) => {
 
 // Always-available view of the running code, rendered the same way reveal
 // cards render: segments + the learner's fills, with unwritten regions as
-// faded placeholders. Read-only, ephemeral — open-state stays local (ADR-0012).
+// faded placeholders. Read-only, ephemeral — open-state stays local.
 // The sheet wears the github-dark-dimmed palette (#22272e et al) so its chrome
 // merges into the shiki code, which is always dark regardless of app theme.
 export const CodePeek = ({ lab }: { lab: Lab }) => {

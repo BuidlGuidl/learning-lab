@@ -3,7 +3,7 @@
 // Client-side behavioural grading: the learner's region assembled against
 // canonicals, compiled in the solc worker, deployed and tested in tevm —
 // all in the browser. The verdict comes out of here; the model only coaches
-// on the result (ADR-0009's split, with tests instead of a bare compile).
+// on the result.
 import { type CompileFn } from "./harness";
 import { type RunProgress, type RunReport, runRegionTests } from "./run";
 import { compileContracts } from "~~/lib/solc/solc";

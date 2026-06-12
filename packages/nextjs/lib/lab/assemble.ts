@@ -1,4 +1,4 @@
-// Canonical-backfill assembly — ADR-0015's rule over segments.
+// Canonical-backfill assembly over segments.
 //
 // Every region without a fill gets its canonical; filled regions get the
 // learner's text. fills = {} assembles the fully-canonical contract set
