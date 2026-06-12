@@ -1,12 +1,15 @@
 "use client";
 
-// Boots the world a deployment or experiment card hands its surface. The lab
-// is assembled from the learner's ACTUAL fills — whatever they last
-// submitted, passing or not — with canonical only for regions they never
-// touched. If that assembly doesn't compile, the failure comes back as data,
-// not a silent canonical fallback: the learner sees their own compile
-// errors, exactly like a real deploy would show them. Running the reference
-// solution instead is a separate, explicit choice the shell offers.
+// Boots the world an experiment card hands its surface. The lab is
+// assembled from the learner's ACTUAL fills — whatever they last submitted,
+// passing or not — with canonical only for regions they never touched, and
+// every check earned so far runs against that assembly before the surface
+// opens. Grading isolates one region with canonical neighbours (ADR-0015);
+// this run is its complement — the one place the learner's regions are
+// tested together, on the contract they actually wrote. Failures come back
+// as data, never a silent canonical fallback: the learner sees their own
+// compile errors or red checks, exactly like a real deploy would show them.
+// Running the reference solution instead is a separate, explicit choice.
 import { assembleSources } from "./assemble";
 import { type Compiled, type World, bootWorld } from "./harness";
 import type { TestResult } from "./run";
@@ -15,23 +18,22 @@ import { latestEvent } from "~~/lib/grader/transcript";
 import { compileContracts } from "~~/lib/solc/solc";
 import { fillsOf, useLabStore } from "~~/services/store/lab-store";
 
-export type LearnerBoot =
-  | { ok: true; world: World; reference: boolean }
+// One row of the deploy checklist — a region's test result, with the
+// region kept so a red row can name its suspect card.
+export type ExperimentCheck = TestResult & { region: string };
+
+export type ExperimentBoot =
+  // checks are empty and passed is true on a reference boot — the validator
+  // already proves the canonical assembly green, re-running it is theater
+  | { ok: true; world: World; checks: ExperimentCheck[]; passed: boolean; reference: boolean }
   // the learner's assembly didn't compile: solc's errors, plus the regions
   // whose fills are learner-written and not currently passing — the suspects
   | { ok: false; errors: string[]; suspects: string[] };
 
-// One row of a deployment card's checklist — a region's test result, with
-// the region kept so a red row can name its suspect card.
-export type DeploymentCheck = TestResult & { region: string };
-
-export type DeploymentBoot =
-  | { ok: true; world: World; checks: DeploymentCheck[]; passed: boolean }
-  | { ok: false; errors: string[]; suspects: string[] };
-
-// The regions a deployment card is allowed to check: those of code-exercise
-// cards that come before it in lab order. Future regions stay invisible,
-// down to their test names — the ADR-0019 surface rule applied to tests.
+// The regions an experiment checks before its surface opens: those of
+// code-exercise cards that come before it in lab order. Future regions stay
+// invisible, down to their test names — the ADR-0019 surface rule applied
+// to tests.
 export function regionsBeforeCard(lab: Lab, cardId: string): string[] {
   const regions: string[] = [];
   for (const chapter of lab.chapters) {
@@ -75,26 +77,12 @@ async function compileLearnerAssembly(): Promise<
   return { ok: false, errors: result.errors, suspects };
 }
 
-export async function bootLearnerWorld(): Promise<LearnerBoot> {
-  const { deploy } = useLabStore.getState();
-  if (!deploy) throw new Error("lab has no deploy — store not initialised?");
-
-  const result = await compileLearnerAssembly();
-  if (!result.ok) return result;
-  return { ok: true, world: await bootWorld(result.compiled, deploy), reference: false };
-}
-
-// The deployment card's run: compile the learner's assembly, then run every
-// region test earned so far against it. Grading isolates one region with
-// canonical neighbours (ADR-0015); this is its complement — the one place
-// the learner's regions are tested together, on the contract they actually
-// wrote. Red comes back as data and never throws; the display world boots
-// either way, because the contract DID deploy — the checks describe its
-// behaviour, they don't gate its existence.
-export async function bootDeploymentWorld(
+// The experiment's deploy: compile the learner's assembly, run every region
+// test earned so far against it, then boot the world the surface gets.
+export async function bootExperimentWorld(
   regionIds: string[],
-  onProgress?: (done: DeploymentCheck[], total: number) => void,
-): Promise<DeploymentBoot> {
+  onProgress?: (done: ExperimentCheck[], total: number) => void,
+): Promise<ExperimentBoot> {
   const { deploy, tests } = useLabStore.getState();
   if (!deploy || !tests) throw new Error("lab has no deploy/tests — store not initialised?");
 
@@ -102,7 +90,7 @@ export async function bootDeploymentWorld(
   if (!result.ok) return result;
 
   const suite = regionIds.flatMap(region => (tests[region] ?? []).map(t => ({ region, t })));
-  const checks: DeploymentCheck[] = [];
+  const checks: ExperimentCheck[] = [];
   onProgress?.([], suite.length);
   for (const { region, t } of suite) {
     // fresh chain per test, same bargain as the grade-runner — no test
@@ -118,17 +106,17 @@ export async function bootDeploymentWorld(
   }
 
   const world = await bootWorld(result.compiled, deploy);
-  return { ok: true, world, checks, passed: checks.every(c => c.passed) };
+  return { ok: true, world, checks, passed: checks.every(c => c.passed), reference: false };
 }
 
 // The explicit escape hatch: deploy the all-canonical reference solution.
 // Only offered after the learner's own assembly failed — never silently.
-export async function bootReferenceWorld(): Promise<LearnerBoot> {
+export async function bootReferenceWorld(): Promise<ExperimentBoot> {
   const { files, regions, deploy } = useLabStore.getState();
   if (!deploy) throw new Error("lab has no deploy — store not initialised?");
 
   const result = await compile(assembleSources(files, regions));
   // the validator proves the canonical assembly compiles; failing here is a lab bug
   if (!result.ok) throw new Error(`reference solution failed to compile:\n${result.errors.join("\n")}`);
-  return { ok: true, world: await bootWorld(result.compiled, deploy), reference: true };
+  return { ok: true, world: await bootWorld(result.compiled, deploy), checks: [], passed: true, reference: true };
 }

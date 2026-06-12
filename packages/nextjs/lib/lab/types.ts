@@ -4,7 +4,7 @@ import type { ComponentType } from "react";
 import type { DeployFn, LabTests, World } from "./harness";
 import type { Region, Segment } from "./regions";
 
-export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
+export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "SUMMARY";
 
 type CardBase = {
   id: string;
@@ -52,31 +52,23 @@ export type QuestionCard = CardBase & {
   hint?: string;
 };
 
-// Hands-on exploration, deploy beat included. The world only exists after
-// the learner presses Deploy — the shell assembles their ACTUAL fills
-// (passing or not; canonical only for regions never touched), and if that
-// doesn't compile the learner sees the errors, like a real deploy would.
-// No canonical, no verdict, no required action to advance. The interactive
-// surface is a per-lab react component receiving the booted World; mid-lab
-// placement is fine when the component scopes what it shows.
+// Hands-on exploration, the whole deploy beat included. The world only
+// exists after the learner presses Deploy — the shell requires every region
+// from cards before this one to have a fill, assembles the learner's ACTUAL
+// text (canonical backfills only future regions), and runs every check
+// earned so far against the assembly before the surface opens: grading
+// isolates each region against canonical neighbours, so this run is the one
+// place the learner's regions are tested TOGETHER. Compile errors and red
+// checks are shown with suspects named, never papered over; the surface
+// mounts on green (or on the labelled reference world, one explicit click
+// away). Never graded, never gates Next. The surface is a per-lab react
+// component receiving the booted World — full react, no widget language;
+// mid-lab placement is fine when the component scopes what it shows.
 export type ExperimentCard = CardBase & {
   type: "experiment";
   label: "EXPERIMENT";
   scenario: string;
   component: ComponentType<{ world: World }>;
-};
-
-// The ship-it beat: deploy the learner's contract and run every check
-// earned so far against it. Pure data — the shell is generic (no per-lab
-// component). Grading isolates each region against canonical neighbours;
-// this card is the one place the learner's regions are tested TOGETHER.
-// Red is shown with the suspect regions named, but never gates Next —
-// gates guard knowledge, not state. Anything interactive (read-backs,
-// buttons) belongs in an experiment card placed after.
-export type DeploymentCard = CardBase & {
-  type: "deployment";
-  label: "DEPLOYMENT";
-  scenario: string;
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was
@@ -87,14 +79,7 @@ export type SummaryCard = CardBase & {
   body: string;
 };
 
-export type Card =
-  | ConceptCard
-  | CodeCard
-  | CodeExerciseCard
-  | QuestionCard
-  | ExperimentCard
-  | DeploymentCard
-  | SummaryCard;
+export type Card = ConceptCard | CodeCard | CodeExerciseCard | QuestionCard | ExperimentCard | SummaryCard;
 
 export type Chapter = {
   id: string;

@@ -1,7 +1,6 @@
 import { CodeCard } from "./cards/CodeCard";
 import { CodeExerciseCard } from "./cards/CodeExerciseCard";
 import { ConceptCard } from "./cards/ConceptCard";
-import { DeploymentCard } from "./cards/DeploymentCard";
 import { ExperimentCard } from "./cards/ExperimentCard";
 import { QuestionCard } from "./cards/QuestionCard";
 import type { Card, Lab } from "~~/lib/lab/types";
@@ -9,7 +8,7 @@ import type { Card, Lab } from "~~/lib/lab/types";
 type Props = {
   card: Card;
   chapterId: string;
-  // the deployment card scopes its checks to the cards before it, which only
+  // the experiment card scopes its checks to the cards before it, which only
   // the lab's chapter order knows
   lab: Lab;
 };
@@ -25,9 +24,7 @@ export const CardRenderer = ({ card, chapterId, lab }: Props) => {
     case "question":
       return <QuestionCard card={card} chapterId={chapterId} />;
     case "experiment":
-      return <ExperimentCard card={card} />;
-    case "deployment":
-      return <DeploymentCard card={card} lab={lab} />;
+      return <ExperimentCard card={card} lab={lab} />;
     case "summary":
       return (
         <div className="alert alert-warning max-w-3xl">
