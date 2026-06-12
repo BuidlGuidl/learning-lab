@@ -1,42 +1,64 @@
 "use client";
 
-// Boots the world a card hands its author component — the experiment on
-// mount (ADR-0018), the deployment card on the learner's click. The lab is
-// assembled with the learner's passed fills (canonical backfill for
-// everything skipped, failed, or unreached), compiled in the solc worker,
-// deployed to a fresh tevm chain. The third caller of assembleSources —
-// grading passes one fill, ci passes none, this passes the passed set.
+// Boots the world an experiment card hands its author component. The lab is
+// assembled from the learner's ACTUAL fills — whatever they last submitted,
+// passing or not — with canonical only for regions they never touched. If
+// that assembly doesn't compile, the failure comes back as data, not a
+// silent canonical fallback: the learner sees their own compile errors,
+// exactly like a real deploy would show them. Running the reference
+// solution instead is a separate, explicit choice the shell offers.
 import { assembleSources } from "./assemble";
-import { type CompileFn, type World, bootWorld } from "./harness";
+import { type Compiled, type World, bootWorld } from "./harness";
+import { latestEvent } from "~~/lib/grader/transcript";
 import { compileContracts } from "~~/lib/solc/solc";
-import { passedFillsOf, useLabStore } from "~~/services/store/lab-store";
+import { fillsOf, useLabStore } from "~~/services/store/lab-store";
 
-export type WorldBoot = {
-  world: World;
-  // true when the passed-fills assembly failed to compile and the world is
-  // running all-canonical instead — the shell shows a quiet notice
-  usedCanonicalFallback: boolean;
-};
+export type LearnerBoot =
+  | { ok: true; world: World; reference: boolean }
+  // the learner's assembly didn't compile: solc's errors, plus the regions
+  // whose fills are learner-written and not currently passing — the suspects
+  | { ok: false; errors: string[]; suspects: string[] };
 
-const compile: CompileFn = async sources => {
+async function compile(
+  sources: Record<string, string>,
+): Promise<{ ok: true; compiled: Compiled } | { ok: false; errors: string[] }> {
   const result = await compileContracts(sources);
-  if (!result.ok) throw new Error(result.errors.join("\n"));
-  return Object.fromEntries(
-    Object.entries(result.contracts).map(([name, c]) => [name, { abi: c.abi, bytecode: c.bytecode }]),
-  );
-};
+  if (!result.ok) return { ok: false, errors: result.errors };
+  return {
+    ok: true,
+    compiled: Object.fromEntries(
+      Object.entries(result.contracts).map(([name, c]) => [name, { abi: c.abi, bytecode: c.bytecode }]),
+    ),
+  };
+}
 
-export async function bootLearnerWorld(): Promise<WorldBoot> {
+export async function bootLearnerWorld(): Promise<LearnerBoot> {
   const { files, regions, deploy, progress, transcript } = useLabStore.getState();
   if (!deploy) throw new Error("lab has no deploy — store not initialised?");
 
-  try {
-    const compiled = await compile(assembleSources(files, regions, passedFillsOf(progress, transcript)));
-    return { world: await bootWorld(compiled, deploy), usedCanonicalFallback: false };
-  } catch {
-    // a fill set that each passed alone can still fail assembled together;
-    // free play must not brick on it, so run the reference solution
-    const compiled = await compile(assembleSources(files, regions));
-    return { world: await bootWorld(compiled, deploy), usedCanonicalFallback: true };
+  const result = await compile(assembleSources(files, regions, fillsOf(progress)));
+  if (!result.ok) {
+    const suspects = Object.entries(progress)
+      .filter(([cardId, p]) => {
+        const event = latestEvent(transcript, cardId);
+        // a skip wrote the canonical into progress — it can't be the culprit
+        if (event?.outcome === "skipped") return false;
+        return !(event?.outcome === "pass" && event.answer === p.learnerInput);
+      })
+      .map(([, p]) => p.region);
+    return { ok: false, errors: result.errors, suspects };
   }
+  return { ok: true, world: await bootWorld(result.compiled, deploy), reference: false };
+}
+
+// The explicit escape hatch: deploy the all-canonical reference solution.
+// Only offered after the learner's own assembly failed — never silently.
+export async function bootReferenceWorld(): Promise<LearnerBoot> {
+  const { files, regions, deploy } = useLabStore.getState();
+  if (!deploy) throw new Error("lab has no deploy — store not initialised?");
+
+  const result = await compile(assembleSources(files, regions));
+  // the validator proves the canonical assembly compiles; failing here is a lab bug
+  if (!result.ok) throw new Error(`reference solution failed to compile:\n${result.errors.join("\n")}`);
+  return { ok: true, world: await bootWorld(result.compiled, deploy), reference: true };
 }

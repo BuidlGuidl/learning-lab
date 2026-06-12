@@ -4,7 +4,7 @@ import type { ComponentType } from "react";
 import type { DeployFn, LabTests, World } from "./harness";
 import type { Region, Segment } from "./regions";
 
-export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
+export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "SUMMARY";
 
 type CardBase = {
   id: string;
@@ -52,26 +52,16 @@ export type QuestionCard = CardBase & {
   hint?: string;
 };
 
-// Hands-on exploration. Learner pokes at their own assembled contract in a
-// fresh tevm world to build intuition. No canonical, no required action to
-// advance. The interactive surface is a per-lab react component (ADR-0018)
-// that receives the booted World — the shared shell owns assemble → compile
-// → boot and the card chrome.
+// Hands-on exploration, deploy beat included. The world only exists after
+// the learner presses Deploy — the shell assembles their ACTUAL fills
+// (passing or not; canonical only for regions never touched), and if that
+// doesn't compile the learner sees the errors, like a real deploy would.
+// No canonical, no verdict, no required action to advance. The interactive
+// surface is a per-lab react component receiving the booted World; mid-lab
+// placement is fine when the component scopes what it shows.
 export type ExperimentCard = CardBase & {
   type: "experiment";
   label: "EXPERIMENT";
-  scenario: string;
-  component: ComponentType<{ world: World }>;
-};
-
-// Deploy beat. The learner presses Deploy themselves — the boot pipeline is
-// the experiment's, but the world only exists after their click — and a
-// deliberately narrow per-lab component confirms the contract runs (e.g. read
-// one value back). Mid-lab placement is fine: backfilled future regions are
-// only a leak if the component shows them, so the component scopes the surface.
-export type DeploymentCard = CardBase & {
-  type: "deployment";
-  label: "DEPLOYMENT";
   scenario: string;
   component: ComponentType<{ world: World }>;
 };
@@ -84,14 +74,7 @@ export type SummaryCard = CardBase & {
   body: string;
 };
 
-export type Card =
-  | ConceptCard
-  | CodeCard
-  | CodeExerciseCard
-  | QuestionCard
-  | ExperimentCard
-  | DeploymentCard
-  | SummaryCard;
+export type Card = ConceptCard | CodeCard | CodeExerciseCard | QuestionCard | ExperimentCard | SummaryCard;
 
 export type Chapter = {
   id: string;

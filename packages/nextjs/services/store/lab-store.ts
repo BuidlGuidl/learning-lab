@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
-import { isCardCleared, latestEvent, nextAttempt } from "~~/lib/grader/transcript";
+import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
 import { assembleSources } from "~~/lib/lab/assemble";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 import type { Region, Segment } from "~~/lib/lab/regions";
@@ -64,31 +64,14 @@ const initialState: LabState = {
   transcript: emptyTranscript,
 };
 
-// region id -> the learner's accepted text. This is the store's one moving
-// part for code; display and grading both render from it.
+// region id -> the learner's latest submitted text (a skip writes the
+// canonical). This is the store's one moving part for code; display,
+// grading, and the experiment world all render from it — the experiment on
+// purpose: the learner deploys what they actually wrote, passing or not,
+// and a broken fill surfaces as a real compile error, never a silent
+// canonical stand-in.
 export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
   Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
-
-// The fills an experiment world assembles with (ADR-0018): the learner's text
-// only where the exercise's latest verdict was a pass. progress records every
-// submit — including ones that then failed grading — so it can't be used raw;
-// failed and unreached regions backfill canonical in assembleSources, and a
-// skip already wrote canonical into progress so excluding it changes nothing.
-// The verdict must also be about THIS text: progress updates at submit but the
-// event lands at stream-finish, so a resubmit-then-jump-ahead on an already-
-// cleared card could otherwise ride a stale pass into the experiment.
-export const passedFillsOf = (
-  progress: Record<string, ProgressEntry>,
-  transcript: LearningTranscript,
-): Record<string, string> =>
-  Object.fromEntries(
-    Object.entries(progress)
-      .filter(([cardId, p]) => {
-        const event = latestEvent(transcript, cardId);
-        return event?.outcome === "pass" && event.answer === p.learnerInput;
-      })
-      .map(([, p]) => [p.region, p.learnerInput]),
-  );
 
 // The source handed to the compiler when grading one exercise. The learner only
 // ever writes one region; placing it and the rest of the file is the platform's

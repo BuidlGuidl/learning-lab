@@ -42,9 +42,9 @@ export const lab = defineLab({
           note: "Here's the contract with your line in it. That declaration runs once when the contract gets deployed, and the slot stays there as long as the contract exists. The faded lines below are the pieces you'll fill in over the next chapters.",
         },
         {
-          type: "deployment",
+          type: "experiment",
           id: "first-deploy",
-          label: "DEPLOYMENT",
+          label: "EXPERIMENT",
           title: "Deploy it",
           scenario:
             "That contract is real Solidity, and this tab has a real EVM in it. Press deploy: your source gets compiled to bytecode and shipped to a fresh chain, right here, nothing leaves the browser. Then read your storage slot back from the live contract — the value you picked, answering from the chain.",
@@ -164,7 +164,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Drive your counter",
           scenario:
-            "This is your contract, compiled and deployed to a throwaway chain right here in the browser. Nothing to pass, nothing graded — just drive it. Bump the number from a few different accounts, set it directly and watch your NumberChanged event land in the log. Then the real test of the chapter: call reset() as the owner, and call it again as a stranger. One of those goes through and one gets rejected by the modifier you wrote — see it happen for real.",
+            "This is your contract — press deploy to ship it to a throwaway chain right here in the browser, then drive it. Nothing to pass, nothing graded. Bump the number from a few different accounts, set it directly and watch your NumberChanged event land in the log. Then the real test of the chapter: call reset() as the owner, and call it again as a stranger. One of those goes through and one gets rejected by the modifier you wrote — see it happen for real.",
           component: CounterExperiment,
         },
       ],
