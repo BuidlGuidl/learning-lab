@@ -40,11 +40,9 @@ function serializeCard(card: Card, lab: Lab): string {
     case "question":
       return `Question: ${card.question}\nA good answer should touch on: ${card.rubricConcepts.join("; ")}`;
     case "experiment":
-      // the interactive surface is a react component (ADR-0018); the scenario
-      // prose is all the assessor needs — free play, never graded
+      // the interactive surface is a react component; the scenario prose is
+      // all the assessor needs — experiments are never graded
       return `Scenario: ${card.scenario}`;
-    case "deployment":
-      return card.body;
   }
 }
 

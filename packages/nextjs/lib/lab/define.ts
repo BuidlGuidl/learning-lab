@@ -31,7 +31,7 @@ export function defineLab(spec: LabSpec): Lab {
       if (card.type === "code" && !files[card.file]) {
         throw new Error(`lab "${spec.id}": card "${card.id}" reveals unknown file "${card.file}"`);
       }
-      if (card.type === "experiment" && typeof card.component !== "function") {
+      if (card.type === "experiment" && card.component == null) {
         throw new Error(`lab "${spec.id}": experiment card "${card.id}" has no component`);
       }
     }
