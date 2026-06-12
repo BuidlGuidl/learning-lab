@@ -5,6 +5,7 @@
 // code-exercise card points at a region that exists. A bad reference throws
 // at module load, so the mistake surfaces in dev and in validate-labs,
 // never in a learner session.
+import type { DeployFn, LabTests } from "./harness";
 import { extractLabContracts } from "./regions";
 import type { Chapter, Lab } from "./types";
 
@@ -14,6 +15,8 @@ export type LabSpec = {
   // marked .sol sources, keyed by filename (generated from contracts/ by
   // scripts/gen-lab-sources.mjs)
   contracts: Record<string, string>;
+  deploy: DeployFn;
+  tests: LabTests;
   chapters: Chapter[];
 };
 
@@ -28,8 +31,19 @@ export function defineLab(spec: LabSpec): Lab {
       if (card.type === "code" && !files[card.file]) {
         throw new Error(`lab "${spec.id}": card "${card.id}" reveals unknown file "${card.file}"`);
       }
+      if (card.type === "experiment" && card.component == null) {
+        throw new Error(`lab "${spec.id}": experiment card "${card.id}" has no component`);
+      }
     }
   }
 
-  return { id: spec.id, title: spec.title, files, regions, chapters: spec.chapters };
+  return {
+    id: spec.id,
+    title: spec.title,
+    files,
+    regions,
+    deploy: spec.deploy,
+    tests: spec.tests,
+    chapters: spec.chapters,
+  };
 }

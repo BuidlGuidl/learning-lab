@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { CardFrame } from "../CardFrame";
 import { GradeFeedback } from "./GradeFeedback";
+import { TestRunPanel } from "./TestRunPanel";
 import { useGrade } from "./useGrade";
-import { compileCheck } from "~~/lib/grader/compile-check";
-import type { CompileCheckResult } from "~~/lib/grader/compile-check";
 import { latestEvent } from "~~/lib/grader/transcript";
-import type { GradingOutcome } from "~~/lib/grader/transcript";
+import { gradeRegion } from "~~/lib/lab/grade";
+import type { RunProgress, RunReport } from "~~/lib/lab/run";
 import type { CodeExerciseCard as CodeExerciseCardType } from "~~/lib/lab/types";
-import type { CompilerPhase } from "~~/lib/solc/solc";
-import { gradingSourceOf, useLabStore } from "~~/services/store/lab-store";
+import { useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
   card: CodeExerciseCardType;
@@ -21,44 +20,46 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const completeCodeExercise = useLabStore(s => s.completeCodeExercise);
   const saved = useLabStore(s => s.progress[card.id]?.learnerInput ?? "");
   const latest = useLabStore(s => latestEvent(s.transcript, card.id));
+  const regionTests = useLabStore(s => s.tests?.[card.region]);
   const [input, setInput] = useState(saved);
-  // Lets the chip read "fail" the instant compilation fails, before coaching streams in.
-  const [lastCompile, setLastCompile] = useState<CompileCheckResult | null>(null);
-  // What solc is doing right now — null outside the compile window. On a cold
-  // page the first submit sits behind a ~7MB soljson download, and a silent
-  // button for those seconds reads as broken.
-  const [compilerPhase, setCompilerPhase] = useState<CompilerPhase | null>(null);
+  // The behavioural run's result. The verdict chip reads this the moment the
+  // tests finish — coaching streams in after, but never decides anything.
+  const [report, setReport] = useState<RunReport | null>(null);
+  // Live narration of the run (fetching compiler → compiling → testing). On a
+  // cold page the first submit sits behind a ~7MB soljson download, and a
+  // silent button for those seconds reads as broken.
+  const [progress, setProgress] = useState<RunProgress | null>(null);
+  const running = progress !== null;
 
-  const { object, grade, isLoading, error } = useGrade(card, chapterId);
+  const { object, grade, isLoading, error, settledFeedback } = useGrade(card, chapterId);
 
   const handleSubmit = async () => {
-    // Record the input for the display path (reveal cards), then compile an
-    // isolated file for grading: only this region under test, every other region
-    // backfilled with its canonical so a broken neighbour can't fail a correct answer.
+    // Record the input for the display path (reveal cards), then run the real
+    // thing: assemble this region against canonicals, compile in the worker,
+    // deploy in tevm, run the region's tests. That run IS the verdict.
     completeCodeExercise(card.id, card.region, input);
-    const assembled = gradingSourceOf(useLabStore.getState(), card.region, input);
+    setReport(null);
+    setProgress({ step: "compiling" });
     try {
-      const compileResult = await compileCheck(assembled, setCompilerPhase);
-      setLastCompile(compileResult);
-      grade(input, compileResult);
+      const result = await gradeRegion(card.region, input, setProgress);
+      setReport(result);
+      grade(input, result);
     } finally {
-      setCompilerPhase(null);
+      setProgress(null);
     }
   };
 
-  // grading: compile-fail pins "fail", else the streamed verdict. idle: last recorded result.
-  const verdict: GradingOutcome | undefined = isLoading
-    ? lastCompile && !lastCompile.ok
-      ? "fail"
-      : object?.verdict
-    : latest?.outcome;
-  const feedback = isLoading ? object?.feedback : latest?.feedback;
+  // The report owns the verdict from the moment it exists; idle shows the last recorded event.
+  const settled = report ? report.verdict : running || isLoading ? undefined : latest?.outcome;
+  const runVerdict = settled === "pass" || settled === "fail" ? settled : undefined;
+  // settledFeedback covers a truncated coach stream: the event recorded a fallback
+  // line the live object never carried, and without it the dots spin until remount.
+  const feedback = isLoading || report ? (object?.feedback ?? settledFeedback) : latest?.feedback;
   const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter((c): c is string => Boolean(c));
-  const compilerErrors = isLoading
-    ? lastCompile && !lastCompile.ok
-      ? lastCompile.errors
-      : undefined
-    : latest?.compilerErrors;
+  const compilerErrors =
+    report?.stage === "compile" ? report.errors : isLoading || report ? undefined : latest?.compilerErrors;
+  const testResults =
+    report?.stage === "tests" ? report.results : isLoading || report ? undefined : latest?.testResults;
 
   return (
     <CardFrame card={card}>
@@ -69,32 +70,40 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
         placeholder={card.placeholder}
         value={input}
         onChange={e => setInput(e.target.value)}
-        disabled={compilerPhase !== null || isLoading}
+        disabled={running || isLoading}
       />
       <div className="card-actions justify-end mt-3">
         <button
           className="btn btn-primary"
           onClick={handleSubmit}
-          disabled={compilerPhase !== null || isLoading || input.trim().length === 0}
+          disabled={running || isLoading || input.trim().length === 0}
         >
-          {compilerPhase === "downloading"
+          {progress?.step === "fetching-compiler"
             ? "Fetching compiler…"
-            : compilerPhase === "compiling"
+            : progress?.step === "compiling"
               ? "Compiling…"
-              : isLoading
-                ? "Grading…"
-                : latest
-                  ? "Re-submit"
-                  : "Submit"}
+              : progress?.step === "testing"
+                ? "Running tests…"
+                : isLoading
+                  ? "Grading…"
+                  : latest
+                    ? "Re-submit"
+                    : "Submit"}
         </button>
       </div>
+      <TestRunPanel
+        testNames={regionTests?.map(t => t.name) ?? []}
+        progress={progress}
+        verdict={runVerdict}
+        results={testResults}
+        compilerErrors={compilerErrors}
+      />
       <GradeFeedback
-        pending={isLoading}
+        variant="coach"
+        pending={isLoading || (report !== null && !feedback)}
         error={error}
-        verdict={verdict}
         feedback={feedback}
         missedConcepts={missed}
-        compilerErrors={compilerErrors}
       />
     </CardFrame>
   );

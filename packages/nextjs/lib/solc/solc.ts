@@ -5,13 +5,7 @@
 export type CompiledContract = { name: string; abi: unknown[]; bytecode: `0x${string}` };
 
 export type CompileResult =
-  | {
-      ok: true;
-      abi: unknown[];
-      bytecode: `0x${string}`;
-      contracts: Record<string, CompiledContract>;
-      warnings: string[];
-    }
+  | { ok: true; contracts: Record<string, CompiledContract>; warnings: string[] }
   | { ok: false; errors: string[] };
 
 // What the compiler is doing right now, for callers that want to show progress.
@@ -44,8 +38,6 @@ function ensureWorker(): Worker {
     if (rest.ok === true) {
       resolver({
         ok: true,
-        abi: rest.abi as unknown[],
-        bytecode: rest.bytecode as `0x${string}`,
         contracts: (rest.contracts as Record<string, CompiledContract>) ?? {},
         warnings: (rest.warnings as string[]) ?? [],
       });
@@ -75,7 +67,10 @@ export function warmCompiler(): void {
   ensureWorker();
 }
 
-export function compileSolidity(source: string, onPhase?: (phase: CompilerPhase) => void): Promise<CompileResult> {
+export function compileContracts(
+  sources: Record<string, string>,
+  onPhase?: (phase: CompilerPhase) => void,
+): Promise<CompileResult> {
   const w = ensureWorker();
   const id = String(nextId++);
   if (onPhase) {
@@ -84,6 +79,6 @@ export function compileSolidity(source: string, onPhase?: (phase: CompilerPhase)
   }
   return new Promise(resolve => {
     pending.set(id, resolve);
-    w.postMessage({ id, source });
+    w.postMessage({ id, sources });
   });
 }

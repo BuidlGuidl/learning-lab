@@ -1,11 +1,11 @@
 import { Output, streamText } from "ai";
 import { registry } from "~~/labs/registry";
 import { GRADER_MODEL, GRADER_PROVIDER_OPTIONS, openrouter } from "~~/lib/ai/ai.config";
-import type { CompileCheckResult } from "~~/lib/grader/compile-check";
 import { buildGradingPrompt, projectHistory } from "~~/lib/grader/prompt";
 import { verdictSchema } from "~~/lib/grader/schema";
 import type { LearningTranscript } from "~~/lib/grader/transcript";
 import { nextAttempt } from "~~/lib/grader/transcript";
+import type { RunReport } from "~~/lib/lab/run";
 
 // Client submits raw inputs; the server loads the lab, builds the prompt, and streams the
 // verdict. Prompt construction stays server-side so canonical answers never ship to the
@@ -16,7 +16,7 @@ type GradeBody = {
   labId: string;
   cardId: string;
   answer: string;
-  compileResult?: CompileCheckResult;
+  report?: RunReport;
   transcript: LearningTranscript;
 };
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     attempt,
     answer: body.answer,
     history,
-    compileResult: body.compileResult,
+    report: body.report,
   });
 
   const result = streamText({

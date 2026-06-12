@@ -1,4 +1,8 @@
+import { ReadGoal } from "./ReadGoal";
+import { ShipIt } from "./ShipIt";
 import { contracts } from "./contracts.gen";
+import { deploy } from "./deploy";
+import { tests } from "./tests";
 import { defineLab } from "~~/lib/lab/define";
 
 // Carlos's Ethereum 101 design (issue #20): from "what is Ethereum" to
@@ -7,6 +11,8 @@ export const lab = defineLab({
   id: "ethereum-101",
   title: "Ethereum 101",
   contracts,
+  deploy,
+  tests,
   chapters: [
     {
       id: "world-computer",
@@ -66,9 +72,7 @@ export const lab = defineLab({
           label: "CODE",
           title: "Read it: it's most of a Kickstarter",
           file: "Crowdfund.sol",
-          fromAnchor: "goal",
-          toAnchor: "function refund",
-          note: "This is real Solidity — the state the contract keeps, plus fund(), the function contributors call. Read it line by line. The faded lines are gaps you'll fill in yourself over the next cards.",
+          note: "This is real Solidity — the whole contract. Don't worry about reading all of it yet: focus on the state at the top and fund(), the function contributors call. You'll meet refund() and claim() later in the lab. The faded lines are gaps you'll fill in yourself.",
         },
         {
           type: "question",
@@ -94,12 +98,13 @@ export const lab = defineLab({
           placeholder: "uint256 public constant FEE = 2 ether;",
         },
         {
-          type: "deployment",
+          type: "experiment",
           id: "deploy-goal",
-          label: "DEPLOYMENT",
+          label: "EXPERIMENT",
           title: "Deploy it",
-          body: "One click. This compiles the contract — your GOAL line included — and deploys it to an EVM running right here in this browser tab. Then we read GOAL back from the live contract, not from the source file.",
-          readbacks: [{ contract: "Crowdfund", fn: "GOAL", label: "GOAL", format: "eth" }],
+          scenario:
+            "One click. Your contract — your GOAL line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. It's a real transaction: it costs gas and the contract lands at an address. Then read GOAL back from the live contract, not from the source file.",
+          component: ReadGoal,
         },
         {
           type: "concept",
@@ -222,15 +227,13 @@ export const lab = defineLab({
           note: "The full reveal — every learner line in place, plus claim(), the function that pays the creator when the goal is hit. A fixed goal, a public ledger, a deadline, refunds that can't be gamed. The whole deal, enforced by code.",
         },
         {
-          type: "deployment",
+          type: "experiment",
           id: "ship-final",
-          label: "DEPLOYMENT",
+          label: "EXPERIMENT",
           title: "Ship it",
-          body: "Deploy the finished contract one more time, your lines and all. The address below is where it lives on this tab's chain; on mainnet, that same address would be reachable by anyone on Earth.",
-          readbacks: [
-            { contract: "Crowdfund", fn: "GOAL", label: "GOAL", format: "eth" },
-            { contract: "Crowdfund", fn: "creator", label: "creator" },
-          ],
+          scenario:
+            "Deploy the finished contract, your lines and all. Every check you've earned in this lab runs against it on the way in. On mainnet, this exact same deploy would put your crowdfund at an address reachable by anyone on Earth.",
+          component: ShipIt,
         },
         {
           type: "concept",

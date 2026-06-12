@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
 import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
 import { assembleSources } from "~~/lib/lab/assemble";
+import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 import type { Region, Segment } from "~~/lib/lab/regions";
 import type { Card, Lab } from "~~/lib/lab/types";
 
@@ -30,6 +31,9 @@ type LabState = {
   // Sources are never stored — every view renders from these plus fills.
   files: Record<string, Segment[]>;
   regions: Record<string, Region>;
+  // the lab's boot + behavioural tests, captured at init for grade-time runs
+  deploy: DeployFn | null;
+  tests: LabTests | null;
   progress: Record<string, ProgressEntry>;
   transcript: LearningTranscript;
 };
@@ -54,12 +58,18 @@ const initialState: LabState = {
   maxReached: { chapterIndex: 0, cardIndex: 0 },
   files: {},
   regions: {},
+  deploy: null,
+  tests: null,
   progress: {},
   transcript: emptyTranscript,
 };
 
-// region id -> the learner's accepted text. This is the store's one moving
-// part for code; display and grading both render from it.
+// region id -> the learner's latest submitted text (a skip writes the
+// canonical). This is the store's one moving part for code; display,
+// grading, and the experiment world all render from it — the experiment on
+// purpose: the learner deploys what they actually wrote, passing or not,
+// and a broken fill surfaces as a real compile error, never a silent
+// canonical stand-in.
 export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
   Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
 
@@ -93,6 +103,8 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         currentLabId: lab.id,
         files: lab.files,
         regions: lab.regions,
+        deploy: lab.deploy,
+        tests: lab.tests,
         transcript: { labId: lab.id, events: [] },
       };
     }),
