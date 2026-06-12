@@ -64,8 +64,12 @@ const initialState: LabState = {
   transcript: emptyTranscript,
 };
 
-// region id -> the learner's accepted text. This is the store's one moving
-// part for code; display and grading both render from it.
+// region id -> the learner's latest submitted text (a skip writes the
+// canonical). This is the store's one moving part for code; display,
+// grading, and the experiment world all render from it — the experiment on
+// purpose: the learner deploys what they actually wrote, passing or not,
+// and a broken fill surfaces as a real compile error, never a silent
+// canonical stand-in.
 export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
   Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
 

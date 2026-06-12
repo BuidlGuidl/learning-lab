@@ -1,9 +1,10 @@
 // Label is type in caps, pinned by the union so it can't drift from
 // the dispatch. TODO: WE can probably drive from type in future
-import type { DeployFn, LabTests } from "./harness";
+import type { ComponentType } from "react";
+import type { DeployFn, LabTests, World } from "./harness";
 import type { Region, Segment } from "./regions";
 
-export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "DEPLOYMENT" | "SUMMARY";
+export type CardLabel = "CONCEPT" | "CODE" | "CODE EXERCISE" | "QUESTION" | "EXPERIMENT" | "SUMMARY";
 
 type CardBase = {
   id: string;
@@ -51,23 +52,23 @@ export type QuestionCard = CardBase & {
   hint?: string;
 };
 
-// TODO: Will be implemented in next iteration
-// Hands-on exploration. Learner pokes at the contract (calls a fn with
-// different inputs, watches state change) to build intuition. No
-// canonical, no required action to advance. Body can be probably react component
+// Hands-on exploration, the whole deploy beat included. The world only
+// exists after the learner presses Deploy — the shell requires every region
+// from cards before this one to have a fill, assembles the learner's ACTUAL
+// text (canonical backfills only future regions), and runs every check
+// earned so far against the assembly before the surface opens: grading
+// isolates each region against canonical neighbours, so this run is the one
+// place the learner's regions are tested TOGETHER. Compile errors and red
+// checks are shown with suspects named, never papered over; the surface
+// mounts on green (or on the labelled reference world, one explicit click
+// away). Never graded, never gates Next. The surface is a per-lab react
+// component receiving the booted World — full react, no widget language;
+// mid-lab placement is fine when the component scopes what it shows.
 export type ExperimentCard = CardBase & {
   type: "experiment";
   label: "EXPERIMENT";
   scenario: string;
-  body: string;
-};
-
-// Deploy beat. Learner ships the contract to a real evm and confirms it
-// runs there. The moment-of-truth before the chapter closes.
-export type DeploymentCard = CardBase & {
-  type: "deployment";
-  label: "DEPLOYMENT";
-  body: string;
+  component: ComponentType<{ world: World }>;
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was
@@ -78,14 +79,7 @@ export type SummaryCard = CardBase & {
   body: string;
 };
 
-export type Card =
-  | ConceptCard
-  | CodeCard
-  | CodeExerciseCard
-  | QuestionCard
-  | ExperimentCard
-  | DeploymentCard
-  | SummaryCard;
+export type Card = ConceptCard | CodeCard | CodeExerciseCard | QuestionCard | ExperimentCard | SummaryCard;
 
 export type Chapter = {
   id: string;
