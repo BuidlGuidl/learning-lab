@@ -64,12 +64,16 @@ export type ExperimentCard = CardBase & {
   component: ComponentType<{ world: World }>;
 };
 
-// Deploy beat. Learner ships the contract to a real evm and confirms it
-// runs there. The moment-of-truth before the chapter closes.
+// Deploy beat. The learner presses Deploy themselves — the boot pipeline is
+// the experiment's, but the world only exists after their click — and a
+// deliberately narrow per-lab component confirms the contract runs (e.g. read
+// one value back). Mid-lab placement is fine: backfilled future regions are
+// only a leak if the component shows them, so the component scopes the surface.
 export type DeploymentCard = CardBase & {
   type: "deployment";
   label: "DEPLOYMENT";
-  body: string;
+  scenario: string;
+  component: ComponentType<{ world: World }>;
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was

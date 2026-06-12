@@ -1,16 +1,17 @@
 "use client";
 
-// Boots the world an experiment card hands its author component (ADR-0018):
-// the lab assembled with the learner's passed fills (canonical backfill for
+// Boots the world a card hands its author component — the experiment on
+// mount (ADR-0018), the deployment card on the learner's click. The lab is
+// assembled with the learner's passed fills (canonical backfill for
 // everything skipped, failed, or unreached), compiled in the solc worker,
 // deployed to a fresh tevm chain. The third caller of assembleSources —
-// grading passes one fill, ci passes none, the experiment passes the passed set.
+// grading passes one fill, ci passes none, this passes the passed set.
 import { assembleSources } from "./assemble";
 import { type CompileFn, type World, bootWorld } from "./harness";
 import { compileContracts } from "~~/lib/solc/solc";
 import { passedFillsOf, useLabStore } from "~~/services/store/lab-store";
 
-export type ExperimentBoot = {
+export type WorldBoot = {
   world: World;
   // true when the passed-fills assembly failed to compile and the world is
   // running all-canonical instead — the shell shows a quiet notice
@@ -25,7 +26,7 @@ const compile: CompileFn = async sources => {
   );
 };
 
-export async function bootExperimentWorld(): Promise<ExperimentBoot> {
+export async function bootLearnerWorld(): Promise<WorldBoot> {
   const { files, regions, deploy, progress, transcript } = useLabStore.getState();
   if (!deploy) throw new Error("lab has no deploy — store not initialised?");
 

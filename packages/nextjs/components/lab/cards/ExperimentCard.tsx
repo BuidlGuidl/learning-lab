@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 import { CardFrame } from "../CardFrame";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import { type ExperimentBoot, bootExperimentWorld } from "~~/lib/lab/experiment";
+import { type WorldBoot, bootLearnerWorld } from "~~/lib/lab/learner-world";
 import type { ExperimentCard as ExperimentCardType } from "~~/lib/lab/types";
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export const ExperimentCard = ({ card }: Props) => {
-  const [boot, setBoot] = useState<ExperimentBoot | null>(null);
+  const [boot, setBoot] = useState<WorldBoot | null>(null);
   const [bootError, setBootError] = useState<string | null>(null);
   // epoch bumps on reset: re-runs the boot effect and keys the author
   // component, so world and component state restart together
@@ -26,7 +26,7 @@ export const ExperimentCard = ({ card }: Props) => {
     let cancelled = false;
     setBoot(null);
     setBootError(null);
-    bootExperimentWorld()
+    bootLearnerWorld()
       .then(b => !cancelled && setBoot(b))
       .catch(e => !cancelled && setBootError((e as Error).message));
     return () => {

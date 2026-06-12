@@ -1,4 +1,5 @@
 import { CounterExperiment } from "./CounterExperiment";
+import { FirstDeploy } from "./FirstDeploy";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -39,6 +40,15 @@ export const lab = defineLab({
           title: "Your contract",
           file: "Counter.sol",
           note: "Here's the contract with your line in it. That declaration runs once when the contract gets deployed, and the slot stays there as long as the contract exists. The faded lines below are the pieces you'll fill in over the next chapters.",
+        },
+        {
+          type: "deployment",
+          id: "first-deploy",
+          label: "DEPLOYMENT",
+          title: "Deploy it",
+          scenario:
+            "That contract is real Solidity, and this tab has a real EVM in it. Press deploy: your source gets compiled to bytecode and shipped to a fresh chain, right here, nothing leaves the browser. Then read your storage slot back from the live contract — the value you picked, answering from the chain.",
+          component: FirstDeploy,
         },
       ],
     },
