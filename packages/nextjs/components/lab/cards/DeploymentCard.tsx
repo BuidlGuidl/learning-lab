@@ -14,6 +14,7 @@ import { ArrowPathIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 import { type DeploymentBoot, bootDeploymentWorld, regionsBeforeCard } from "~~/lib/lab/learner-world";
 import type { RunProgress } from "~~/lib/lab/run";
 import type { DeploymentCard as DeploymentCardType, Lab } from "~~/lib/lab/types";
+import { fillsOf, useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
   card: DeploymentCardType;
@@ -28,6 +29,17 @@ export const DeploymentCard = ({ card, lab }: Props) => {
     () => regionIds.flatMap(region => (lab.tests[region] ?? []).map(t => t.name)),
     [lab, regionIds],
   );
+
+  // Deploying needs the learner's contract to exist first: every region this
+  // card checks must have a fill (a learner submit, or a skip's canonical).
+  // Canonical never stands in for an untouched region here — a sidebar peek
+  // landing on this card gets pointed back to the writing, not a green run
+  // of reference code presented as theirs. Future regions still backfill.
+  const labProgress = useLabStore(s => s.progress);
+  const missing = useMemo(() => {
+    const fills = fillsOf(labProgress);
+    return regionIds.filter(region => !(region in fills));
+  }, [labProgress, regionIds]);
 
   const [run, setRun] = useState<DeploymentBoot | null>(null);
   const [progress, setProgress] = useState<RunProgress | null>(null);
@@ -71,7 +83,27 @@ export const DeploymentCard = ({ card, lab }: Props) => {
         </div>
       )}
 
-      {run === null ? (
+      {missing.length > 0 ? (
+        <div className="flex flex-col gap-3">
+          <div className="rounded-box border border-base-300 bg-base-200/60 px-4 py-3">
+            <p className="text-sm text-base-content/80 m-0">
+              Nothing to deploy yet — you haven&apos;t written{" "}
+              {missing.map((region, i) => (
+                <span key={region}>
+                  {i > 0 && ", "}
+                  <code className="font-mono">{region}</code>
+                </span>
+              ))}
+              . Go back to {missing.length === 1 ? "that card" : "those cards"} first; this button ships <em>your</em>{" "}
+              code.
+            </p>
+          </div>
+          <button className="btn btn-primary gap-2 self-start" disabled>
+            <RocketLaunchIcon className="w-5 h-5" />
+            Deploy
+          </button>
+        </div>
+      ) : run === null ? (
         <button className="btn btn-primary gap-2" onClick={deploy} disabled={busy}>
           {busy ? (
             <>
