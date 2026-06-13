@@ -11,6 +11,11 @@ export type CompileResult =
 // What the compiler is doing right now, for callers that want to show progress.
 export type CompilerPhase = "downloading" | "compiling";
 
+// The worker couldn't load soljson (CDN unreachable). This is an infra error,
+// not the learner's code — callers reframe it as a retry, not a compile fail.
+export const COMPILER_UNAVAILABLE = "the Solidity compiler couldn't load — check your connection and try again";
+export const isCompilerUnavailable = (errors?: string[]) => !!errors?.some(e => e === COMPILER_UNAVAILABLE);
+
 let worker: Worker | null = null;
 let ready = false;
 let nextId = 0;
@@ -50,7 +55,7 @@ function ensureWorker(): Worker {
   // even retries hang. Fail what's in flight and let the next call respawn.
   worker.onerror = () => {
     for (const resolve of pending.values()) {
-      resolve({ ok: false, errors: ["the Solidity compiler failed to load — check your connection and resubmit"] });
+      resolve({ ok: false, errors: [COMPILER_UNAVAILABLE] });
     }
     pending.clear();
     phaseWatchers.clear();

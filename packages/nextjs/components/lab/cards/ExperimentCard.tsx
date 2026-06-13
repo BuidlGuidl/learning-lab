@@ -24,6 +24,7 @@ import {
 } from "~~/lib/lab/learner-world";
 import type { RunProgress } from "~~/lib/lab/run";
 import type { ExperimentCard as ExperimentCardType, Lab } from "~~/lib/lab/types";
+import { COMPILER_UNAVAILABLE, isCompilerUnavailable } from "~~/lib/solc/solc";
 import { fillsOf, useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
@@ -153,27 +154,41 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           )}
         </button>
       ) : !boot.ok ? (
-        // the learner's assembly didn't compile
-        <div className="flex flex-col gap-3">
-          <div className="rounded-box border border-error/40 bg-error/5 px-4 py-3">
-            <p className="text-sm font-medium text-error m-0">Your contract didn&apos;t compile.</p>
-            {boot.suspects.length > 0 && <Suspects regions={boot.suspects} verb="isn't passing yet" />}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button className="btn btn-sm gap-1.5" onClick={deploy} disabled={busy}>
+        isCompilerUnavailable(boot.errors) ? (
+          // not the learner's code — the compiler itself couldn't load. No
+          // suspects, no reference (it needs the compiler too); just retry.
+          <div className="flex flex-col gap-3">
+            <div className="rounded-box border border-warning/40 bg-warning/5 px-4 py-3">
+              <p className="text-sm font-medium text-warning m-0">{COMPILER_UNAVAILABLE}</p>
+            </div>
+            <button className="btn btn-sm gap-1.5 self-start" onClick={deploy} disabled={busy}>
               {busy && <span className="loading loading-spinner loading-xs" />}
               Deploy again
             </button>
-            <button
-              className="btn btn-sm btn-ghost text-base-content/60"
-              onClick={() => launch(bootReferenceWorld)}
-              disabled={busy}
-              title="Deploy the lab's reference solution instead of your code"
-            >
-              Run the reference solution
-            </button>
           </div>
-        </div>
+        ) : (
+          // the learner's assembly didn't compile
+          <div className="flex flex-col gap-3">
+            <div className="rounded-box border border-error/40 bg-error/5 px-4 py-3">
+              <p className="text-sm font-medium text-error m-0">Your contract didn&apos;t compile.</p>
+              {boot.suspects.length > 0 && <Suspects regions={boot.suspects} verb="isn't passing yet" />}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button className="btn btn-sm gap-1.5" onClick={deploy} disabled={busy}>
+                {busy && <span className="loading loading-spinner loading-xs" />}
+                Deploy again
+              </button>
+              <button
+                className="btn btn-sm btn-ghost text-base-content/60"
+                onClick={() => launch(bootReferenceWorld)}
+                disabled={busy}
+                title="Deploy the lab's reference solution instead of your code"
+              >
+                Run the reference solution
+              </button>
+            </div>
+          </div>
+        )
       ) : redChecks ? (
         // it deployed, but the checks caught it — fix first, surface stays shut
         <div className="flex flex-col gap-3">

@@ -1,5 +1,6 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import type { RunProgress, TestResult } from "~~/lib/lab/run";
+import { COMPILER_UNAVAILABLE, isCompilerUnavailable } from "~~/lib/solc/solc";
 
 // Always-visible checks panel. The assertions show up front as a todo list so
 // the learner knows exactly what their code is graded against, and a run just
@@ -27,6 +28,8 @@ export const TestRunPanel = ({ testNames, progress, verdict, results, compilerEr
   const live = progress !== null;
   const settled = !live && verdict !== undefined;
   const compileFailed = settled && !!compilerErrors?.length;
+  // not the learner's fault — the compiler couldn't load. Shown as a retry, not a red fail.
+  const compilerUnavailable = compileFailed && isCompilerUnavailable(compilerErrors);
 
   // store names are the base; recorded results fill in if the store is empty
   const names = testNames.length > 0 ? testNames : (results ?? []).map(r => r.name);
@@ -61,11 +64,15 @@ export const TestRunPanel = ({ testNames, progress, verdict, results, compilerEr
             {phaseText}
           </span>
         ) : settled ? (
-          <span
-            className={`badge badge-sm font-mono uppercase tracking-wider ${verdict === "pass" ? "badge-success" : "badge-error"}`}
-          >
-            {verdict}
-          </span>
+          compilerUnavailable ? (
+            <span className="badge badge-sm badge-warning font-mono uppercase tracking-wider">retry</span>
+          ) : (
+            <span
+              className={`badge badge-sm font-mono uppercase tracking-wider ${verdict === "pass" ? "badge-success" : "badge-error"}`}
+            >
+              {verdict}
+            </span>
+          )
         ) : (
           <span className="font-mono text-[10px] uppercase tracking-wider text-base-content/40">
             {names.length} {names.length === 1 ? "check" : "checks"}
@@ -74,22 +81,29 @@ export const TestRunPanel = ({ testNames, progress, verdict, results, compilerEr
       </div>
 
       <div className="px-4 py-3">
-        {compileFailed && (
-          <div className="mb-2.5">
-            <p className="my-0 flex items-baseline gap-2 font-mono text-xs">
-              <span className="flex w-3.5 justify-center text-error">✗</span>
-              <span className="text-base-content/80">compile</span>
-            </p>
-            <details className="group mt-1 pl-[1.375rem]" open>
-              <summary className="flex cursor-pointer select-none list-none items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-base-content/40 transition-colors hover:text-base-content/70">
-                <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
-                compiler output
-              </summary>
-              <pre className="mt-1.5 overflow-x-auto rounded-md border border-base-300 bg-base-300/40 p-3 font-mono text-xs leading-relaxed text-error/80">
-                {compilerErrors.join("\n\n")}
-              </pre>
-            </details>
-          </div>
+        {compilerUnavailable ? (
+          <p className="my-0 flex items-baseline gap-2 font-mono text-xs text-warning">
+            <span className="flex w-3.5 justify-center">⚠</span>
+            <span className="text-base-content/80">{COMPILER_UNAVAILABLE}</span>
+          </p>
+        ) : (
+          compileFailed && (
+            <div className="mb-2.5">
+              <p className="my-0 flex items-baseline gap-2 font-mono text-xs">
+                <span className="flex w-3.5 justify-center text-error">✗</span>
+                <span className="text-base-content/80">compile</span>
+              </p>
+              <details className="group mt-1 pl-[1.375rem]" open>
+                <summary className="flex cursor-pointer select-none list-none items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-base-content/40 transition-colors hover:text-base-content/70">
+                  <ChevronRightIcon className="h-3 w-3 transition-transform group-open:rotate-90" />
+                  compiler output
+                </summary>
+                <pre className="mt-1.5 overflow-x-auto rounded-md border border-base-300 bg-base-300/40 p-3 font-mono text-xs leading-relaxed text-error/80">
+                  {compilerErrors.join("\n\n")}
+                </pre>
+              </details>
+            </div>
+          )
         )}
 
         {names.length > 0 && (
