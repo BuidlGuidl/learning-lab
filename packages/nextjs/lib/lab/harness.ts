@@ -143,6 +143,17 @@ export function expectOk(result: CallResult, label = "call") {
   if (result.errors?.length) throw new Error(`${label} reverted: ${result.errors[0].message ?? result.errors[0].name}`);
 }
 
-export function expectRevert(result: CallResult, label = "call") {
-  if (!result.errors?.length) throw new Error(`${label} should have reverted, but succeeded`);
+// Pass `reason` (a substring of the revert message or custom-error name) to
+// assert the call reverted *for the expected reason*, not just that it
+// reverted at all — a bare revert check passes for an out-of-gas or a
+// wrong-require slip and quietly weakens the test.
+export function expectRevert(result: CallResult, label = "call", reason?: string) {
+  const err = result.errors?.[0];
+  if (!err) throw new Error(`${label} should have reverted, but succeeded`);
+  if (reason !== undefined) {
+    const text = `${err.name ?? ""} ${err.message ?? ""}`;
+    if (!text.includes(reason)) {
+      throw new Error(`${label} reverted, but not with "${reason}" — got: ${err.message ?? err.name}`);
+    }
+  }
 }

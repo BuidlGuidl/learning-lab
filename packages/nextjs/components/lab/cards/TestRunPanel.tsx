@@ -33,10 +33,10 @@ export const TestRunPanel = ({ testNames, progress, verdict, results, compilerEr
   if (names.length === 0 && !live && !settled) return null;
 
   const done = live ? (progress.step === "testing" ? progress.results : []) : settled ? (results ?? []) : [];
-  const byName = new Map(done.map(r => [r.name, r]));
-
-  const glyphFor = (name: string, i: number): RowGlyph => {
-    const r = byName.get(name);
+  // matched by position, not name: results arrive in the same order as names,
+  // so two regions sharing a test name can't collide on one row
+  const glyphFor = (i: number): RowGlyph => {
+    const r = done[i];
     if (r) return r.passed ? "pass" : "fail";
     if (live && progress.step === "testing" && i === done.length) return "running";
     return "todo";
@@ -96,10 +96,10 @@ export const TestRunPanel = ({ testNames, progress, verdict, results, compilerEr
           // checks that never ran (compile failure) stay dimmed todos
           <ul className={`space-y-1.5 ${compileFailed ? "opacity-50" : ""}`}>
             {names.map((name, i) => {
-              const glyph = glyphFor(name, i);
-              const error = byName.get(name)?.error;
+              const glyph = glyphFor(i);
+              const error = done[i]?.error;
               return (
-                <li key={name} className="flex items-baseline gap-2 font-mono text-xs">
+                <li key={`${i}-${name}`} className="flex items-baseline gap-2 font-mono text-xs">
                   <span className="flex w-3.5 justify-center">
                     <Glyph glyph={glyph} />
                   </span>

@@ -28,5 +28,14 @@ export const CardRenderer = ({ card, chapterId, lab }: Props) => {
       return <ExperimentCard card={card} lab={lab} />;
     case "summary":
       return <SummaryCard card={card} />;
+    default:
+      // statically unreachable — the catch keeps an unknown/legacy type from
+      // vanishing silently instead of surfacing as a visible gap
+      card satisfies never;
+      return (
+        <div className="alert alert-warning text-sm">
+          unknown card type <code className="font-mono">{(card as { type: string }).type}</code>
+        </div>
+      );
   }
 };

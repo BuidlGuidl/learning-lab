@@ -23,10 +23,14 @@ export type LabSpec = {
 export function defineLab(spec: LabSpec): Lab {
   const { files, regions } = extractLabContracts(spec.contracts);
 
+  const exerciseCount: Record<string, number> = {};
   for (const chapter of spec.chapters) {
     for (const card of chapter.cards) {
-      if (card.type === "code-exercise" && !regions[card.region]) {
-        throw new Error(`lab "${spec.id}": card "${card.id}" references unknown region "${card.region}"`);
+      if (card.type === "code-exercise") {
+        if (!regions[card.region]) {
+          throw new Error(`lab "${spec.id}": card "${card.id}" references unknown region "${card.region}"`);
+        }
+        exerciseCount[card.region] = (exerciseCount[card.region] ?? 0) + 1;
       }
       if (card.type === "code" && !files[card.file]) {
         throw new Error(`lab "${spec.id}": card "${card.id}" reveals unknown file "${card.file}"`);
@@ -34,6 +38,17 @@ export function defineLab(spec: LabSpec): Lab {
       if (card.type === "experiment" && card.component == null) {
         throw new Error(`lab "${spec.id}": experiment card "${card.id}" has no component`);
       }
+    }
+  }
+
+  // exactly one card per region — two cards collapse to one fill in the store,
+  // so catch it at load like every other coherence violation, not just in ci
+  for (const id of Object.keys(regions)) {
+    const count = exerciseCount[id] ?? 0;
+    if (count !== 1) {
+      throw new Error(
+        `lab "${spec.id}": region "${id}" is referenced by ${count} code-exercise cards (want exactly 1)`,
+      );
     }
   }
 

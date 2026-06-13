@@ -2,6 +2,7 @@
 // contracts/Crowdfund.sol — that's the whole attribution story.
 // These exact functions run in validate-labs (against the canonical contract)
 // and at grade time (against the learner's fill).
+import { FUNDING_WINDOW_S } from "./deploy";
 import { decodeEventLog } from "viem";
 import { type LabTests, type World, expect, expectEq, expectOk, expectRevert, test } from "~~/lib/lab/harness";
 
@@ -15,14 +16,15 @@ const decodedEvents = (logs: { topics: `0x${string}`[]; data: `0x${string}` }[] 
     }
   });
 
-// tevm's mine() sets block.timestamp to real system time (Date.now/1000).
-// evm_increaseTime / anvil_setBlockTimestampInterval are not implemented in
-// this version of tevm, so we use tevmMine({ blockCount: 2, interval }) —
-// the second block lands at now + interval, which clears the 7-day deadline.
-const EIGHT_DAYS_S = 8 * 24 * 60 * 60;
+// Move chain time past the campaign's funding deadline. increaseTime /
+// setNextBlockTimestamp throw UnsupportedMethodError in this tevm, so we mine
+// with an interval: the first mined block resets to wall-clock (~deploy time),
+// the second lands `interval` later. A full window + a day clears the deadline
+// regardless of how long the window is.
+const ONE_DAY_S = 24n * 60n * 60n;
 const passDeadline = async (client: World["client"]) => {
   const mine = client.tevmMine as unknown as (p: { blockCount: number; interval: number }) => Promise<void>;
-  await mine({ blockCount: 2, interval: EIGHT_DAYS_S });
+  await mine({ blockCount: 2, interval: Number(FUNDING_WINDOW_S + ONE_DAY_S) });
 };
 
 const ETHER = 10n ** 18n;
@@ -80,7 +82,11 @@ export const tests: LabTests = {
   refund: [
     test("refund() reverts while funding is still open", async ({ contracts, write, accounts }) => {
       expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 1n * ETHER }), "fund(1 ether)");
-      expectRevert(await write(contracts.Crowdfund, "refund", { from: accounts[1] }), "refund() before deadline");
+      expectRevert(
+        await write(contracts.Crowdfund, "refund", { from: accounts[1] }),
+        "refund() before deadline",
+        "funding still open",
+      );
     }),
     test("refund pays back and zeroes the ledger after deadline", async ({
       contracts,
@@ -120,7 +126,11 @@ export const tests: LabTests = {
       await passDeadline(client);
 
       expectOk(await write(contracts.Crowdfund, "refund", { from: accounts[1] }), "first refund()");
-      expectRevert(await write(contracts.Crowdfund, "refund", { from: accounts[1] }), "second refund()");
+      expectRevert(
+        await write(contracts.Crowdfund, "refund", { from: accounts[1] }),
+        "second refund()",
+        "nothing to refund",
+      );
     }),
     test("refund() reverts when the goal was reached", async ({ contracts, write, accounts, client }) => {
       // fund exactly 10 ether so the goal is met
@@ -129,7 +139,11 @@ export const tests: LabTests = {
 
       await passDeadline(client);
 
-      expectRevert(await write(contracts.Crowdfund, "refund", { from: accounts[1] }), "refund() when goal was reached");
+      expectRevert(
+        await write(contracts.Crowdfund, "refund", { from: accounts[1] }),
+        "refund() when goal was reached",
+        "goal was reached",
+      );
     }),
   ],
 };
