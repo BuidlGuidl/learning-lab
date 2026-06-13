@@ -10,11 +10,10 @@
 // is hit. Build it as the next iteration of this component.
 import { useCallback, useEffect, useState } from "react";
 import { formatEther } from "viem";
+import { short } from "~~/lib/lab/format";
 import type { Address, World } from "~~/lib/lab/harness";
 
 type Props = { world: World };
-
-const short = (a: Address) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
 const FUND_AMOUNT = 2n * 10n ** 18n;
 

@@ -7,11 +7,10 @@
 // iteration; this surface keeps to what the learner built.
 import { useState } from "react";
 import { formatEther } from "viem";
+import { short } from "~~/lib/lab/format";
 import type { Address, World } from "~~/lib/lab/harness";
 
 type Props = { world: World };
-
-const short = (a: Address) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
 type Answers = { goal: bigint; creator: Address; deadline: bigint; balance: bigint };
 

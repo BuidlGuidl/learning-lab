@@ -6,11 +6,10 @@
 // real gas, a real address, all inside this tab's EVM.
 import { useState } from "react";
 import { formatEther } from "viem";
+import { short } from "~~/lib/lab/format";
 import type { Address, World } from "~~/lib/lab/harness";
 
 type Props = { world: World };
-
-const short = (a: Address) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
 export const ReadGoal = ({ world }: Props) => {
   const crowdfund = world.contracts.Crowdfund;

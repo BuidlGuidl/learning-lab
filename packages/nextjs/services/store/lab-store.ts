@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
 import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
-import { assembleSources } from "~~/lib/lab/assemble";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 import type { Region, Segment } from "~~/lib/lab/regions";
 import type { Card, Lab } from "~~/lib/lab/types";
@@ -72,21 +71,6 @@ const initialState: LabState = {
 // canonical stand-in.
 export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
   Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
-
-// The source handed to the compiler when grading one exercise. The learner only
-// ever writes one region; placing it and the rest of the file is the platform's
-// job. So we isolate the region under test — learner input there, every other
-// region canonical-backfilled — and compile that file. A broken or not-yet-written
-// neighbour can't fail this answer, which is what stops a correct re-submit from
-// tripping over a wrong later card (and lets a region that depends on a later one,
-// like the setter emitting an event, still grade). Same bargain SpeedRunEthereum
-// makes — every checkpoint ships a reference solution — here that reference also
-// backfills the file.
-export const gradingSourceOf = (s: LabState, region: string, learnerInput: string) => {
-  const file = s.regions[region]?.file;
-  if (!file) return "";
-  return assembleSources(s.files, s.regions, { [region]: learnerInput })[file];
-};
 
 // Gradable cards gate forward nav; read-only types advance freely.
 const isGradable = (card: Card) => card.type === "code-exercise" || card.type === "question";
