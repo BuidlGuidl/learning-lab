@@ -58,16 +58,22 @@ async function compile(
   };
 }
 
-// Compile the learner's actual assembly; on failure, name the suspects.
-async function compileLearnerAssembly(): Promise<
-  { ok: true; compiled: Compiled } | { ok: false; errors: string[]; suspects: string[] }
-> {
+// Compile the learner's actual assembly; on failure, name the suspects. Scoped
+// to the regions this card has earned: a future region the learner peeked at
+// and broke can't brick this deploy, and can't surface as a suspect — the
+// card never names a region the learner hasn't reached.
+async function compileLearnerAssembly(
+  regionIds: string[],
+): Promise<{ ok: true; compiled: Compiled } | { ok: false; errors: string[]; suspects: string[] }> {
   const { files, regions, progress, transcript } = useLabStore.getState();
-  const result = await compile(assembleSources(files, regions, fillsOf(progress)));
+  const scoped = regionIds.includes.bind(regionIds);
+  const fills = Object.fromEntries(Object.entries(fillsOf(progress)).filter(([region]) => scoped(region)));
+  const result = await compile(assembleSources(files, regions, fills));
   if (result.ok) return result;
 
   const suspects = Object.entries(progress)
     .filter(([cardId, p]) => {
+      if (!scoped(p.region)) return false;
       const event = latestEvent(transcript, cardId);
       // a skip wrote the canonical into progress — it can't be the culprit
       if (event?.outcome === "skipped") return false;
@@ -86,15 +92,16 @@ export async function bootExperimentWorld(
   const { deploy, tests } = useLabStore.getState();
   if (!deploy || !tests) throw new Error("lab has no deploy/tests — store not initialised?");
 
-  const result = await compileLearnerAssembly();
+  const result = await compileLearnerAssembly(regionIds);
   if (!result.ok) return result;
 
   const suite = regionIds.flatMap(region => (tests[region] ?? []).map(t => ({ region, t })));
   const checks: ExperimentCheck[] = [];
   onProgress?.([], suite.length);
+  // one fresh chain per test plus one for the surface — N+1 createMemoryClient +
+  // deploy() per Deploy click. The cost buys isolation (no test sees another's
+  // state); pool/snapshot-revert if a large suite ever janks the tab.
   for (const { region, t } of suite) {
-    // fresh chain per test, same bargain as the grade-runner — no test
-    // depends on another's state
     try {
       const world = await bootWorld(result.compiled, deploy);
       await t.run(world);

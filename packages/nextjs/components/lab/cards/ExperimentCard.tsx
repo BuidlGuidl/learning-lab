@@ -15,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CardFrame } from "../CardFrame";
 import { TestRunPanel } from "./TestRunPanel";
 import { ArrowPathIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
+import { short } from "~~/lib/lab/format";
 import {
   type ExperimentBoot,
   bootExperimentWorld,
@@ -29,8 +30,6 @@ type Props = {
   card: ExperimentCardType;
   lab: Lab;
 };
-
-const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
 const Suspects = ({ regions, verb }: { regions: string[]; verb: string }) => (
   <p className="text-sm text-base-content/70 mt-1 mb-0">
@@ -202,6 +201,9 @@ export const ExperimentCard = ({ card, lab }: Props) => {
         <div className="flex flex-col gap-3">
           {open.reference ? (
             <p className="text-xs text-base-content/50 m-0">running the reference solution, not your code</p>
+          ) : open.checks.length === 0 ? (
+            // nothing earned to verify yet — open the surface without claiming a check that never ran
+            <></>
           ) : (
             <details className="rounded-box border border-base-300 bg-base-200/60">
               <summary className="cursor-pointer select-none px-4 py-2.5 font-mono text-xs text-base-content/70">
