@@ -145,5 +145,9 @@ export const tests: LabTests = {
         "goal was reached",
       );
     }),
+    // TODO(#20): nothing here fails a vulnerable refund (send before zeroing,
+    // the TheDAO bug) yet. That needs a re-entering attacker contract, and the
+    // lab can't hide a test-only fixture from the code peek — add it with the
+    // fixture model in the lab-design pass.
   ],
 };
