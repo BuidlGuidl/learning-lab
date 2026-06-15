@@ -32,27 +32,27 @@ export function useGrade(card: Card, chapterId: string) {
   const recordEvent = (object?: { verdict?: "pass" | "fail"; feedback?: string; missedConcepts?: string[] }) => {
     const ctx = pending.current;
     if (!ctx) return false;
-    const report = ctx.report;
-    if (!object?.verdict && !report) return false;
 
-    const fallbackFeedback =
-      report?.stage === "compile"
-        ? "Your code didn't compile yet. Work through the errors and try again."
-        : report?.verdict === "fail"
-          ? "Your code compiles but doesn't do what the card asked yet. Check the failed tests and try again."
-          : "Your code passed this exercise's tests.";
+    // Code-exercise coach: the verdict event was already written by the test run
+    // (recordRunVerdict). The coach is non-gating, so it touches the transcript not at all —
+    // its words are transient. Surface the feedback; a missing one means the stream failed.
+    if (ctx.report) {
+      if (!object?.feedback) return false;
+      setSettledFeedback(object.feedback);
+      pending.current = null;
+      return true;
+    }
 
+    // Question card: no compiler to lean on, so the model owns the verdict here. Record it.
+    if (!object?.verdict) return false;
     const event: GradingEvent = {
       cardId: card.id,
       chapterId,
       attempt: ctx.attempt,
-      // report owns the verdict when present; the model only ever decides questions
-      outcome: report ? report.verdict : object!.verdict!,
+      outcome: object.verdict,
       answer: ctx.answer,
-      feedback: object?.feedback ?? fallbackFeedback,
-      missedConcepts: object?.missedConcepts?.filter((c): c is string => Boolean(c)) ?? [],
-      compilerErrors: report?.stage === "compile" ? report.errors : undefined,
-      testResults: report?.stage === "tests" ? report.results : undefined,
+      feedback: object.feedback,
+      missedConcepts: object.missedConcepts?.filter((c): c is string => Boolean(c)) ?? [],
       happenedAt: Date.now(),
     };
     appendGradingEvent(event);
@@ -69,10 +69,11 @@ export function useGrade(card: Card, chapterId: string) {
       // fails), but flag it so the learner gets a retry prompt instead of a cleared spinner.
       if (!recordEvent(object ?? undefined) && pending.current) setStreamFailed(true);
     },
-    // route-level failure (non-ok response). With a report the verdict still stands and
-    // must be recorded — the gate can't be hostage to the coach being reachable.
+    // route-level failure (non-ok response). Nothing to record either way: a code-exercise's
+    // verdict was already written by the test run, and a question doesn't record on error (an
+    // error isn't a fail). useObject's `error` drives the retry / coach-unreachable message.
     onError: () => {
-      recordEvent();
+      pending.current = null;
     },
   });
 
@@ -86,7 +87,7 @@ export function useGrade(card: Card, chapterId: string) {
 
   // useObject.error covers route-level failures (non-ok response); streamFailed covers the
   // silent mid-stream truncation. Both land on GradeFeedback's "submit again" alert.
-  const gradeError = error ?? (streamFailed ? new Error("grader returned no verdict") : undefined);
+  const gradeError = error ?? (streamFailed ? new Error("ai request returned nothing") : undefined);
 
   return { object, grade, isLoading, error: gradeError, settledFeedback, stop };
 }
