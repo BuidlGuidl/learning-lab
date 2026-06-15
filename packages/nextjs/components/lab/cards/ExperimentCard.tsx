@@ -300,8 +300,17 @@ export const ExperimentCard = ({ card, lab }: Props) => {
       ) : null}
 
       {/* opt-in activity log: the deploy receipt, then every read/write the
-          surface above makes against the live contract. Sits under the UI. */}
-      {card.console && <Console progress={progress} boot={boot} crash={crash} interactions={log} />}
+          surface above makes against the live contract. Sits under the UI;
+          a deploy card opens it, a surface card folds it. */}
+      {card.console && (
+        <Console
+          progress={progress}
+          boot={boot}
+          crash={crash}
+          interactions={log}
+          defaultOpen={card.console === "open"}
+        />
+      )}
     </CardFrame>
   );
 };

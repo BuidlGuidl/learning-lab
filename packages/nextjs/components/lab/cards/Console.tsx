@@ -4,6 +4,7 @@
 // surface can mount one under its UI). Collapsible, like the tests panel.
 // Values are raw — the console is generic, it can't know units, so a uint goal
 // reads as its wei, exactly like cast or hardhat would dump it.
+import { useState } from "react";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { short } from "~~/lib/lab/format";
 import type { ExperimentBoot } from "~~/lib/lab/learner-world";
@@ -32,6 +33,7 @@ type Props = {
   boot: ExperimentBoot | null; // the settled deploy result; null before the first deploy
   crash: string | null; // an unexpected failure (worker death, deploy script throw)
   interactions: ConsoleEntry[]; // reads/writes since the current deploy
+  defaultOpen?: boolean; // start expanded (deploy beat) vs folded (a surface's log)
 };
 
 const toneClass: Record<Tone, string> = {
@@ -119,16 +121,23 @@ const status = (progress: RunProgress | null, boot: ExperimentBoot | null, crash
   return { label: "idle", cls: "text-base-content/40" };
 };
 
-export const Console = ({ progress, boot, crash, interactions }: Props) => {
+export const Console = ({ progress, boot, crash, interactions, defaultOpen = false }: Props) => {
   const lines = [...deployLines(progress, boot, crash), ...interactionLines(interactions)];
   const consoleStatus = status(progress, boot, crash);
   const live = progress !== null;
 
-  // Folded by default — a titled box you click to open, not an always-on wall
-  // of log. When open, the body scrolls inside its own cap so a long activity
-  // log never grows the page.
+  // A titled box you click to open. Controlled by state, not a raw `open`
+  // attribute: interactions append and re-render the console, which would
+  // otherwise snap `open` back to defaultOpen and fight the learner's toggle.
+  // When open, the body scrolls inside its own cap so a long log never grows
+  // the page.
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <details className="group mt-4 overflow-hidden rounded-box border border-base-300 bg-base-300/30">
+    <details
+      open={isOpen}
+      onToggle={event => setIsOpen(event.currentTarget.open)}
+      className="group mt-4 overflow-hidden rounded-box border border-base-300 bg-base-300/30"
+    >
       <summary className="flex cursor-pointer select-none list-none items-center justify-between border-b border-transparent bg-base-300/40 px-4 py-2 transition-colors group-open:border-base-300">
         <span className="flex items-center gap-1.5">
           <ChevronRightIcon className="h-3 w-3 text-base-content/40 transition-transform group-open:rotate-90" />

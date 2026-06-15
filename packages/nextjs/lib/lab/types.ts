@@ -78,9 +78,10 @@ export type ExperimentCard = CardBase & {
   scenario: string;
   component?: ComponentType<{ world: World }>;
   // mount the activity console under the card — the deploy receipt plus every
-  // read/write the surface makes. A deploy card always sets it; a surface card
-  // opts in when the author wants the log under their UI.
-  console?: boolean;
+  // read/write the surface makes. Omit for no console; "open" starts it
+  // expanded (a deploy card, where the log is the point); "closed" folds it
+  // by default (a surface card, where the experience leads).
+  console?: "open" | "closed";
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was

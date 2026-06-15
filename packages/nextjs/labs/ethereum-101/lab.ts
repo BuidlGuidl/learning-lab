@@ -104,7 +104,7 @@ export const lab = defineLab({
           title: "Deploy it",
           scenario:
             "One click. Your contract — your GOAL line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
-          console: true,
+          console: "open",
         },
         {
           type: "concept",
@@ -243,7 +243,7 @@ export const lab = defineLab({
           scenario:
             "This is what your contract looks like from the outside — an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the fund() you wrote — watch the console log each one.",
           component: UseIt,
-          console: true,
+          console: "closed",
         },
         {
           type: "summary",
