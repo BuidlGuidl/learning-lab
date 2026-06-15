@@ -1,4 +1,3 @@
-import { ShipIt } from "./ShipIt";
 import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
@@ -233,7 +232,7 @@ export const lab = defineLab({
           title: "Ship it",
           scenario:
             "Deploy the finished contract, your lines and all. Every check you've earned in this lab runs against it on the way in. On mainnet, this exact same deploy would put your crowdfund at an address reachable by anyone on Earth.",
-          component: ShipIt,
+          console: "open",
         },
         {
           type: "experiment",
