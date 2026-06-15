@@ -308,6 +308,7 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           boot={boot}
           crash={crash}
           interactions={log}
+          epoch={epoch}
           defaultOpen={card.console === "open"}
         />
       )}

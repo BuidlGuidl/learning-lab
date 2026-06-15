@@ -4,7 +4,7 @@
 // surface can mount one under its UI). Collapsible, like the tests panel.
 // Values are raw — the console is generic, it can't know units, so a uint goal
 // reads as its wei, exactly like cast or hardhat would dump it.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { short } from "~~/lib/lab/format";
 import type { ExperimentBoot } from "~~/lib/lab/learner-world";
@@ -34,7 +34,10 @@ type Props = {
   crash: string | null; // an unexpected failure (worker death, deploy script throw)
   interactions: ConsoleEntry[]; // reads/writes since the current deploy
   defaultOpen?: boolean; // start expanded (deploy beat) vs folded (a surface's log)
+  epoch?: number; // bumps on each successful deploy — replays the receipt reveal
 };
+
+const REVEAL_MS = 120; // per-line delay for the typewriter reveal
 
 const toneClass: Record<Tone, string> = {
   muted: "text-base-content/45",
@@ -121,7 +124,7 @@ const status = (progress: RunProgress | null, boot: ExperimentBoot | null, crash
   return { label: "idle", cls: "text-base-content/40" };
 };
 
-export const Console = ({ progress, boot, crash, interactions, defaultOpen = false }: Props) => {
+export const Console = ({ progress, boot, crash, interactions, defaultOpen = false, epoch = 0 }: Props) => {
   const lines = [...deployLines(progress, boot, crash), ...interactionLines(interactions)];
   const consoleStatus = status(progress, boot, crash);
   const live = progress !== null;
@@ -132,6 +135,32 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
   // When open, the body scrolls inside its own cap so a long log never grows
   // the page.
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  // Typewriter reveal: lines appear one at a time, a block cursor on the line
+  // being written. The receipt replays on each deploy (epoch resets the count
+  // to 0), then each new interaction line types itself in as it lands. Live
+  // phases show at once — they change too fast to reveal cleanly.
+  const [shown, setShown] = useState(0);
+  useEffect(() => setShown(0), [epoch]);
+  useEffect(() => {
+    if (live) {
+      setShown(lines.length);
+      return;
+    }
+    if (shown >= lines.length) return;
+    const timer = setTimeout(() => setShown(count => count + 1), REVEAL_MS);
+    return () => clearTimeout(timer);
+  }, [live, shown, lines.length]);
+  const visible = Math.min(shown, lines.length);
+  const typing = !live && visible < lines.length;
+
+  // keep the write-head in view as lines reveal/append inside the capped body
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (body) body.scrollTop = body.scrollHeight;
+  }, [visible]);
+
   return (
     <details
       open={isOpen}
@@ -151,13 +180,14 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
         </span>
       </summary>
 
-      <div className="max-h-80 overflow-y-auto px-4 py-3 font-mono text-xs leading-relaxed">
-        {lines.map((line, index) => (
+      <div ref={bodyRef} className="max-h-80 overflow-y-auto px-4 py-3 font-mono text-xs leading-relaxed">
+        {lines.slice(0, visible).map((line, index) => (
           <div
             key={index}
             className={`whitespace-pre-wrap break-all ${line.indent ? "pl-4" : ""} ${toneClass[line.tone]}`}
           >
             {line.text}
+            {typing && index === visible - 1 && <span className="ml-0.5 animate-pulse">▋</span>}
           </div>
         ))}
       </div>
