@@ -13,9 +13,8 @@
 // react key, so author-side state clears for free.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CardFrame } from "../CardFrame";
-import { TestRunPanel } from "./TestRunPanel";
+import { DeployConsole } from "./DeployConsole";
 import { ArrowPathIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
-import { short } from "~~/lib/lab/format";
 import {
   type ExperimentBoot,
   bootExperimentWorld,
@@ -47,10 +46,6 @@ const Suspects = ({ regions, verb }: { regions: string[]; verb: string }) => (
 
 export const ExperimentCard = ({ card, lab }: Props) => {
   const regionIds = useMemo(() => regionsBeforeCard(lab, card.id), [lab, card.id]);
-  const testNames = useMemo(
-    () => regionIds.flatMap(region => (lab.tests[region] ?? []).map(t => t.name)),
-    [lab, regionIds],
-  );
 
   // Deploying needs the learner's contract to exist first: every region this
   // card checks must have a fill (a learner submit, or a skip's canonical).
@@ -116,6 +111,11 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           <span className="font-mono whitespace-pre-wrap break-all">{crash}</span>
         </div>
       )}
+
+      {/* the deploy terminal stays on screen through every state — idle, the
+          live run, a failed compile, and the green receipt — so the contract
+          landing on the chain is something the learner watches, not a popped UI */}
+      <DeployConsole progress={progress} boot={boot} crash={crash} epoch={epoch} />
 
       {missing.length > 0 ? (
         // fill-gate: nothing of the learner's to ship yet
@@ -212,38 +212,15 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           </div>
         </div>
       ) : open ? (
-        // green door (or the labelled reference world): the surface gets the stage
+        // green door (or the labelled reference world): the surface gets the
+        // stage. the checks that gated it here stay silent — they ran to keep
+        // a broken contract off the surface, not to be read.
         <div className="flex flex-col gap-3">
-          {open.reference ? (
+          {open.reference && (
             <p className="text-xs text-base-content/50 m-0">running the reference solution, not your code</p>
-          ) : open.checks.length === 0 ? (
-            // nothing earned to verify yet — open the surface without claiming a check that never ran
-            <></>
-          ) : (
-            <details className="rounded-box border border-base-300 bg-base-200/60">
-              <summary className="cursor-pointer select-none px-4 py-2.5 font-mono text-xs text-base-content/70">
-                <span className="text-success">✓</span> {open.checks.length}/{open.checks.length}{" "}
-                {open.checks.length === 1 ? "check" : "checks"}
-                {Object.entries(open.world.contracts).map(([name, handle]) => (
-                  <span key={name} className="text-base-content/50">
-                    {" "}
-                    · {name} live at{" "}
-                    <span title={handle.address} className="text-base-content/70">
-                      {short(handle.address)}
-                    </span>
-                    {handle.deployment?.gasUsed !== undefined && (
-                      <> · {handle.deployment.gasUsed.toLocaleString()} gas</>
-                    )}
-                  </span>
-                ))}
-              </summary>
-              <div className="border-t border-base-300 px-4 pb-3">
-                <TestRunPanel testNames={testNames} progress={null} verdict="pass" results={open.checks} />
-              </div>
-            </details>
           )}
 
-          <Surface key={epoch} world={open.world} />
+          {Surface && <Surface key={epoch} world={open.world} />}
 
           <button
             className="btn btn-ghost btn-sm gap-1.5 self-start text-base-content/60"
@@ -256,19 +233,6 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           </button>
         </div>
       ) : null}
-
-      {/* the checks live at the bottom while they're the story — upfront todos,
-          live phases, compile errors, red rows. on green they collapse into the
-          summary row above instead. */}
-      {!open && (
-        <TestRunPanel
-          testNames={testNames}
-          progress={progress}
-          verdict={boot === null ? undefined : boot.ok ? (boot.passed ? "pass" : "fail") : "fail"}
-          results={boot?.ok ? boot.checks : undefined}
-          compilerErrors={boot && !boot.ok ? boot.errors : undefined}
-        />
-      )}
     </CardFrame>
   );
 };

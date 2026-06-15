@@ -1,10 +1,10 @@
 "use client";
 
 // The capstone surface: the finished crowdfund, live. Every check earned in
-// the lab already ran green at the door; here the learner inspects the real
-// thing — the receipt, then the contract's own answers. The interactive
-// playground (fund from accounts, watch the bar, pull a refund) is a later
-// iteration; this surface keeps to what the learner built.
+// the lab already ran green at the door; the deploy receipt is the console's
+// story above, so here the learner just inspects the contract's own answers.
+// The interactive playground (fund from accounts, watch the bar, pull a
+// refund) is a later iteration; this surface keeps to what the learner built.
 import { useState } from "react";
 import { formatEther } from "viem";
 import { short } from "~~/lib/lab/format";
@@ -40,29 +40,6 @@ export const ShipIt = ({ world }: Props) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-box bg-base-200 px-5 py-4 flex flex-wrap gap-x-8 gap-y-2">
-        <div>
-          <div className="text-xs font-mono uppercase tracking-wider text-base-content/50 mb-1">deployed at</div>
-          <div className="font-mono text-sm" title={crowdfund.address}>
-            {short(crowdfund.address)}
-          </div>
-        </div>
-        {crowdfund.deployment?.gasUsed !== undefined && (
-          <div>
-            <div className="text-xs font-mono uppercase tracking-wider text-base-content/50 mb-1">gas used</div>
-            <div className="font-mono text-sm">{crowdfund.deployment.gasUsed.toLocaleString()}</div>
-          </div>
-        )}
-        {crowdfund.deployment?.txHash && (
-          <div>
-            <div className="text-xs font-mono uppercase tracking-wider text-base-content/50 mb-1">transaction</div>
-            <div className="font-mono text-sm" title={crowdfund.deployment.txHash}>
-              {short(crowdfund.deployment.txHash as Address)}
-            </div>
-          </div>
-        )}
-      </div>
-
       {answers && (
         <div className="rounded-box bg-base-200 px-5 py-4 grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
           <div>

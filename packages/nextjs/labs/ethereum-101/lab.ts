@@ -1,4 +1,3 @@
-import { ReadGoal } from "./ReadGoal";
 import { ShipIt } from "./ShipIt";
 import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
@@ -104,8 +103,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Deploy it",
           scenario:
-            "One click. Your contract — your GOAL line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. It's a real transaction: it costs gas and the contract lands at an address. Then read GOAL back from the live contract, not from the source file.",
-          component: ReadGoal,
+            "One click. Your contract — your GOAL line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
         },
         {
           type: "concept",
