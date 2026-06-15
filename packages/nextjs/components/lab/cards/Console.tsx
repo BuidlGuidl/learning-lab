@@ -4,6 +4,7 @@
 // surface can mount one under its UI). Collapsible, like the tests panel.
 // Values are raw — the console is generic, it can't know units, so a uint goal
 // reads as its wei, exactly like cast or hardhat would dump it.
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { short } from "~~/lib/lab/format";
 import type { ExperimentBoot } from "~~/lib/lab/learner-world";
 import type { RunProgress } from "~~/lib/lab/run";
@@ -123,10 +124,16 @@ export const Console = ({ progress, boot, crash, interactions }: Props) => {
   const consoleStatus = status(progress, boot, crash);
   const live = progress !== null;
 
+  // Folded by default — a titled box you click to open, not an always-on wall
+  // of log. When open, the body scrolls inside its own cap so a long activity
+  // log never grows the page.
   return (
-    <details open className="mt-4 overflow-hidden rounded-box border border-base-300 bg-base-300/30">
-      <summary className="flex cursor-pointer select-none list-none items-center justify-between border-b border-base-300 bg-base-300/40 px-4 py-2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-base-content/50">console</span>
+    <details className="group mt-4 overflow-hidden rounded-box border border-base-300 bg-base-300/30">
+      <summary className="flex cursor-pointer select-none list-none items-center justify-between border-b border-transparent bg-base-300/40 px-4 py-2 transition-colors group-open:border-base-300">
+        <span className="flex items-center gap-1.5">
+          <ChevronRightIcon className="h-3 w-3 text-base-content/40 transition-transform group-open:rotate-90" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-base-content/50">console</span>
+        </span>
         <span
           className={`flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider ${consoleStatus.cls}`}
         >
@@ -135,7 +142,7 @@ export const Console = ({ progress, boot, crash, interactions }: Props) => {
         </span>
       </summary>
 
-      <div className="px-4 py-3 font-mono text-xs leading-relaxed">
+      <div className="max-h-80 overflow-y-auto px-4 py-3 font-mono text-xs leading-relaxed">
         {lines.map((line, index) => (
           <div
             key={index}
