@@ -77,6 +77,10 @@ export type ExperimentCard = CardBase & {
   label: "EXPERIMENT";
   scenario: string;
   component?: ComponentType<{ world: World }>;
+  // mount the activity console under the card — the deploy receipt plus every
+  // read/write the surface makes. A deploy card always sets it; a surface card
+  // opts in when the author wants the log under their UI.
+  console?: boolean;
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was
