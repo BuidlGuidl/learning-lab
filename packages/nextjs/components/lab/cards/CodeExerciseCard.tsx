@@ -67,6 +67,10 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const testResults = report?.stage === "tests" ? report.results : report ? undefined : latest?.testResults;
   const coachFeedback = object?.feedback ?? settledFeedback;
   const coachMissed = object?.missedConcepts?.filter((c): c is string => Boolean(c));
+  // Why the coach is locked, if it is. Shown as a tooltip so the button is always visible
+  // (the learner discovers the option) but spells out the two gates: spend the free hints,
+  // then run the test — the coach only ever speaks to a real verdict.
+  const coachTip = moreHints ? "Check the hints first" : !report ? "Run the test first" : undefined;
 
   return (
     <CardFrame card={card}>
@@ -104,31 +108,36 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
         compilerErrors={compilerErrors}
       />
 
-      {/* Tiered help, revealed in order: the free, offline hint ladder first; the AI coach only
-          once every rung is spent — or immediately when a card ships no hints. Amber = free,
-          teal = the paid escalation. They swap in place so there's never a dead-looking button.
-          The coach stays disabled until a run exists (`report`): it always speaks to a real test
-          verdict, never grades un-tested code — the model is downstream of the tests, full stop. */}
+      {/* Two-tier help, both visible from the start so the coach is discoverable. Amber = the
+          free, offline hint ladder; teal = the paid AI escalation. The coach is disabled — with
+          a tooltip naming the gate — until every hint is spent AND a test run exists, so the
+          model never speaks without a real verdict behind it. The hint button retires to a
+          dimmed "no more hints" once the ladder's done. */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {moreHints ? (
+        {hints.length > 0 && (
           <button
-            className="btn btn-ghost btn-sm gap-1.5 font-mono text-xs normal-case text-warning hover:bg-warning/10"
+            className="btn btn-ghost btn-sm gap-1.5 font-mono text-xs normal-case text-warning hover:bg-warning/10 disabled:text-base-content/30"
             onClick={() => setRevealedHints(n => Math.min(n + 1, hints.length))}
-            disabled={running}
+            disabled={!moreHints || running}
           >
             <LightBulbIcon className="h-3.5 w-3.5" />
-            {revealedHints === 0 ? "need a hint?" : `next hint · ${revealedHints + 1}/${hints.length}`}
+            {revealedHints === 0
+              ? "need a hint?"
+              : moreHints
+                ? `next hint · ${revealedHints + 1}/${hints.length}`
+                : "no more hints"}
           </button>
-        ) : (
+        )}
+        <div className={coachTip ? "tooltip" : undefined} data-tip={coachTip}>
           <button
             className="btn btn-sm btn-accent gap-1.5 font-mono text-xs normal-case"
             onClick={() => grade(input, report ?? undefined)}
-            disabled={running || isLoading || !report || input.trim().length === 0}
+            disabled={running || isLoading || moreHints || !report}
           >
             <SparklesIcon className="h-3.5 w-3.5" />
             {isLoading ? "asking…" : "ask the coach"}
           </button>
-        )}
+        </div>
       </div>
 
       {revealedHints > 0 && (
