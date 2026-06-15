@@ -14,10 +14,6 @@ import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
-      {/* Fixed to the viewport so a page can run its own internal scroll (the
-          lab's sidebar + reading column each scroll in place) instead of the
-          whole window growing. main is the scroll boundary for ordinary pages;
-          the lab fills it exactly and scrolls its panes within. */}
       <div className="flex h-dvh flex-col">
         <Header />
         <main className="relative flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</main>
