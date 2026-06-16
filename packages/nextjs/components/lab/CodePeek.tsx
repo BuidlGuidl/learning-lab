@@ -21,8 +21,8 @@ const isEditable = (el: EventTarget | null) => {
 // Always-available view of the running code, rendered the same way reveal
 // cards render: segments + the learner's fills, with unwritten regions as
 // faded placeholders. Read-only, ephemeral — open-state stays local.
-// The sheet wears the github-dark-dimmed palette (#22272e et al) so its chrome
-// merges into the shiki code, which is always dark regardless of app theme.
+// The sheet follows the lab's Lavender Paper code surface: light editor chrome,
+// violet active state, and the same rendered source/fill behavior.
 export const CodePeek = ({ lab }: { lab: Lab }) => {
   const labFiles = useLabStore(s => s.files);
   const regions = useLabStore(s => s.regions);
@@ -89,7 +89,7 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed z-30 flex items-center gap-2 px-3 py-2 text-sm transition-shadow border rounded-full shadow-sm cursor-pointer bottom-6 right-6 bg-base-100 border-base-300 text-base-content/70 hover:text-base-content hover:shadow-md"
+          className="lab-paper-code-trigger fixed z-30 flex items-center gap-2 text-sm transition-shadow border shadow-sm cursor-pointer bottom-6 right-6"
           aria-label="Peek at the current code"
         >
           <CodeBracketIcon className="w-4 h-4" />
@@ -112,22 +112,20 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
         aria-modal="true"
         aria-label={`current state of ${shownFile}`}
         aria-hidden={!open}
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col bg-[#22272e] text-[#adbac7] shadow-2xl transition-transform duration-200 ease-out lg:w-1/2 ${
+        className={`lab-paper-codepeek fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col transition-transform duration-200 ease-out lg:w-1/2 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Tab row — one tab per file in sources, trees.software-style pills. */}
-        <div className="flex items-center gap-1 px-2 pt-2 overflow-x-auto bg-[#1c2128] border-b border-[#373e47]">
+        <div className="lab-paper-codepeek__tabs flex items-center gap-1 overflow-x-auto">
           {files.map(file => {
             const active = file === shownFile;
             return (
               <button
                 key={file}
                 onClick={() => setPickedFile(file)}
-                className={`flex items-center gap-1.5 rounded-t-md border border-b-0 px-3 py-1.5 font-mono text-xs whitespace-nowrap cursor-pointer transition-colors ${
-                  active
-                    ? "bg-[#22272e] border-[#373e47] text-[#adbac7]"
-                    : "border-transparent text-[#768390] hover:bg-[#2d333b]"
+                className={`lab-paper-codepeek__tab flex items-center gap-1.5 font-mono text-xs whitespace-nowrap cursor-pointer transition-colors ${
+                  active ? "is-active" : ""
                 }`}
               >
                 <CodeBracketIcon className="w-3.5 h-3.5" />
@@ -138,7 +136,7 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
 
           <button
             onClick={close}
-            className="flex items-center gap-1.5 ml-auto mb-1 rounded-md px-2 py-1 font-mono text-xs cursor-pointer transition-colors text-[#768390] hover:text-[#adbac7]"
+            className="lab-paper-codepeek__close flex items-center gap-1.5 ml-auto font-mono text-xs cursor-pointer transition-colors"
             aria-label="Close code peek (esc)"
           >
             <XMarkIcon className="w-4 h-4" />
@@ -148,8 +146,16 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
         </div>
 
         {/* The running source, as a line-numbered editor pane filling the sheet. */}
-        <div className="flex-1 overflow-auto">
-          {shownFile && <CodeBlock code={shown.code} softLines={shown.softLines} lang="solidity" showLineNumbers />}
+        <div className="lab-paper-codepeek__body flex-1 overflow-auto">
+          {shownFile && (
+            <CodeBlock
+              code={shown.code}
+              softLines={shown.softLines}
+              lang="solidity"
+              theme="github-light"
+              showLineNumbers
+            />
+          )}
         </div>
       </aside>
     </>

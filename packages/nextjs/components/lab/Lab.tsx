@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { CodePeek } from "./CodePeek";
 import { Sidebar } from "./Sidebar";
-import { Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon, Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import { isCardCleared } from "~~/lib/grader/transcript";
 import type { Lab as LabType } from "~~/lib/lab/types";
 import { warmCompiler } from "~~/lib/solc/solc";
@@ -44,6 +44,10 @@ export const Lab = ({ lab }: Props) => {
 
   const totalChapters = lab.chapters.length;
   const totalCards = chapter.cards.length;
+  const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
+  const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
+  const currentLabCard = completedBeforeCurrent + cardIndex + 1;
+  const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
   const atFirstCard = chapterIndex === 0 && cardIndex === 0;
   const atLastCard = chapterIndex === totalChapters - 1 && cardIndex === totalCards - 1;
 
@@ -60,7 +64,7 @@ export const Lab = ({ lab }: Props) => {
     // flex-1 + min-h-0 size the drawer to its slot via flexbox (a percentage h-full
     // can't resolve against main's flex-grow height). The drawer-side override below
     // then caps daisyUI's 100vh rail so it fills the slot instead of overflowing.
-    <div className={`flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open" : ""}`}>
+    <div className={`lab-paper flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open" : ""}`}>
       <input
         id={DRAWER_ID}
         type="checkbox"
@@ -69,47 +73,50 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
-      <div className="flex flex-col gap-6 px-4 py-6 overflow-y-auto drawer-content">
-        {/* Always rendered (no layout jump on toggle); plain + unpadded so it lines
-            up with the title's left edge rather than sitting indented like a btn. */}
-        <div className="w-full max-w-3xl mx-auto shrink-0">
+      <div className="lab-paper__content flex flex-col gap-6 overflow-y-auto drawer-content">
+        <div className="lab-paper__topbar w-full max-w-3xl mx-auto shrink-0">
           <button
             onClick={() => setSidebarOpen(o => !o)}
-            className="flex items-center gap-1.5 text-sm font-medium cursor-pointer text-base-content/60 hover:text-base-content transition-colors"
+            className="lab-paper__chapter-toggle flex items-center gap-2 text-sm font-medium cursor-pointer transition-colors"
             aria-label={sidebarOpen ? "Hide chapters" : "Show chapters"}
           >
             {sidebarOpen ? <ChevronDoubleLeftIcon className="w-4 h-4" /> : <Bars3Icon className="w-4 h-4" />}
-            Chapters
+            <span className="lab-paper__breadcrumb">
+              <span>{lab.title}</span>
+              <span aria-hidden>›</span>
+              <span>{chapter.title}</span>
+              <span aria-hidden>›</span>
+              <strong>{card.title}</strong>
+            </span>
           </button>
         </div>
 
-        {/* my-auto centers the reading column in the leftover height, yet still
-            scrolls cleanly once the content grows taller than the viewport. */}
-        <div className="flex flex-col w-full max-w-3xl gap-6 mx-auto my-auto">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold">{lab.title}</h1>
-              <span className="text-sm text-base-content/60">
-                chapter {chapterIndex + 1} of {totalChapters} · card {cardIndex + 1} of {totalCards}
-              </span>
-            </div>
-            <p className="text-sm text-base-content/60">{chapter.title}</p>
-          </div>
-
+        <div className="lab-paper__main flex flex-col w-full max-w-3xl gap-6 mx-auto">
           {/* key on card.id remounts the card subtree on every navigation. Without it React
               reuses the same component instance across two same-type cards (e.g. jumping
               exercise→exercise), so the prior card's textarea + grade state leaks in. */}
           <CardRenderer key={card.id} card={card} chapterId={chapter.id} lab={lab} />
 
-          <div className="flex items-center justify-between">
-            <button className="btn btn-ghost" onClick={() => prev(lab)} disabled={atFirstCard}>
-              Prev
+          <div className="lab-paper__controls flex items-center justify-between">
+            <button className="btn btn-ghost lab-paper__nav-button" onClick={() => prev(lab)} disabled={atFirstCard}>
+              <ArrowLeftIcon className="w-4 h-4" />
+              back
             </button>
+            <div
+              className="lab-paper__progress-track"
+              role="progressbar"
+              aria-label="Lab progress"
+              aria-valuemin={1}
+              aria-valuemax={totalLabCards}
+              aria-valuenow={currentLabCard}
+            >
+              <span className="lab-paper__progress-fill" style={{ width: `${progressPercent}%` }} />
+            </div>
             <div className="flex items-center gap-3">
               {gated && (
                 // TODO: (remove-skip) dev-only escape hatch; remove before learner-facing.
                 <button
-                  className="btn btn-ghost btn-sm text-base-content/50"
+                  className="btn btn-ghost btn-sm"
                   onClick={() => {
                     skipCard(card, chapter.id);
                     next(lab);
@@ -118,12 +125,17 @@ export const Lab = ({ lab }: Props) => {
                   skip for now
                 </button>
               )}
-              <button className="btn btn-primary" onClick={() => next(lab)} disabled={atLastCard || gated}>
-                Next
+              <button
+                className="btn btn-primary lab-paper__nav-button"
+                onClick={() => next(lab)}
+                disabled={atLastCard || gated}
+              >
+                next
+                <ArrowRightIcon className="w-4 h-4" />
               </button>
             </div>
           </div>
-          {gated && <p className="text-sm text-base-content/50">Pass this card to unlock the next one.</p>}
+          {gated && <p className="lab-paper__gate-note text-sm">Pass this card to unlock the next one.</p>}
         </div>
       </div>
 

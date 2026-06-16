@@ -5,14 +5,28 @@ type Props = {
   children: React.ReactNode;
 };
 
+const DROP_CAP_MIN_CHARS = 140;
+
+const getDropCapText = (card: Card) => {
+  switch (card.type) {
+    case "concept":
+    case "summary":
+      return card.body;
+    case "code":
+      return card.note ?? "";
+    default:
+      return "";
+  }
+};
+
 export const CardFrame = ({ card, children }: Props) => {
+  const showDropCap = getDropCapText(card).trim().length >= DROP_CAP_MIN_CHARS;
+
   return (
-    <div className="card bg-base-100 shadow-lg w-full max-w-3xl">
-      <div className="card-body">
-        <span className="badge badge-primary font-mono uppercase text-xs tracking-wider mb-2 self-start">
-          {card.label}
-        </span>
-        <h2 className="card-title text-2xl mb-4">{card.title}</h2>
+    <div className={`lab-card w-full max-w-3xl ${showDropCap ? "lab-card--dropcap" : ""}`}>
+      <div className="lab-card__body">
+        <span className="lab-card__eyebrow font-mono uppercase text-xs self-start">{card.label}</span>
+        <h2 className="lab-card__title">{card.title}</h2>
         {children}
       </div>
     </div>

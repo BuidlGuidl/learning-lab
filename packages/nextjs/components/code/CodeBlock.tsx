@@ -6,6 +6,7 @@ import { getHighlighter } from "./highlighter";
 type Props = {
   code: string;
   lang?: string;
+  theme?: "github-dark-dimmed" | "github-light";
   // 1-based lines rendered quieter than real code (placeholder comments for
   // not-yet-written exercises)
   softLines?: number[];
@@ -15,7 +16,13 @@ type Props = {
   showLineNumbers?: boolean;
 };
 
-export const CodeBlock = ({ code, lang = "solidity", softLines, showLineNumbers = false }: Props) => {
+export const CodeBlock = ({
+  code,
+  lang = "solidity",
+  theme = "github-light",
+  softLines,
+  showLineNumbers = false,
+}: Props) => {
   const [html, setHtml] = useState<string>("");
 
   useEffect(() => {
@@ -26,7 +33,7 @@ export const CodeBlock = ({ code, lang = "solidity", softLines, showLineNumbers 
       setHtml(
         h.codeToHtml(code, {
           lang,
-          theme: "github-dark-dimmed",
+          theme,
           transformers: [
             {
               line(node, line) {
@@ -40,7 +47,7 @@ export const CodeBlock = ({ code, lang = "solidity", softLines, showLineNumbers 
     return () => {
       cancelled = true;
     };
-  }, [code, lang, softLines]);
+  }, [code, lang, theme, softLines]);
 
   // Numbered mode fills its pane like an editor (no rounded corners); the
   // default mode stays a rounded inline block for lesson cards.
