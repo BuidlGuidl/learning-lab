@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getHighlighter } from "./highlighter";
+import { useTheme } from "next-themes";
 
 type Props = {
   code: string;
@@ -16,13 +17,9 @@ type Props = {
   showLineNumbers?: boolean;
 };
 
-export const CodeBlock = ({
-  code,
-  lang = "solidity",
-  theme = "github-light",
-  softLines,
-  showLineNumbers = false,
-}: Props) => {
+export const CodeBlock = ({ code, lang = "solidity", theme, softLines, showLineNumbers = false }: Props) => {
+  const { resolvedTheme } = useTheme();
+  const activeTheme = theme ?? (resolvedTheme === "dark" ? "github-dark-dimmed" : "github-light");
   const [html, setHtml] = useState<string>("");
 
   useEffect(() => {
@@ -33,7 +30,7 @@ export const CodeBlock = ({
       setHtml(
         h.codeToHtml(code, {
           lang,
-          theme,
+          theme: activeTheme,
           transformers: [
             {
               line(node, line) {
@@ -47,7 +44,7 @@ export const CodeBlock = ({
     return () => {
       cancelled = true;
     };
-  }, [code, lang, theme, softLines]);
+  }, [code, lang, activeTheme, softLines]);
 
   // Numbered mode fills its pane like an editor (no rounded corners); the
   // default mode stays a rounded inline block for lesson cards.
