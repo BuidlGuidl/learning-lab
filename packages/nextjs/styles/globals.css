@@ -123,6 +123,8 @@
 
 .lab-paper,
 .lab-paper-header {
+  --lab-header-height: 52px;
+  --lab-build-panel-width: clamp(420px, 32vw, 520px);
   --lab-paper-canvas: #ece0ff;
   --lab-paper-surface: #ffffff;
   --lab-paper-code: #faf7ff;
@@ -171,6 +173,23 @@
   padding: 32px clamp(16px, 4vw, 64px);
   background:
     radial-gradient(80% 54% at 50% -18%, rgb(147 87 244 / 0.18), rgb(147 87 244 / 0) 70%), var(--lab-paper-canvas);
+}
+
+.lab-paper__content--with-code {
+  padding-right: calc(var(--lab-build-panel-width) + 32px);
+}
+
+.lab-paper__workspace {
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+
+.lab-paper__workspace--with-code {
+  width: min(100%, 760px);
+}
+
+.lab-paper__lesson-column {
+  min-width: 0;
 }
 
 .lab-paper__topbar,
@@ -535,67 +554,186 @@
   color: var(--lab-paper-gutter);
 }
 
-.lab-paper-code-trigger {
-  padding: 10px 14px;
-  border-color: var(--lab-paper-border);
-  border-radius: 4px;
+.lab-build-panel {
+  position: fixed !important;
+  top: var(--lab-header-height);
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  display: flex;
+  width: var(--lab-build-panel-width);
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--lab-paper-border);
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
   background: var(--lab-paper-surface);
-  color: var(--lab-paper-muted);
-}
-
-.lab-paper-code-trigger:hover {
-  border-color: var(--lab-paper-violet);
-  color: var(--lab-paper-violet);
+  color: var(--lab-paper-text);
   box-shadow: var(--lab-paper-shadow);
 }
 
-.lab-paper-codepeek {
-  border-left: 1px solid var(--lab-paper-border);
-  background: var(--lab-paper-surface);
-  color: var(--lab-paper-text);
-  box-shadow: -30px 0 70px -42px rgb(40 20 80 / 0.35);
-}
-
-.lab-paper-codepeek__tabs {
-  padding: 12px 14px 0;
+.lab-build-panel__head {
+  flex: none;
   border-bottom: 1px solid var(--lab-paper-border);
-  background: var(--lab-paper-surface);
+  padding: 16px 18px 14px;
 }
 
-.lab-paper-codepeek__tab {
-  padding: 10px 12px;
-  border: 1px solid transparent;
-  border-bottom: 2px solid transparent;
-  border-radius: 8px 8px 0 0;
-  color: var(--lab-paper-faint);
+.lab-build-panel__file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.lab-paper-codepeek__tab:hover {
-  background: var(--lab-paper-code);
+.lab-build-panel__file {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
   color: var(--lab-paper-text);
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.lab-paper-codepeek__tab.is-active {
-  border-color: var(--lab-paper-border);
-  border-bottom-color: var(--lab-paper-violet);
-  background: var(--lab-paper-code);
+.lab-build-panel__file svg {
+  flex: none;
   color: var(--lab-paper-violet);
 }
 
-.lab-paper-codepeek__close {
-  margin-bottom: 7px;
-  padding: 7px 8px;
-  border-radius: 4px;
+.lab-build-panel__count {
+  flex: none;
+  color: var(--lab-paper-faint);
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+
+.lab-build-panel__count strong {
+  color: var(--lab-paper-violet);
+  font-weight: 700;
+}
+
+.lab-build-panel__focus-toggle,
+.lab-build-panel__hint {
+  margin: 12px 0 0;
   color: var(--lab-paper-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-.lab-paper-codepeek__close:hover {
-  background: var(--lab-paper-code);
+.lab-build-panel__focus-toggle {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+  padding: 0;
+  text-align: left;
+}
+
+.lab-build-panel__focus-toggle:hover {
   color: var(--lab-paper-violet);
 }
 
-.lab-paper-codepeek__body {
+.lab-build-panel__focus-toggle strong {
+  overflow: hidden;
+  color: var(--lab-paper-violet);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-build-panel__focus-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 9999px;
+  background: var(--lab-paper-violet);
+}
+
+.lab-build-panel__focus-toggle.is-off .lab-build-panel__focus-dot {
+  background: var(--lab-paper-faint);
+}
+
+.lab-build-code {
+  flex: 1;
+  overflow: auto;
   background: var(--lab-paper-code);
+  cursor: default;
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.62;
+}
+
+.lab-build-code--focus {
+  cursor: pointer;
+}
+
+.lab-build-code pre {
+  min-width: max-content;
+  margin: 0;
+  padding: 14px 0;
+}
+
+.lab-build-line {
+  display: flex;
+  min-height: 20px;
+  padding: 0 18px 0 0;
+  border-left: 3px solid transparent;
+  color: var(--lab-paper-text);
+  white-space: pre;
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.lab-build-code--focus .lab-build-line:not(.lab-build-line--focus) {
+  opacity: 0.34;
+}
+
+.lab-build-line--focus {
+  border-left-color: var(--lab-paper-violet);
+  background: var(--lab-paper-tint);
+}
+
+.lab-build-line--focus-first {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.lab-build-line--focus-last {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.lab-build-line__number {
+  width: 42px;
+  flex: none;
+  padding-right: 14px;
+  color: var(--lab-paper-gutter);
+  text-align: right;
+  user-select: none;
+}
+
+.lab-build-line__stub {
+  display: inline-flex;
+  align-items: center;
+  border: 1px dashed var(--lab-paper-gutter);
+  border-radius: 6px;
+  background: var(--lab-paper-surface);
+  color: var(--lab-paper-violet);
+  font-style: italic;
+  padding: 0 7px;
 }
 
 [data-theme="dark"] .lab-paper,
@@ -759,6 +897,25 @@
 
   .lab-card__title {
     font-size: 30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .lab-paper__content--with-code {
+    padding-right: 16px;
+  }
+
+  .lab-paper__workspace--with-code {
+    width: min(100%, 760px);
+  }
+
+  .lab-build-panel {
+    position: static !important;
+    width: auto;
+    height: auto;
+    min-height: 420px;
+    max-height: 560px;
+    border-radius: 16px;
   }
 }
 

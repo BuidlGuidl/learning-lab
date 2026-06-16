@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
-import { CodePeek } from "./CodePeek";
+import { CodeBuildPanel } from "./CodeBuildPanel";
 import { Sidebar } from "./Sidebar";
 import { ArrowLeftIcon, ArrowRightIcon, Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import { isCardCleared } from "~~/lib/grader/transcript";
@@ -45,6 +45,7 @@ export const Lab = ({ lab }: Props) => {
   const totalChapters = lab.chapters.length;
   const totalCards = chapter.cards.length;
   const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
+  const hasContracts = Object.keys(lab.files).length > 0;
   const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
   const currentLabCard = completedBeforeCurrent + cardIndex + 1;
   const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
@@ -73,78 +74,88 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
-      <div className="lab-paper__content flex flex-col gap-6 overflow-y-auto drawer-content">
-        <div className="lab-paper__topbar w-full max-w-3xl mx-auto shrink-0">
-          <button
-            onClick={() => setSidebarOpen(o => !o)}
-            className="lab-paper__chapter-toggle flex items-center gap-2 text-sm font-medium cursor-pointer transition-colors"
-            aria-label={sidebarOpen ? "Hide chapters" : "Show chapters"}
-          >
-            {sidebarOpen ? <ChevronDoubleLeftIcon className="w-4 h-4" /> : <Bars3Icon className="w-4 h-4" />}
-            <span className="lab-paper__breadcrumb">
-              <span>{lab.title}</span>
-              <span aria-hidden>›</span>
-              <span>{chapter.title}</span>
-              <span aria-hidden>›</span>
-              <strong>{card.title}</strong>
-            </span>
-          </button>
-        </div>
-
-        <div className="lab-paper__main flex flex-col w-full max-w-3xl gap-6 mx-auto">
-          {/* key on card.id remounts the card subtree on every navigation. Without it React
-              reuses the same component instance across two same-type cards (e.g. jumping
-              exercise→exercise), so the prior card's textarea + grade state leaks in. */}
-          <CardRenderer key={card.id} card={card} chapterId={chapter.id} lab={lab} />
-
-          <div className="lab-paper__controls flex items-center justify-between">
-            <button className="btn btn-ghost lab-paper__nav-button" onClick={() => prev(lab)} disabled={atFirstCard}>
-              <ArrowLeftIcon className="w-4 h-4" />
-              back
-            </button>
-            <div
-              className="lab-paper__progress-track"
-              role="progressbar"
-              aria-label="Lab progress"
-              aria-valuemin={1}
-              aria-valuemax={totalLabCards}
-              aria-valuenow={currentLabCard}
-            >
-              <span className="lab-paper__progress-fill" style={{ width: `${progressPercent}%` }} />
-            </div>
-            <div className="flex items-center gap-3">
-              {gated && (
-                // TODO: (remove-skip) dev-only escape hatch; remove before learner-facing.
-                <button
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => {
-                    skipCard(card, chapter.id);
-                    next(lab);
-                  }}
-                >
-                  skip for now
-                </button>
-              )}
+      <div
+        className={`lab-paper__content ${hasContracts ? "lab-paper__content--with-code" : ""} overflow-y-auto drawer-content`}
+      >
+        <div className={`lab-paper__workspace ${hasContracts ? "lab-paper__workspace--with-code" : ""}`}>
+          <section className="lab-paper__lesson-column">
+            <div className="lab-paper__topbar w-full max-w-3xl mx-auto shrink-0">
               <button
-                className="btn btn-primary lab-paper__nav-button"
-                onClick={() => next(lab)}
-                disabled={atLastCard || gated}
+                onClick={() => setSidebarOpen(o => !o)}
+                className="lab-paper__chapter-toggle flex items-center gap-2 text-sm font-medium cursor-pointer transition-colors"
+                aria-label={sidebarOpen ? "Hide chapters" : "Show chapters"}
               >
-                next
-                <ArrowRightIcon className="w-4 h-4" />
+                {sidebarOpen ? <ChevronDoubleLeftIcon className="w-4 h-4" /> : <Bars3Icon className="w-4 h-4" />}
+                <span className="lab-paper__breadcrumb">
+                  <span>{lab.title}</span>
+                  <span aria-hidden>›</span>
+                  <span>{chapter.title}</span>
+                  <span aria-hidden>›</span>
+                  <strong>{card.title}</strong>
+                </span>
               </button>
             </div>
-          </div>
-          {gated && <p className="lab-paper__gate-note text-sm">Pass this card to unlock the next one.</p>}
+
+            <div className="lab-paper__main flex flex-col w-full max-w-3xl gap-6 mx-auto">
+              {/* key on card.id remounts the card subtree on every navigation. Without it React
+              reuses the same component instance across two same-type cards (e.g. jumping
+              exercise→exercise), so the prior card's textarea + grade state leaks in. */}
+              <CardRenderer key={card.id} card={card} chapterId={chapter.id} lab={lab} />
+
+              <div className="lab-paper__controls flex items-center justify-between">
+                <button
+                  className="btn btn-ghost lab-paper__nav-button"
+                  onClick={() => prev(lab)}
+                  disabled={atFirstCard}
+                >
+                  <ArrowLeftIcon className="w-4 h-4" />
+                  back
+                </button>
+                <div
+                  className="lab-paper__progress-track"
+                  role="progressbar"
+                  aria-label="Lab progress"
+                  aria-valuemin={1}
+                  aria-valuemax={totalLabCards}
+                  aria-valuenow={currentLabCard}
+                >
+                  <span className="lab-paper__progress-fill" style={{ width: `${progressPercent}%` }} />
+                </div>
+                <div className="flex items-center gap-3">
+                  {gated && (
+                    // TODO: (remove-skip) dev-only escape hatch; remove before learner-facing.
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        skipCard(card, chapter.id);
+                        next(lab);
+                      }}
+                    >
+                      skip for now
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-primary lab-paper__nav-button"
+                    onClick={() => next(lab)}
+                    disabled={atLastCard || gated}
+                  >
+                    next
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              {gated && <p className="lab-paper__gate-note text-sm">Pass this card to unlock the next one.</p>}
+            </div>
+          </section>
         </div>
       </div>
+
+      {hasContracts && <CodeBuildPanel lab={lab} />}
 
       <div className="z-20 drawer-side lg:h-full!">
         <label htmlFor={DRAWER_ID} aria-label="close chapters" className="drawer-overlay"></label>
         <Sidebar lab={lab} onNavigate={handleNavigate} onClose={() => setSidebarOpen(false)} />
       </div>
-
-      <CodePeek lab={lab} />
     </div>
   );
 };
