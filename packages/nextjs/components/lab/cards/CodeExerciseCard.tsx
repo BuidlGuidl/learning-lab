@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CardFrame } from "../CardFrame";
+import { Markdown } from "../Markdown";
 import { GradeFeedback } from "./GradeFeedback";
 import { useGrade } from "./useGrade";
 import { compileCheck } from "~~/lib/grader/compile-check";
@@ -53,7 +54,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed mb-4 whitespace-pre-wrap">{card.prompt}</p>
+      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.prompt}</Markdown>
       <textarea
         className="textarea textarea-bordered font-mono text-sm w-full"
         rows={3}
