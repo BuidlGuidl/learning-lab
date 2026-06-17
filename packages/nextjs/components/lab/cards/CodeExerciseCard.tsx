@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CardFrame } from "../CardFrame";
 import { GradeFeedback } from "./GradeFeedback";
 import { useGrade } from "./useGrade";
+import { CodeInput } from "~~/components/code/CodeInput";
 import { compileCheck } from "~~/lib/grader/compile-check";
 import type { CompileCheckResult } from "~~/lib/grader/compile-check";
 import { latestEvent } from "~~/lib/grader/transcript";
@@ -54,14 +55,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   return (
     <CardFrame card={card}>
       <p className="text-base-content/90 leading-relaxed mb-4 whitespace-pre-wrap">{card.prompt}</p>
-      <textarea
-        className="textarea textarea-bordered font-mono text-sm w-full"
-        rows={3}
-        placeholder={card.placeholder}
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        disabled={isLoading}
-      />
+      <CodeInput value={input} onChange={setInput} placeholder={card.placeholder} readOnly={isLoading} />
       <div className="card-actions justify-end mt-3">
         <button className="btn btn-primary" onClick={handleSubmit} disabled={isLoading || input.trim().length === 0}>
           {isLoading ? "Grading…" : latest ? "Re-submit" : "Submit"}

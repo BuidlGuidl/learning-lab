@@ -146,3 +146,14 @@
   color: #545d68;
   user-select: none;
 }
+
+/*
+  CodeInput (slot-answer editor): the overlay textarea hides its own text behind
+  the Shiki layer via a transparent text-fill, which also hides the placeholder —
+  restore it explicitly in the muted comment color.
+*/
+.code-slot-textarea::placeholder {
+  -webkit-text-fill-color: #768390;
+  color: #768390;
+  opacity: 1;
+}
