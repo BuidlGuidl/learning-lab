@@ -1,5 +1,3 @@
-import { ReadGoal } from "./ReadGoal";
-import { ShipIt } from "./ShipIt";
 import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
@@ -109,8 +107,8 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Deploy it",
           scenario:
-            "One click. Your contract — your GOAL line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. It's a real transaction: it costs gas and the contract lands at an address. Then read GOAL back from the live contract, not from the source file.",
-          component: ReadGoal,
+            "One click. Your contract — your GOAL line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
+          console: "open",
         },
         {
           type: "concept",
@@ -239,7 +237,7 @@ export const lab = defineLab({
           title: "Ship it",
           scenario:
             "Deploy the finished contract, your lines and all. Every check you've earned in this lab runs against it on the way in. On mainnet, this exact same deploy would put your crowdfund at an address reachable by anyone on Earth.",
-          component: ShipIt,
+          console: "open",
         },
         {
           type: "experiment",
@@ -247,8 +245,9 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Use it like an app",
           scenario:
-            "This is what your contract looks like from the outside — an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the fund() you wrote.",
+            "This is what your contract looks like from the outside — an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the fund() you wrote — watch the console log each one.",
           component: UseIt,
+          console: "closed",
         },
         {
           type: "summary",

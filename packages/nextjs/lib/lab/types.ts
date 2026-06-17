@@ -74,12 +74,18 @@ export type QuestionCard = CardBase & {
 // mounts on green (or on the labelled reference world, one explicit click
 // away). Never graded, never gates Next. The surface is a per-lab react
 // component receiving the booted World — full react, no widget language;
-// mid-lab placement is fine when the component scopes what it shows.
+// mid-lab placement is fine when the component scopes what it shows. Omit it
+// for a pure deploy beat: the console is the whole story.
 export type ExperimentCard = CardBase & {
   type: "experiment";
   label: "EXPERIMENT";
   scenario: string;
-  component: ComponentType<{ world: World }>;
+  component?: ComponentType<{ world: World }>;
+  // mount the activity console under the card — the deploy receipt plus every
+  // read/write the surface makes. Omit for no console; "open" starts it
+  // expanded (a deploy card, where the log is the point); "closed" folds it
+  // by default (a surface card, where the experience leads).
+  console?: "open" | "closed";
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was
