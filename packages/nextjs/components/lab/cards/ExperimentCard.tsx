@@ -1,21 +1,26 @@
 "use client";
 
-// The experiment shell owns the whole deploy beat. The world only exists
-// after the learner presses Deploy — and the button stays off until every
-// region this card checks has a fill, so a sidebar peek gets pointed back
-// to the writing, never a green run of reference code presented as theirs.
-// The click compiles the learner's actual fills, runs every check earned so
-// far against the whole assembly, and only a green door mounts the author's
-// surface; on green the checklist collapses to one summary row so the
-// surface gets the stage. Compile errors and red checks render with the
-// suspect regions named — "run the reference solution" is the explicit,
-// labelled escape. Redeploy reboots the world and swaps the component's
-// react key, so author-side state clears for free.
+// The experiment shell owns the deploy beat. The world only exists after the
+// learner presses Deploy — and the button stays off until every region this
+// card checks has a fill, so a sidebar peek gets pointed back to the writing,
+// never a green run of reference code presented as theirs. The click compiles
+// the learner's actual fills and runs every check earned so far against the
+// whole assembly — silently: those checks are the gate that keeps a broken
+// contract off the surface, not a readout. A green door mounts the author's
+// surface; a compile error or a red check shows the actual errors with the
+// suspect cards named, "run the reference solution" the labelled escape.
+// Redeploy reboots the world and swaps the surface's react key, so author-side
+// state clears for free. An opt-in <Console> (card.console) logs the deploy and
+// every read/write the surface makes against the live contract.
+//
+// TODO(state-sharing): a deploy card and a following experiment card should
+// share one world — deploy once, experiment on the same live contract. Today
+// every experiment card boots its own world on its own Deploy click.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CardFrame } from "../CardFrame";
-import { TestRunPanel } from "./TestRunPanel";
+import { Console, type ConsoleEntry } from "./Console";
 import { ArrowPathIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
-import { short } from "~~/lib/lab/format";
+import type { ContractHandle, World } from "~~/lib/lab/harness";
 import {
   type ExperimentBoot,
   bootExperimentWorld,
@@ -47,10 +52,6 @@ const Suspects = ({ regions, verb }: { regions: string[]; verb: string }) => (
 
 export const ExperimentCard = ({ card, lab }: Props) => {
   const regionIds = useMemo(() => regionsBeforeCard(lab, card.id), [lab, card.id]);
-  const testNames = useMemo(
-    () => regionIds.flatMap(region => (lab.tests[region] ?? []).map(t => t.name)),
-    [lab, regionIds],
-  );
 
   // Deploying needs the learner's contract to exist first: every region this
   // card checks must have a fill (a learner submit, or a skip's canonical).
@@ -69,6 +70,9 @@ export const ExperimentCard = ({ card, lab }: Props) => {
   const [crash, setCrash] = useState<string | null>(null);
   // keys the author component across deploys so its state restarts with the world
   const [epoch, setEpoch] = useState(0);
+  // the console's activity log — deploy receipt aside, the reads/writes the
+  // surface makes. Cleared on every deploy so a fresh world starts a fresh log.
+  const [log, setLog] = useState<ConsoleEntry[]>([]);
   const busy = progress !== null;
   const mounted = useRef(true);
 
@@ -82,6 +86,7 @@ export const ExperimentCard = ({ card, lab }: Props) => {
   const launch = async (booter: () => Promise<ExperimentBoot>) => {
     setCrash(null);
     setBoot(null);
+    setLog([]);
     setProgress({ step: "compiling" });
     try {
       const result = await booter();
@@ -106,6 +111,53 @@ export const ExperimentCard = ({ card, lab }: Props) => {
   const redChecks = boot?.ok && !boot.reference && !boot.passed ? boot : null;
   const open = boot?.ok && (boot.reference || boot.passed) ? boot : null;
   const failedRegions = redChecks ? [...new Set(redChecks.checks.filter(c => !c.passed).map(c => c.region))] : [];
+
+  // The world the surface gets, with read/write wrapped to log every call into
+  // the console. Recreated per deploy (open changes identity), so each world
+  // starts a clean log; the harness stays pure for the ci validator, which has
+  // no console — the instrumentation lives here, on the UI side.
+  const loggedWorld = useMemo<World | null>(() => {
+    if (!open) return null;
+    const bootedWorld = open.world;
+    const contractNameOf = (contract: ContractHandle) =>
+      Object.keys(bootedWorld.contracts).find(name => bootedWorld.contracts[name].address === contract.address) ??
+      "contract";
+    const appendEntry = (entry: ConsoleEntry) => setLog(previousEntries => [...previousEntries, entry]);
+    return {
+      ...bootedWorld,
+      read: async (contract, functionName, args) => {
+        try {
+          const result = await bootedWorld.read(contract, functionName, args);
+          appendEntry({ kind: "read", contract: contractNameOf(contract), fn: functionName, args: args ?? [], result });
+          return result;
+        } catch (error) {
+          appendEntry({
+            kind: "read",
+            contract: contractNameOf(contract),
+            fn: functionName,
+            args: args ?? [],
+            error: (error as Error).message,
+          });
+          throw error;
+        }
+      },
+      write: async (contract, functionName, options) => {
+        const result = await bootedWorld.write(contract, functionName, options);
+        const firstError = result.errors?.[0];
+        appendEntry({
+          kind: "write",
+          contract: contractNameOf(contract),
+          fn: functionName,
+          args: options?.args ?? [],
+          from: options?.from,
+          value: options?.value,
+          ok: !firstError,
+          error: firstError ? (firstError.message ?? firstError.name) : undefined,
+        });
+        return result;
+      },
+    };
+  }, [open]);
 
   return (
     <CardFrame card={card}>
@@ -172,6 +224,9 @@ export const ExperimentCard = ({ card, lab }: Props) => {
             <div className="rounded-box border border-error/40 bg-error/5 px-4 py-3">
               <p className="text-sm font-medium text-error m-0">Your contract didn&apos;t compile.</p>
               {boot.suspects.length > 0 && <Suspects regions={boot.suspects} verb="isn't passing yet" />}
+              <pre className="mt-2 mb-0 overflow-x-auto rounded-md border border-base-300 bg-base-300/40 p-3 font-mono text-xs leading-relaxed text-error/80 whitespace-pre-wrap break-all">
+                {boot.errors.join("\n\n")}
+              </pre>
             </div>
             <div className="flex flex-wrap gap-2">
               <button className="btn btn-sm gap-1.5" onClick={deploy} disabled={busy}>
@@ -195,6 +250,16 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           <div className="rounded-box border border-error/40 bg-error/5 px-4 py-3">
             <p className="text-sm font-medium text-error m-0">It deployed, but some checks aren&apos;t passing.</p>
             <Suspects regions={failedRegions} verb="isn't behaving right" />
+            <ul className="mt-2 mb-0 list-none space-y-1 pl-0">
+              {redChecks.checks
+                .filter(check => !check.passed)
+                .map((failedCheck, index) => (
+                  <li key={index} className="font-mono text-xs text-error/80 whitespace-pre-wrap break-all">
+                    ✗ {failedCheck.name}
+                    {failedCheck.error ? ` — ${failedCheck.error}` : ""}
+                  </li>
+                ))}
+            </ul>
           </div>
           <div className="flex flex-wrap gap-2">
             <button className="btn btn-sm gap-1.5" onClick={deploy} disabled={busy}>
@@ -212,38 +277,15 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           </div>
         </div>
       ) : open ? (
-        // green door (or the labelled reference world): the surface gets the stage
+        // green door (or the labelled reference world): the surface gets the
+        // stage. the checks that gated it here stay silent — they ran to keep
+        // a broken contract off the surface, not to be read.
         <div className="flex flex-col gap-3">
-          {open.reference ? (
+          {open.reference && (
             <p className="text-xs text-base-content/50 m-0">running the reference solution, not your code</p>
-          ) : open.checks.length === 0 ? (
-            // nothing earned to verify yet — open the surface without claiming a check that never ran
-            <></>
-          ) : (
-            <details className="rounded-box border border-base-300 bg-base-200/60">
-              <summary className="cursor-pointer select-none px-4 py-2.5 font-mono text-xs text-base-content/70">
-                <span className="text-success">✓</span> {open.checks.length}/{open.checks.length}{" "}
-                {open.checks.length === 1 ? "check" : "checks"}
-                {Object.entries(open.world.contracts).map(([name, handle]) => (
-                  <span key={name} className="text-base-content/50">
-                    {" "}
-                    · {name} live at{" "}
-                    <span title={handle.address} className="text-base-content/70">
-                      {short(handle.address)}
-                    </span>
-                    {handle.deployment?.gasUsed !== undefined && (
-                      <> · {handle.deployment.gasUsed.toLocaleString()} gas</>
-                    )}
-                  </span>
-                ))}
-              </summary>
-              <div className="border-t border-base-300 px-4 pb-3">
-                <TestRunPanel testNames={testNames} progress={null} verdict="pass" results={open.checks} />
-              </div>
-            </details>
           )}
 
-          <Surface key={epoch} world={open.world} />
+          {Surface && loggedWorld && <Surface key={epoch} world={loggedWorld} />}
 
           <button
             className="btn btn-ghost btn-sm gap-1.5 self-start text-base-content/60"
@@ -257,16 +299,17 @@ export const ExperimentCard = ({ card, lab }: Props) => {
         </div>
       ) : null}
 
-      {/* the checks live at the bottom while they're the story — upfront todos,
-          live phases, compile errors, red rows. on green they collapse into the
-          summary row above instead. */}
-      {!open && (
-        <TestRunPanel
-          testNames={testNames}
+      {/* opt-in activity log: the deploy receipt, then every read/write the
+          surface above makes against the live contract. Sits under the UI;
+          a deploy card opens it, a surface card folds it. */}
+      {card.console && (
+        <Console
           progress={progress}
-          verdict={boot === null ? undefined : boot.ok ? (boot.passed ? "pass" : "fail") : "fail"}
-          results={boot?.ok ? boot.checks : undefined}
-          compilerErrors={boot && !boot.ok ? boot.errors : undefined}
+          boot={boot}
+          crash={crash}
+          interactions={log}
+          epoch={epoch}
+          defaultOpen={card.console === "open"}
         />
       )}
     </CardFrame>
