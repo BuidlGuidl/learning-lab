@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useTheme } from "next-themes";
 import type { ThemedToken } from "shiki";
 import { CodeBracketIcon } from "@heroicons/react/24/outline";
 import { getHighlighter } from "~~/components/code/highlighter";
@@ -117,7 +116,6 @@ function focusForCard(card: Card | undefined, lab: Lab): BuildFocus {
 }
 
 export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
-  const { resolvedTheme } = useTheme();
   const labFiles = useLabStore(s => s.files);
   const regions = useLabStore(s => s.regions);
   const progress = useLabStore(s => s.progress);
@@ -127,7 +125,7 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
   const [showFocus, setShowFocus] = useState(true);
   const [tokens, setTokens] = useState<ThemedToken[][] | null>(null);
   const codeRef = useRef<HTMLDivElement>(null);
-  const codeTheme = resolvedTheme === "dark" ? "github-dark-dimmed" : "github-light";
+  const codeTheme = "github-dark-dimmed";
 
   const files = Object.keys(labFiles);
   const card = lab.chapters[chapterIndex]?.cards[cardIndex];
@@ -226,11 +224,16 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
         <div className="lab-build-panel__file-row">
           <span className="lab-build-panel__file">
             <CodeBracketIcon className="h-4 w-4" />
-            {shownFile}
+            <span className="lab-build-panel__file-name">{shownFile}</span>
+            {fileRegions.length > 0 && (
+              <span className="lab-build-panel__count">
+                <strong>{writtenCount}</strong> of {fileRegions.length} tasks
+              </span>
+            )}
           </span>
           {fileRegions.length > 0 && (
-            <span className="lab-build-panel__count">
-              <strong>{writtenCount}</strong>/{fileRegions.length} pieces
+            <span className="lab-build-panel__count lab-build-panel__count--mobile">
+              <strong>{writtenCount}</strong>/{fileRegions.length}
             </span>
           )}
         </div>
@@ -246,7 +249,7 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
           </button>
         ) : (
           <p className="lab-build-panel__hint">
-            The contract updates as you finish each task. Dashed stubs mark the parts you still write.
+            The contract updates as you finish each task. Lavender labels mark the parts you still write.
           </p>
         )}
       </div>
