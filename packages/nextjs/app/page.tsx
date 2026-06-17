@@ -116,7 +116,7 @@ const curriculumModules: ModuleCardProps[] = [
     href: MARKETING_ROUTES.ethereum101,
     artTint: "lavender",
     artFill: true,
-    imageSrc: "/get-started-learn.png",
+    imageSrc: "/ethereum-101-learning-lab.png",
     imageAlt: "",
     meta: ["Beginner", "23 cards"],
     title: "Ethereum 101",
