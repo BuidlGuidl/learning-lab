@@ -22,9 +22,9 @@ export const Header = () => {
         isLab ? "lab-paper-header" : ""
       }`}
     >
-      <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
+      <Link href="/" className="flex items-center gap-[9px] text-base font-black tracking-tight">
         <Image src="/eth-diamond-purple.svg" alt="" width={24} height={24} />
-        SRE Learning Lab
+        Learning Lab
       </Link>
       <div className="flex items-center gap-3">
         <SwitchTheme className="site-theme-switch" />

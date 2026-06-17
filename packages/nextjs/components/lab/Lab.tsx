@@ -148,9 +148,8 @@ export const Lab = ({ lab }: Props) => {
             </div>
           </section>
         </div>
+        {hasContracts && <CodeBuildPanel lab={lab} />}
       </div>
-
-      {hasContracts && <CodeBuildPanel lab={lab} />}
 
       <div className="z-20 drawer-side lg:h-full!">
         <label htmlFor={DRAWER_ID} aria-label="close chapters" className="drawer-overlay"></label>

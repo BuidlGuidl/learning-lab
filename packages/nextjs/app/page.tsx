@@ -38,10 +38,6 @@ const MARKETING_ROUTES = {
   curriculum: "#curriculum",
   ethereum101: "/labs/ethereum-101",
   tokenization: "/labs/tokenization",
-  allCurriculum: "#curriculum",
-  docs: "#docs",
-  community: "#community",
-  github: "#github",
 };
 
 const PRODUCT_COPY = {
@@ -61,8 +57,8 @@ const PRODUCT_COPY = {
     ),
     lead: (
       <>
-        Guided labs take you from the core ideas to your first deployed contract: part plain-language concepts, part
-        hands-on code you write and run in your browser. An AI tutor asks the questions that make it click.
+        Guided labs take you from the basics to deploying your own contract: first the concepts in plain language, then
+        real code you write and run in your browser, with an AI tutor asking the questions that make it click.
       </>
     ),
     trust: ["No experience needed", "Concepts, not just code", "Runs in your browser"],
@@ -73,8 +69,8 @@ const PRODUCT_COPY = {
     lead: (
       <>
         Most tutorials let you copy, paste, and forget. We don&apos;t. Get stuck, and the AI tutor does what a great
-        mentor does: asks the one question that gets you unstuck, so you reach the answer yourself. It&apos;s the
-        closest thing to a private tutor, on every card.
+        mentor does: asks the one question that gets you unstuck, so you reach the answer yourself. That&apos;s harder
+        than being handed it, and it sticks. The closest thing to a private tutor, on every card.
       </>
     ),
   },
@@ -98,7 +94,7 @@ const featureCards: FeatureCardProps[] = [
   {
     tint: "pink",
     icon: AcademicCapIcon,
-    title: "A curated path",
+    title: "Start from zero",
     body: "Lessons hand-picked and ordered from first principles up. No crypto background required, nothing to install. Beginner-friendly by design.",
   },
   {
@@ -149,33 +145,6 @@ const curriculumModules: ModuleCardProps[] = [
       </>
     ),
     action: "Coming soon",
-  },
-];
-
-const footerColumns = [
-  {
-    title: "Labs",
-    links: [
-      { label: "Ethereum 101", href: MARKETING_ROUTES.ethereum101 },
-      { label: "Tokenization", href: MARKETING_ROUTES.tokenization },
-      { label: "All curriculum", href: MARKETING_ROUTES.allCurriculum },
-    ],
-  },
-  {
-    title: "Platform",
-    links: [
-      { label: "How it works", href: MARKETING_ROUTES.howItWorks },
-      { label: "In-browser EVM", href: "#evm" },
-      { label: "AI tutor", href: "#ai-tutor" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Docs", href: MARKETING_ROUTES.docs },
-      { label: "Community", href: MARKETING_ROUTES.community },
-      { label: "GitHub", href: MARKETING_ROUTES.github },
-    ],
   },
 ];
 
@@ -418,7 +387,6 @@ const SocraticMock = () => (
         <SparklesIcon className="h-[18px] w-[18px]" />
       </span>
       <b>AI Tutor</b>
-      <span className="lp-socratic__mode">Socratic mode</span>
     </div>
     <div className="lp-bubble lp-bubble--tutor">
       Your <code>withdraw()</code> reverts. Before I help, what do you expect <code>balances[msg.sender]</code> to hold
@@ -533,20 +501,8 @@ const Home: NextPage = () => {
             <Image src="/eth-diamond-purple.svg" alt="" width={22} height={22} />
             Learning Lab
           </span>
-          <small>
-            Actually understand Ethereum: concepts, Socratic questions, and real code, right in your browser.
-          </small>
+          <small>Interactive Ethereum labs, concepts to code.</small>
         </div>
-        {footerColumns.map(column => (
-          <div key={column.title} className="lp-footer__col">
-            <h5>{column.title}</h5>
-            {column.links.map(link => (
-              <Link key={link.label} href={link.href}>
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        ))}
       </footer>
     </div>
   );
