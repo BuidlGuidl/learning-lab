@@ -9,12 +9,8 @@ type LabEntry = {
 // folder under labs/ + one entry here. Routing, the home picker, and
 // the store stay agnostic to specific lab ids.
 export const registry: Record<string, LabEntry> = {
-  basics: {
-    title: "Basics of Ethereum",
-    load: () => import("./basics/lab"),
-  },
-  functions: {
-    title: "Functions on a contract",
-    load: () => import("./functions/lab"),
+  "ethereum-101": {
+    title: "Ethereum 101",
+    load: () => import("./ethereum-101/lab"),
   },
 };

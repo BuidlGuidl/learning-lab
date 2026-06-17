@@ -27,8 +27,8 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed mb-4 whitespace-pre-wrap">{card.question}</p>
-      {card.hint && <p className="text-sm text-base-content/60 mb-3">Hint: {card.hint}</p>}
+      <p className="text-base-content/90 leading-relaxed mt-0 mb-4 whitespace-pre-wrap">{card.question}</p>
+      {card.hint && <p className="text-sm text-base-content/60 mt-0 mb-3">Hint: {card.hint}</p>}
       <textarea
         className="textarea textarea-bordered text-sm w-full leading-relaxed"
         rows={5}
