@@ -1245,7 +1245,8 @@
 }
 
 .lab-paper__content--with-code {
-  padding-right: calc(var(--lab-build-panel-width) + 32px);
+  /* room for the sticky mobile code trigger; the desktop side-rail gutter is added at >=1024px */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
 }
 
 .lab-paper__workspace {
@@ -1623,27 +1624,170 @@
   color: var(--lab-paper-gutter);
 }
 
+/* Mobile-first: the panel fills its bottom-sheet host. At >=1024px it becomes a fixed side rail (below). */
 .lab-build-panel {
-  position: fixed !important;
-  top: var(--lab-header-height);
-  right: 0;
-  bottom: 0;
-  z-index: 10;
   box-sizing: border-box;
   display: flex;
-  width: var(--lab-build-panel-width);
-  height: auto;
+  flex: 1;
   min-height: 0;
+  width: 100%;
   overflow: hidden;
   flex-direction: column;
-  border: 1px solid var(--lab-paper-border);
-  border-top: 0;
-  border-right: 0;
-  border-bottom: 0;
-  border-radius: 0;
   background: var(--lab-paper-surface);
   color: var(--lab-paper-text);
-  box-shadow: var(--lab-paper-shadow);
+}
+
+/* Bottom sheet that hosts the code panel on small screens */
+.lab-code-host {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  height: 85vh;
+  max-height: 85vh;
+  overflow: hidden;
+  border-top: 1px solid var(--lab-paper-border);
+  border-radius: 18px 18px 0 0;
+  background: var(--lab-paper-surface);
+  box-shadow: 0 -16px 48px -16px rgb(0 0 0 / 0.4);
+  transform: translateY(100%);
+  transition: transform 0.28s ease;
+}
+
+.lab-code-host.is-open {
+  transform: translateY(0);
+}
+
+.lab-code-sheet__grip {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--lab-paper-border);
+}
+
+.lab-code-sheet__handle {
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--lab-paper-gutter);
+}
+
+.lab-code-sheet__close {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--lab-paper-muted);
+  transform: translateY(-50%);
+}
+
+.lab-code-sheet__close:hover {
+  background: var(--lab-paper-code);
+  color: var(--lab-paper-text);
+}
+
+.lab-code-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.lab-code-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lab-code-trigger {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  height: calc(56px + env(safe-area-inset-bottom));
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px env(safe-area-inset-bottom);
+  border-top: 1px solid var(--lab-paper-border);
+  background: var(--lab-paper-surface);
+  color: var(--lab-paper-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 -6px 20px -10px rgb(0 0 0 / 0.25);
+}
+
+.lab-code-trigger__file {
+  flex: 1;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-code-trigger__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--lab-paper-violet);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 900px) {
+  /* >=900px uses the fixed side rail, so the mobile sheet chrome is hidden here.
+     (Done in CSS, not Tailwind's lg:hidden — unlayered rules above would override it.) */
+  .lab-code-trigger,
+  .lab-code-backdrop,
+  .lab-code-sheet__grip {
+    display: none;
+  }
+
+  .lab-paper__content--with-code {
+    padding-right: calc(var(--lab-build-panel-width) + 32px);
+    padding-bottom: 32px;
+  }
+
+  .lab-build-panel {
+    position: fixed;
+    top: var(--lab-header-height);
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    width: var(--lab-build-panel-width);
+    flex: none;
+    border-left: 1px solid var(--lab-paper-border);
+    box-shadow: var(--lab-paper-shadow);
+  }
+
+  /* Desktop: the host is inert — the panel inside is the fixed rail */
+  .lab-code-host {
+    position: static;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+  }
 }
 
 .lab-build-panel__head {
@@ -1966,25 +2110,6 @@
 
   .lab-card__title {
     font-size: 30px;
-  }
-}
-
-@media (max-width: 767px) {
-  .lab-paper__content--with-code {
-    padding-right: 16px;
-  }
-
-  .lab-paper__workspace--with-code {
-    width: min(100%, 760px);
-  }
-
-  .lab-build-panel {
-    position: static !important;
-    width: auto;
-    height: auto;
-    min-height: 420px;
-    max-height: 560px;
-    border-radius: 16px;
   }
 }
 

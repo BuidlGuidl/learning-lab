@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
 import { Sidebar } from "./Sidebar";
-import { ArrowLeftIcon, ArrowRightIcon, Bars3Icon, ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  Bars3Icon,
+  ChevronDoubleLeftIcon,
+  ChevronUpIcon,
+  CodeBracketIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { isCardCleared } from "~~/lib/grader/transcript";
 import type { Lab as LabType } from "~~/lib/lab/types";
 import { warmCompiler } from "~~/lib/solc/solc";
@@ -30,12 +38,24 @@ export const Lab = ({ lab }: Props) => {
   // Rail starts open on desktop, closed on mobile. On desktop it's an in-flow
   // rail that collapses for a focused read; on mobile it's an overlay drawer.
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // The code panel is a fixed side rail on desktop; below lg it collapses to a
+  // sticky trigger that opens this bottom sheet.
+  const [codeSheetOpen, setCodeSheetOpen] = useState(false);
   useEffect(() => {
     init(lab);
     if (isDesktop()) setSidebarOpen(true);
     // kick off the soljson download (~7MB) now, so the first submit doesn't eat the whole wait
     warmCompiler();
   }, [lab, init]);
+
+  useEffect(() => {
+    if (!codeSheetOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setCodeSheetOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [codeSheetOpen]);
 
   const chapter = lab.chapters[chapterIndex];
   const card = chapter?.cards[cardIndex];
@@ -46,6 +66,7 @@ export const Lab = ({ lab }: Props) => {
   const totalCards = chapter.cards.length;
   const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
   const hasContracts = Object.keys(lab.files).length > 0;
+  const primaryFile = Object.keys(lab.files)[0];
   const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
   const currentLabCard = completedBeforeCurrent + cardIndex + 1;
   const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
@@ -148,7 +169,52 @@ export const Lab = ({ lab }: Props) => {
             </div>
           </section>
         </div>
-        {hasContracts && <CodeBuildPanel lab={lab} />}
+        {hasContracts && (
+          <>
+            {/* Mobile: sticky bar that opens the code as a bottom sheet. Hidden on desktop, where the panel is a fixed side rail. */}
+            <button
+              type="button"
+              className="lab-code-trigger"
+              onClick={() => setCodeSheetOpen(true)}
+              aria-expanded={codeSheetOpen}
+              aria-controls="lab-code-sheet"
+            >
+              <CodeBracketIcon className="w-4 h-4" />
+              <span className="lab-code-trigger__file">{primaryFile}</span>
+              <span className="lab-code-trigger__cta">
+                view code
+                <ChevronUpIcon className="w-4 h-4" />
+              </span>
+            </button>
+
+            <div
+              className={`lab-code-backdrop ${codeSheetOpen ? "is-open" : ""}`}
+              onClick={() => setCodeSheetOpen(false)}
+              aria-hidden
+            />
+
+            <div
+              id="lab-code-sheet"
+              className={`lab-code-host ${codeSheetOpen ? "is-open" : ""}`}
+              role="dialog"
+              aria-label="Contract code"
+              aria-modal={codeSheetOpen || undefined}
+            >
+              <div className="lab-code-sheet__grip">
+                <span className="lab-code-sheet__handle" aria-hidden />
+                <button
+                  type="button"
+                  className="lab-code-sheet__close"
+                  onClick={() => setCodeSheetOpen(false)}
+                  aria-label="Close code"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <CodeBuildPanel lab={lab} />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="z-20 drawer-side lg:h-full!">
