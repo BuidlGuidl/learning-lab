@@ -11,7 +11,6 @@ import {
   CheckCircleIcon,
   CheckIcon,
   CpuChipIcon,
-  CursorArrowRaysIcon,
   LightBulbIcon,
   MapIcon,
   PlayIcon,
@@ -47,67 +46,72 @@ const MARKETING_ROUTES = {
 
 const PRODUCT_COPY = {
   navLinks: [
-    { label: "Labs", href: MARKETING_ROUTES.labs },
     { label: "How it works", href: MARKETING_ROUTES.howItWorks },
-    { label: "Curriculum", href: MARKETING_ROUTES.curriculum },
+    { label: "Labs", href: MARKETING_ROUTES.labs },
   ],
   hero: {
-    eyebrow: "Learn Ethereum in the browser",
-    title: "Build on Ethereum without installing a thing.",
-    lead: (
+    title: (
       <>
-        Learning Lab runs a real EVM right in your browser. Write Solidity, deploy contracts, and break things &mdash;
-        guided by an AI tutor that asks the right questions instead of handing you the answer.
+        Learn Ethereum.
+        <br />
+        Concepts first,
+        <br />
+        code when you&apos;re ready
       </>
     ),
-    trust: ["Zero setup", "Real in-browser EVM", "AI tutor on every card"],
+    lead: (
+      <>
+        Guided labs take you from the core ideas to your first deployed contract: part plain-language concepts, part
+        hands-on code you write and run in your browser. An AI tutor asks the questions that make it click.
+      </>
+    ),
+    trust: ["No experience needed", "Concepts, not just code", "Runs in your browser"],
   },
   socratic: {
     eyebrow: "The Socratic method",
     title: "We don't hand you the answer. We ask the right question.",
     lead: (
       <>
-        Most tutorials let you copy, paste, and forget. Learning Lab guides you to the solution yourself &mdash; so the
-        understanding actually sticks. Get stuck, and the AI tutor responds the way a great mentor would: with the one
-        question that unlocks your next step.
+        Most tutorials let you copy, paste, and forget. We don&apos;t. Get stuck, and the AI tutor does what a great
+        mentor does: asks the one question that gets you unstuck, so you reach the answer yourself. It&apos;s the
+        closest thing to a private tutor, on every card.
       </>
     ),
   },
   capabilities: {
-    eyebrow: "Everything in the browser",
-    title: "A complete lab in a single tab.",
-    lead: "No Node, no Hardhat, no version conflicts. Open a tab and you're building.",
+    title: "More than a coding course.",
+    lead: "Every lab moves through plain-language concepts, Socratic questions, and hands-on code. Some cards never ask you to write a line. They make sure you understand what you're building first.",
   },
   curriculum: {
     eyebrow: "Curriculum",
-    title: "Two labs. Open one and start now.",
+    title: "Explore our labs, with more on the way.",
   },
 };
 
 const featureCards: FeatureCardProps[] = [
   {
     tint: "lavender",
-    icon: CpuChipIcon,
-    title: "In-browser EVM",
-    body: "Deploy and call real contracts against a live EVM -- no testnet, no faucet, no wallet juggling.",
-  },
-  {
-    tint: "mint",
-    icon: CursorArrowRaysIcon,
-    title: "Zero local setup",
-    body: "Nothing to install or configure. Your environment is ready the moment the page loads.",
-  },
-  {
-    tint: "peach",
-    icon: CheckCircleIcon,
-    title: "Instant validation",
-    body: "Every exercise checks your work the moment you run it, and points you straight at the fix.",
+    icon: LightBulbIcon,
+    title: "Concepts, not just code",
+    body: "Many cards are pure explanation, with visuals: the world computer, gas, reentrancy. You build the mental model before you write any Solidity.",
   },
   {
     tint: "pink",
-    icon: SparklesIcon,
-    title: "AI tutor",
-    body: "A Socratic companion that debugs with you and deepens the concept -- on every single card.",
+    icon: AcademicCapIcon,
+    title: "A curated path",
+    body: "Lessons hand-picked and ordered from first principles up. No crypto background required, nothing to install. Beginner-friendly by design.",
+  },
+  {
+    tint: "mint",
+    icon: CpuChipIcon,
+    title: "Real code, real EVM",
+    body: "When it's time to build, you write actual Solidity and run it against a live EVM: no testnet, no faucet, no setup.",
+  },
+  {
+    tint: "peach",
+    icon: BoltIcon,
+    title: "Deploy and use it",
+    body: "One click deploys your contract to the in-browser chain. Then read it back, call it, and try to break it. The same flow real builders use.",
   },
 ];
 
@@ -118,11 +122,13 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/get-started-learn.png",
     imageAlt: "",
-    meta: ["Beginner", "35 cards"],
+    meta: ["Beginner", "23 cards"],
     title: "Ethereum 101",
     body: (
       <>
-        Accounts, transactions, gas, and your first smart contract &mdash; the foundation every onchain builder needs.
+        Go from &ldquo;what is Ethereum&rdquo; to deploying your own crowdfunding contract. Meet the world computer,
+        accounts, and gas, then write, deploy, and use a real contract that collects contributions and refunds them if
+        the goal falls short.
       </>
     ),
     action: "Start Ethereum 101",
@@ -132,16 +138,17 @@ const curriculumModules: ModuleCardProps[] = [
     artTint: "mint",
     imageSrc: "/feature-global.png",
     imageAlt: "",
-    meta: ["Intermediate", "ERC-20 · ERC-721"],
+    meta: ["Intermediate", "ERC-721 · NFTs"],
     mintMetaIndex: 0,
+    comingSoon: true,
     title: "Tokenization",
     body: (
       <>
-        The patterns behind every token on Ethereum. Build ERC-20s and NFTs from scratch and see what&apos;s really
-        happening underneath.
+        How NFTs really work. Mint your own collection, transfer ownership, and handle approvals, then see what&apos;s
+        happening onchain underneath.
       </>
     ),
-    action: "Start Tokenization",
+    action: "Coming soon",
   },
 ];
 
@@ -229,6 +236,7 @@ type ModuleCardProps = {
   title: string;
   body: ReactNode;
   action: string;
+  comingSoon?: boolean;
 };
 
 const ArrowLink = ({ children }: { children: ReactNode }) => (
@@ -249,29 +257,51 @@ const ModuleCard = ({
   title,
   body,
   action,
-}: ModuleCardProps) => (
-  <Link className="lp-module-card" href={href}>
-    <div className={`lp-module-card__art lp-tint-${artTint} ${artFill ? "lp-module-card__art--fill" : ""}`}>
-      {artFill ? (
-        <Image src={imageSrc} alt={imageAlt} width={800} height={500} quality={95} priority={false} />
-      ) : (
-        <Image src={imageSrc} alt={imageAlt} width={260} height={180} priority={false} />
-      )}
-    </div>
-    <div className="lp-module-card__body">
-      <div className="lp-module-card__meta">
-        {meta.map((item, index) => (
-          <span key={item} className={`lp-pill ${mintMetaIndex === index ? "lp-pill--mint" : ""}`}>
-            {item}
-          </span>
-        ))}
+  comingSoon,
+}: ModuleCardProps) => {
+  const content = (
+    <>
+      <div className={`lp-module-card__art lp-tint-${artTint} ${artFill ? "lp-module-card__art--fill" : ""}`}>
+        {artFill ? (
+          <Image src={imageSrc} alt={imageAlt} width={800} height={500} quality={95} priority={false} />
+        ) : (
+          <Image src={imageSrc} alt={imageAlt} width={260} height={180} priority={false} />
+        )}
+        {comingSoon && <span className="lp-module-card__badge">Coming soon</span>}
       </div>
-      <h3>{title}</h3>
-      <p>{body}</p>
-      <ArrowLink>{action}</ArrowLink>
-    </div>
-  </Link>
-);
+      <div className="lp-module-card__body">
+        <div className="lp-module-card__meta">
+          {meta.map((item, index) => (
+            <span key={item} className={`lp-pill ${mintMetaIndex === index ? "lp-pill--mint" : ""}`}>
+              {item}
+            </span>
+          ))}
+        </div>
+        <h3>{title}</h3>
+        <p>{body}</p>
+        {comingSoon ? (
+          <span className="lp-arrow-link lp-arrow-link--muted">{action}</span>
+        ) : (
+          <ArrowLink>{action}</ArrowLink>
+        )}
+      </div>
+    </>
+  );
+
+  if (comingSoon) {
+    return (
+      <div className="lp-module-card lp-module-card--soon" aria-disabled>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link className="lp-module-card" href={href}>
+      {content}
+    </Link>
+  );
+};
 
 const Brand = () => (
   <Link href={MARKETING_ROUTES.home} className="lp-brand">
@@ -288,7 +318,7 @@ const LabShot = () => (
         <i />
         <i />
       </span>
-      <span className="lp-labshot__url">learninglab.eth · ethereum-101 / your-first-contract</span>
+      <span className="lp-labshot__url">Learning Lab · ethereum-101 / your-first-contract</span>
     </div>
     <div className="lp-labshot__body">
       <div className="lp-labshot__concept">
@@ -299,7 +329,7 @@ const LabShot = () => (
         <h4>Storing a value</h4>
         <p>
           A contract&apos;s state lives onchain. Give <span className="lp-inline-mono">CrowdFund</span> a public{" "}
-          <span className="lp-inline-mono">threshold</span> and the network remembers it forever.
+          <span className="lp-inline-mono">goal</span> and the network remembers it forever.
         </p>
         <p>Run it and watch the EVM commit your change.</p>
         <div className="lp-labshot__runrow">
@@ -326,15 +356,17 @@ const LabShot = () => (
             <>
               {"  "}
               <span className="lc-t">uint256</span> <span className="lc-k">public</span>{" "}
-              <span className="lc-k">constant</span> threshold
+              <span className="lc-k">constant</span> goal <span className="lc-p">=</span>{" "}
+              <span className="lc-n">1 ether</span>
+              <span className="lc-p">;</span>
             </>,
             true,
           ],
           [
             "3",
             <>
-              {"    "}
-              <span className="lc-p">=</span> <span className="lc-n">1 ether</span>
+              {"  "}
+              <span className="lc-t">uint256</span> <span className="lc-k">public</span> raised
               <span className="lc-p">;</span>
             </>,
           ],
@@ -351,9 +383,7 @@ const LabShot = () => (
           [
             "6",
             <>
-              {"    "}balances<span className="lc-p">[</span>
-              <span className="lc-k">msg</span>.sender<span className="lc-p">]</span> <span className="lc-p">+=</span>{" "}
-              <span className="lc-k">msg</span>.value
+              {"    "}raised <span className="lc-p">+=</span> <span className="lc-k">msg</span>.value
               <span className="lc-p">;</span>
             </>,
           ],
@@ -400,7 +430,7 @@ const SocraticMock = () => (
     </div>
     <div className="lp-socratic__caption">
       <MapIcon className="h-[15px] w-[15px]" />
-      Guiding you to discover reentrancy &mdash; not just patching it.
+      Guiding you to discover reentrancy, not just patching it.
     </div>
   </div>
 );
@@ -422,7 +452,6 @@ const Home: NextPage = () => {
 
       <header className="lp-hero lp-wrap">
         <div className="lp-hero__text">
-          <Eyebrow icon={BoltIcon}>{PRODUCT_COPY.hero.eyebrow}</Eyebrow>
           <h1 className="lp-display">{PRODUCT_COPY.hero.title}</h1>
           <p className="lp-lead">{PRODUCT_COPY.hero.lead}</p>
           <div className="lp-hero__cta">
@@ -455,15 +484,15 @@ const Home: NextPage = () => {
               <ul className="lp-featured__list">
                 <li>
                   <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                  Prompts that build intuition, not copy-paste muscle memory
+                  Questions that build real intuition, not copy-paste habits
                 </li>
                 <li>
                   <RectangleStackIcon className="h-5 w-5" />
-                  Hints that escalate only as far as you actually need
+                  Hints that go only as far as you actually need
                 </li>
                 <li>
                   <AcademicCapIcon className="h-5 w-5" />
-                  You leave understanding the <em>why</em> behind every line
+                  You finish knowing the <em>why</em> behind every line
                 </li>
               </ul>
             </div>
@@ -474,7 +503,6 @@ const Home: NextPage = () => {
 
       <section className="lp-section lp-wrap" id="evm">
         <div className="lp-section__head is-center">
-          <Eyebrow>{PRODUCT_COPY.capabilities.eyebrow}</Eyebrow>
           <h2 className="lp-h2">{PRODUCT_COPY.capabilities.title}</h2>
           <p className="lp-lead">{PRODUCT_COPY.capabilities.lead}</p>
         </div>
@@ -505,7 +533,9 @@ const Home: NextPage = () => {
             <Image src="/eth-diamond-purple.svg" alt="" width={22} height={22} />
             Learning Lab
           </span>
-          <small>Learn Ethereum by building &mdash; a real EVM and an AI tutor, right in your browser.</small>
+          <small>
+            Actually understand Ethereum: concepts, Socratic questions, and real code, right in your browser.
+          </small>
         </div>
         {footerColumns.map(column => (
           <div key={column.title} className="lp-footer__col">

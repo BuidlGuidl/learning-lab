@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SwitchTheme } from "~~/components/SwitchTheme";
@@ -21,7 +22,8 @@ export const Header = () => {
         isLab ? "lab-paper-header" : ""
       }`}
     >
-      <Link href="/" className="text-lg font-bold tracking-tight">
+      <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
+        <Image src="/eth-diamond-purple.svg" alt="" width={24} height={24} />
         SRE Learning Lab
       </Link>
       <div className="flex items-center gap-3">
