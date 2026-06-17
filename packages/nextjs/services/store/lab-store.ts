@@ -3,6 +3,7 @@ import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript"
 import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 import type { Region, Segment } from "~~/lib/lab/regions";
+import type { RunReport } from "~~/lib/lab/run";
 import type { Card, Lab } from "~~/lib/lab/types";
 
 type ProgressEntry = {
@@ -43,6 +44,7 @@ type LabActions = {
   prev: (lab: Lab) => void;
   goTo: (chapterIndex: number, cardIndex: number) => void;
   completeCodeExercise: (cardId: string, region: string, learnerInput: string) => void;
+  recordRunVerdict: (cardId: string, chapterId: string, learnerInput: string, report: RunReport) => void;
   appendGradingEvent: (event: GradingEvent) => void;
   skipCard: (card: Card, chapterId: string) => void;
   reset: () => void;
@@ -123,6 +125,24 @@ export const useLabStore = create<LabState & LabActions>(set => ({
   // without losing what was typed; re-submitting replaces the region's fill freshly.
   completeCodeExercise: (cardId, region, learnerInput) =>
     set(s => ({ progress: { ...s.progress, [cardId]: { learnerInput, region } } })),
+  // The test run owns the gate. Submitting a code-exercise records its verdict straight off
+  // the report, so isCardCleared flips on the tests alone — Next never waits on the llm, and
+  // the coach (opt-in, separate) can't write here. Feedback stays off the event on purpose:
+  // it's transient coach output now, not part of the transcript.
+  recordRunVerdict: (cardId, chapterId, learnerInput, report) =>
+    set(s => {
+      const event: GradingEvent = {
+        cardId,
+        chapterId,
+        attempt: nextAttempt(s.transcript, cardId),
+        outcome: report.verdict,
+        answer: learnerInput,
+        compilerErrors: report.stage === "compile" ? report.errors : undefined,
+        testResults: report.stage === "tests" ? report.results : undefined,
+        happenedAt: Date.now(),
+      };
+      return { transcript: { ...s.transcript, events: [...s.transcript.events, event] } };
+    }),
   // Record a grade. The gate reads clearance back out of the transcript, so a pass here is
   // what opens next().
   appendGradingEvent: event => set(s => ({ transcript: { ...s.transcript, events: [...s.transcript.events, event] } })),

@@ -95,6 +95,11 @@ export const lab = defineLab({
           prompt:
             "Every campaign needs a target. Declare a constant named `GOAL` set to `10 ether`. The shape is `type visibility constant NAME = value;` — use `uint256`, mark it `public`, and `constant` because the goal never changes after deployment. Solidity understands `ether` as a unit, so `10 ether` means exactly what it says. Press `c` anytime to see the whole file — the gaps are yours to fill.",
           placeholder: "uint256 public constant FEE = 2 ether;",
+          hints: [
+            "Follow the placeholder's shape — only the name and value change.",
+            "`public` lets anyone read it; `constant` bakes the value in at deploy time.",
+            "Write `uint256 public constant GOAL = 10 ether;` — `ether` is a built-in unit, no maths needed.",
+          ],
         },
         {
           type: "experiment",
