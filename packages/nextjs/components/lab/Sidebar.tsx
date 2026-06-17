@@ -34,17 +34,23 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
   };
 
   return (
-    <nav className="lab-paper-sidebar w-80 h-full overflow-y-auto">
-      <div className="lab-paper-sidebar__brand flex items-center justify-between">
+    <nav className="w-80 h-full overflow-y-auto border-r border-[color:var(--lab-paper-border-strong)] bg-[var(--lab-paper-surface)] text-[var(--lab-paper-text)]">
+      <div className="flex min-h-[82px] items-center justify-between border-b border-[color:var(--lab-paper-border-strong)] px-[22px] py-[18px]">
         <div>
-          <p className="lab-paper-sidebar__kicker">learning lab</p>
-          <p className="lab-paper-sidebar__title">{lab.title}</p>
+          <p className="m-0 mb-1 text-xs font-bold uppercase leading-tight text-[var(--lab-paper-violet)]">
+            learning lab
+          </p>
+          <p className="m-0 text-base font-black leading-tight text-[var(--lab-paper-text)]">{lab.title}</p>
         </div>
-        <button onClick={onClose} className="lab-paper-sidebar__close" aria-label="Hide chapters">
+        <button
+          onClick={onClose}
+          className="grid h-8 w-8 cursor-pointer place-items-center rounded border border-[color:var(--lab-paper-border)] bg-[var(--lab-paper-surface)] text-[var(--lab-paper-muted)] hover:border-[color:var(--lab-paper-violet)] hover:text-[var(--lab-paper-violet)]"
+          aria-label="Hide chapters"
+        >
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
-      <ul className="lab-paper-sidebar__outline flex flex-col gap-1">
+      <ul className="flex flex-col gap-1 px-3.5 pt-4 pb-6">
         {lab.chapters.map((chapter, chapterIndex) => {
           const open = expanded.has(chapterIndex);
           return (
@@ -62,23 +68,25 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
                   });
                 }}
               >
-                <summary className="lab-paper-sidebar__chapter flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-3 py-2.5 text-[var(--lab-paper-muted)] hover:bg-[var(--lab-paper-code)] hover:text-[var(--lab-paper-text)] [&::-webkit-details-marker]:hidden">
                   <span
-                    className={`lab-paper-sidebar__number flex-none grid place-items-center font-mono text-xs ${
-                      open ? "is-open" : ""
+                    className={`grid h-6 w-6 flex-none place-items-center rounded-full font-mono text-xs ${
+                      open
+                        ? "bg-[var(--lab-paper-violet)] text-white dark:text-[#14111c]"
+                        : "bg-[var(--lab-paper-code)] text-[var(--lab-paper-muted)]"
                     }`}
                   >
                     {chapterIndex + 1}
                   </span>
-                  <span className="lab-paper-sidebar__chapter-title flex-1 text-sm font-medium">{chapter.title}</span>
+                  <span className="flex-1 text-sm font-medium leading-[1.35]">{chapter.title}</span>
                   <ChevronRightIcon
-                    className={`lab-paper-sidebar__chevron flex-none w-3.5 h-3.5 transition-transform ${
+                    className={`flex-none w-3.5 h-3.5 text-[var(--lab-paper-faint)] transition-transform ${
                       open ? "rotate-90" : ""
                     }`}
                   />
                 </summary>
 
-                <ul className="lab-paper-sidebar__cards flex flex-col">
+                <ul className="my-1 mb-2.5 ml-6 flex flex-col border-l border-[color:var(--lab-paper-border)]">
                   {chapter.cards.map((card, cardIndex) => {
                     const active = chapterIndex === activeChapterIndex && cardIndex === activeCardIndex;
                     const locked = isPositionAfter({ chapterIndex, cardIndex }, maxReached);
@@ -86,10 +94,10 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
                       <li key={card.id}>
                         <button
                           onClick={() => select(chapterIndex, cardIndex)}
-                          className={`lab-paper-sidebar__card flex items-center w-full gap-2 text-sm text-left cursor-pointer transition-colors ${
+                          className={`relative -ml-px flex w-full cursor-pointer items-center gap-2 rounded-r-lg border-l-[3px] px-2.5 py-2 pl-4 text-left text-sm transition-colors ${
                             active
-                              ? "is-active font-medium"
-                              : "text-base-content/70 hover:text-base-content hover:bg-base-200 hover:border-base-content/20"
+                              ? "border-[color:var(--lab-paper-violet)] bg-[var(--lab-paper-tint)] font-medium text-[var(--lab-paper-text)]"
+                              : "border-transparent text-[var(--lab-paper-muted)] hover:bg-[var(--lab-paper-code)] hover:text-[var(--lab-paper-text)]"
                           }`}
                         >
                           <span className="flex-1 truncate">{card.title}</span>

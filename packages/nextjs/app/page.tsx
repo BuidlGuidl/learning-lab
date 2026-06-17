@@ -84,6 +84,18 @@ const PRODUCT_COPY = {
   },
 };
 
+const cn = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
+
+const lpWrap = "w-full max-w-[1216px] mx-auto px-5 sm:px-8 min-[1100px]:px-12";
+const lpSection = "py-[72px] min-[901px]:py-[92px]";
+const lpHeading = "m-0 text-[var(--lp-text-primary)] font-black";
+const lpH2 = `${lpHeading} text-[clamp(32px,3.6vw,46px)] leading-[1.06]`;
+const lpLead = "max-w-[56ch] m-0 text-[19px] leading-[1.6] text-[var(--lp-text-secondary)]";
+const lpEyebrow =
+  "inline-flex items-center self-start gap-[7px] rounded-[var(--radius-tags)] bg-[var(--lp-eyebrow-bg)] px-3 py-1.5 text-sm font-bold uppercase text-[var(--lp-accent)]";
+const lpIconTile =
+  "flex h-12 w-12 items-center justify-center rounded-[var(--radius-icon-tile)] bg-[var(--lp-icon-tile)] text-[var(--lp-accent)]";
+
 const featureCards: FeatureCardProps[] = [
   {
     tint: "lavender",
@@ -159,7 +171,18 @@ type ButtonProps = {
 
 const MarketingButton = ({ href, children, variant = "primary", size = "md", icon, className = "" }: ButtonProps) => {
   return (
-    <Link className={`lp-btn lp-btn--${variant} ${size === "lg" ? "lp-btn--lg" : ""} ${className}`} href={href}>
+    <Link
+      className={cn(
+        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-buttons)] text-base leading-none no-underline transition-colors whitespace-nowrap max-sm:w-full max-sm:px-[18px]",
+        variant === "primary" &&
+          "border border-[var(--lp-btn-bg)] bg-[var(--lp-btn-bg)] px-6 py-[13px] font-bold text-[var(--lp-on-accent)] hover:border-[var(--lp-btn-bg-hover)] hover:bg-[var(--lp-btn-bg-hover)]",
+        variant === "ghost" &&
+          "border border-[var(--lp-ghost-border)] bg-transparent px-5 py-3 text-[var(--lp-text-primary)] hover:border-[var(--lp-ghost-border-hover)]",
+        size === "lg" && "px-7 py-[15px] text-[17px]",
+        className,
+      )}
+      href={href}
+    >
       {children}
       {icon && <ArrowRightIcon className="h-[18px] w-[18px]" />}
     </Link>
@@ -167,7 +190,7 @@ const MarketingButton = ({ href, children, variant = "primary", size = "md", ico
 };
 
 const Eyebrow = ({ icon: Icon, children }: { icon?: ComponentType<IconProps>; children: ReactNode }) => (
-  <span className="lp-eyebrow">
+  <span className={lpEyebrow}>
     {Icon && <Icon className="h-3.5 w-3.5" />}
     {children}
   </span>
@@ -185,12 +208,17 @@ type FeatureCardProps = {
 };
 
 const FeatureCard = ({ tint, icon: Icon, title, body }: FeatureCardProps) => (
-  <article className={`lp-feat-card lp-tint-${tint}`}>
-    <div className="lp-feat-card__icon">
+  <article
+    className={cn(
+      "flex flex-col gap-3.5 rounded-[var(--radius-cards)] p-7 text-[var(--lp-feat-text)]",
+      `lp-tint-${tint}`,
+    )}
+  >
+    <div className={lpIconTile}>
       <Icon className="h-6 w-6" />
     </div>
-    <h3>{title}</h3>
-    <p>{body}</p>
+    <h3 className="m-0 text-xl font-bold leading-[1.2]">{title}</h3>
+    <p className="m-0 text-[15px] leading-[1.55]">{body}</p>
   </article>
 );
 
@@ -209,7 +237,7 @@ type ModuleCardProps = {
 };
 
 const ArrowLink = ({ children }: { children: ReactNode }) => (
-  <span className="lp-arrow-link">
+  <span className="mt-1.5 inline-flex items-center gap-[5px] text-base font-bold text-[var(--lp-accent)]">
     {children}
     <ArrowRightIcon className="h-4 w-4" />
   </span>
@@ -230,26 +258,47 @@ const ModuleCard = ({
 }: ModuleCardProps) => {
   const content = (
     <>
-      <div className={`lp-module-card__art lp-tint-${artTint} ${artFill ? "lp-module-card__art--fill" : ""}`}>
+      <div
+        className={cn(
+          "relative flex h-[200px] items-center justify-center overflow-hidden",
+          artFill ? "p-0 [&_img]:h-full [&_img]:w-full [&_img]:max-h-none [&_img]:object-cover" : "p-6",
+          !artFill && "[&_img]:h-auto [&_img]:max-h-40 [&_img]:w-auto [&_img]:object-contain",
+          artTint === "lavender" ? "bg-[var(--lp-module-art-lavender)]" : "bg-[var(--lp-module-art-mint)]",
+        )}
+      >
         {artFill ? (
           <Image src={imageSrc} alt={imageAlt} width={800} height={500} quality={95} priority={false} />
         ) : (
           <Image src={imageSrc} alt={imageAlt} width={260} height={180} priority={false} />
         )}
-        {comingSoon && <span className="lp-module-card__badge">Coming soon</span>}
+        {comingSoon && (
+          <span className="absolute top-3.5 right-3.5 rounded-[var(--radius-tags)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] px-2.5 py-[5px] text-[11px] font-bold uppercase text-[var(--lp-text-secondary)]">
+            Coming soon
+          </span>
+        )}
       </div>
-      <div className="lp-module-card__body">
-        <div className="lp-module-card__meta">
+      <div className="flex flex-col gap-3 px-7 pt-7 pb-8">
+        <div className="flex flex-wrap gap-2">
           {meta.map((item, index) => (
-            <span key={item} className={`lp-pill ${mintMetaIndex === index ? "lp-pill--mint" : ""}`}>
+            <span
+              key={item}
+              className={cn(
+                "rounded-[var(--radius-tags)] px-2.5 py-1 text-xs font-bold",
+                mintMetaIndex === index
+                  ? "bg-[var(--lp-pill-mint-bg)] text-[var(--lp-pill-mint-fg)]"
+                  : "bg-[var(--lp-pill-bg)] text-[var(--lp-pill-fg)]",
+              )}
+            >
               {item}
             </span>
           ))}
         </div>
-        <h3>{title}</h3>
-        <p>{body}</p>
+        <h3 className="m-0 text-[28px] font-black text-[var(--lp-text-primary)]">{title}</h3>
+        <p className="m-0 text-base leading-[1.6] text-[var(--lp-text-secondary)]">{body}</p>
         {comingSoon ? (
-          <span className="lp-arrow-link lp-arrow-link--muted">{action}</span>
+          <span className="mt-1.5 inline-flex items-center gap-[5px] text-base font-bold text-[var(--lp-text-tertiary)]">
+            {action}
+          </span>
         ) : (
           <ArrowLink>{action}</ArrowLink>
         )}
@@ -259,59 +308,80 @@ const ModuleCard = ({
 
   if (comingSoon) {
     return (
-      <div className="lp-module-card lp-module-card--soon" aria-disabled>
+      <div
+        className="flex cursor-default flex-col overflow-hidden rounded-[var(--radius-cards)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] no-underline [&_img]:opacity-70"
+        aria-disabled
+      >
         {content}
       </div>
     );
   }
 
   return (
-    <Link className="lp-module-card" href={href}>
+    <Link
+      className="flex flex-col overflow-hidden rounded-[var(--radius-cards)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] no-underline transition hover:-translate-y-0.5 hover:border-[color:var(--lp-accent)]"
+      href={href}
+    >
       {content}
     </Link>
   );
 };
 
 const Brand = () => (
-  <Link href={MARKETING_ROUTES.home} className="lp-brand">
+  <Link
+    href={MARKETING_ROUTES.home}
+    className="inline-flex items-center gap-[9px] text-base font-black leading-none text-[var(--lp-text-primary)] no-underline"
+  >
     <Image src="/eth-diamond-purple.svg" alt="" width={24} height={24} />
     <span>Learning Lab</span>
   </Link>
 );
 
 const LabShot = () => (
-  <div className="lp-labshot" aria-label="Learning Lab product preview">
-    <div className="lp-labshot__bar">
-      <span className="lp-labshot__dots" aria-hidden>
-        <i />
-        <i />
-        <i />
+  <div
+    className="overflow-hidden rounded-[var(--radius-cards)] border border-[color:var(--lp-shot-border)] bg-[var(--lp-surface)] shadow-[var(--shadow-labshot)]"
+    aria-label="Learning Lab product preview"
+  >
+    <div className="flex items-center gap-2 border-b border-[color:var(--lp-shot-border)] bg-[var(--lp-shot-bar)] px-3.5 py-[11px]">
+      <span className="flex shrink-0 gap-1.5" aria-hidden>
+        <i className="h-[11px] w-[11px] rounded-full bg-[var(--lp-shot-dots)]" />
+        <i className="h-[11px] w-[11px] rounded-full bg-[var(--lp-shot-dots)]" />
+        <i className="h-[11px] w-[11px] rounded-full bg-[var(--lp-shot-dots)]" />
       </span>
-      <span className="lp-labshot__url">Learning Lab · ethereum-101 / your-first-contract</span>
+      <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-[color:var(--lp-shot-border)] bg-[var(--lp-shot-url-bg)] px-3 py-1 font-mono text-xs text-[var(--lp-text-secondary)]">
+        Learning Lab · ethereum-101 / your-first-contract
+      </span>
     </div>
-    <div className="lp-labshot__body">
-      <div className="lp-labshot__concept">
-        <span className="lp-labshot__eyebrow">
+    <div className="grid min-h-80 grid-cols-[0.85fr_1.15fr] max-[900px]:grid-cols-1">
+      <div className="flex flex-col gap-3 border-r border-[color:var(--lp-shot-divider)] bg-[var(--lp-shot-concept)] px-6 py-[26px] max-[900px]:border-r-0 max-[900px]:border-b">
+        <span className="inline-flex items-center self-start gap-1.5 rounded-[7px] bg-[var(--lp-eyebrow-bg)] px-[9px] py-1 text-[11px] font-bold uppercase text-[var(--lp-accent)]">
           <LightBulbIcon className="h-3 w-3" />
           Concept
         </span>
-        <h4>Storing a value</h4>
-        <p>
+        <h4 className="mt-1 mb-0.5 text-[23px] font-black leading-[1.08] text-[var(--lp-text-primary)]">
+          Storing a value
+        </h4>
+        <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--lp-text-primary)]">
           A contract&apos;s state lives onchain. Give <span className="lp-inline-mono">CrowdFund</span> a public{" "}
           <span className="lp-inline-mono">goal</span> and the network remembers it forever.
         </p>
-        <p>Run it and watch the EVM commit your change.</p>
-        <div className="lp-labshot__runrow">
-          <span className="lp-labshot__run">
+        <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--lp-text-primary)]">
+          Run it and watch the EVM commit your change.
+        </p>
+        <div className="mt-auto flex items-center gap-2.5">
+          <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-buttons)] bg-[var(--lp-btn-bg)] px-4 py-[9px] text-[13px] font-bold text-[var(--lp-on-accent)]">
             <PlayIcon className="h-[13px] w-[13px]" />
             Run
           </span>
-          <span className="lp-labshot__pass">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--lp-trust-check)]">
             <CheckCircleIcon className="h-3.5 w-3.5" />1 / 1 passing
           </span>
         </div>
       </div>
-      <div className="lp-labshot__code" aria-hidden>
+      <div
+        className="overflow-hidden bg-[var(--color-code-bg)] py-[18px] font-mono text-[10.5px] leading-[1.65] text-[var(--color-code-plain)]"
+        aria-hidden
+      >
         {[
           [
             "1",
@@ -370,8 +440,14 @@ const LabShot = () => (
             </>,
           ],
         ].map(([lineNumber, line, highlighted]) => (
-          <div key={String(lineNumber)} className={`lp-labshot__line ${highlighted ? "is-highlighted" : ""}`}>
-            <span className="lp-labshot__gutter">{lineNumber}</span>
+          <div
+            key={String(lineNumber)}
+            className={cn(
+              "flex whitespace-pre px-4",
+              highlighted && "bg-[var(--lp-code-highlight-bg)] shadow-[inset_3px_0_0_var(--color-lilac)]",
+            )}
+          >
+            <span className="w-5 shrink-0 pr-3.5 text-right text-[var(--color-code-comment)]">{lineNumber}</span>
             <span>{line}</span>
           </div>
         ))}
@@ -381,23 +457,28 @@ const LabShot = () => (
 );
 
 const SocraticMock = () => (
-  <div className="lp-socratic" id="ai-tutor">
-    <div className="lp-socratic__head">
-      <span className="lp-socratic__avatar">
+  <div
+    className="flex flex-col gap-3.5 rounded-[var(--radius-cards)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] p-[22px] shadow-[var(--shadow-socratic)]"
+    id="ai-tutor"
+  >
+    <div className="flex items-center gap-2.5 pb-1 max-sm:flex-wrap">
+      <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-[var(--lp-eyebrow-bg)] text-[var(--lp-accent)]">
         <SparklesIcon className="h-[18px] w-[18px]" />
       </span>
-      <b>AI Tutor</b>
+      <b className="text-[15px] font-bold text-[var(--lp-text-primary)]">AI Tutor</b>
     </div>
-    <div className="lp-bubble lp-bubble--tutor">
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-[var(--lp-bubble-tutor)] px-[15px] py-3 text-[14.5px] leading-[1.55] text-[var(--lp-text-primary)] max-sm:max-w-full dark:border dark:border-[#463d6b]">
       Your <code>withdraw()</code> reverts. Before I help, what do you expect <code>balances[msg.sender]</code> to hold
       at this point?
     </div>
-    <div className="lp-bubble lp-bubble--you">The full amount they contributed?</div>
-    <div className="lp-bubble lp-bubble--tutor">
+    <div className="lp-bubble self-end max-w-[88%] rounded-[14px] rounded-br-[var(--radius-buttons)] border border-[color:var(--lp-bubble-you-border)] bg-[var(--lp-bubble-you)] px-[15px] py-3 text-[14.5px] leading-[1.55] text-[var(--lp-text-primary)] max-sm:max-w-full">
+      The full amount they contributed?
+    </div>
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-[var(--lp-bubble-tutor)] px-[15px] py-3 text-[14.5px] leading-[1.55] text-[var(--lp-text-primary)] max-sm:max-w-full dark:border dark:border-[#463d6b]">
       Right. So if you send the ETH first and zero it out after, what could a malicious contract do in between?
     </div>
-    <div className="lp-socratic__caption">
-      <MapIcon className="h-[15px] w-[15px]" />
+    <div className="mt-0.5 flex items-center gap-[7px] border-t border-dashed border-[color:var(--lp-border)] pt-3 text-[12.5px] text-[var(--lp-text-secondary)]">
+      <MapIcon className="h-[15px] w-[15px] shrink-0 text-[var(--lp-accent)]" />
       Guiding you to discover reentrancy, not just patching it.
     </div>
   </div>
@@ -406,23 +487,32 @@ const SocraticMock = () => (
 const Home: NextPage = () => {
   return (
     <div className={`lp ${inter.variable} ${ibmPlexMono.variable}`}>
-      <nav className="lp-nav" aria-label="Main navigation">
+      <nav
+        className="flex h-[68px] items-center gap-10 border-b border-[color:var(--lp-border)] bg-[var(--lp-bg)] px-5 sm:px-8 min-[1100px]:px-12"
+        aria-label="Main navigation"
+      >
         <Brand />
-        <div className="lp-nav__links">
+        <div className="flex gap-6 max-[900px]:hidden">
           {PRODUCT_COPY.navLinks.map(link => (
-            <Link key={link.label} href={link.href}>
+            <Link
+              key={link.label}
+              href={link.href}
+              className="text-base font-bold leading-none text-[var(--lp-text-primary)] transition-colors hover:text-[var(--lp-accent)]"
+            >
               {link.label}
             </Link>
           ))}
         </div>
-        <SwitchTheme className="lp-nav__theme site-theme-switch" />
+        <SwitchTheme className="ml-auto site-theme-switch" />
       </nav>
 
-      <header className="lp-hero lp-wrap">
-        <div className="lp-hero__text">
-          <h1 className="lp-display">{PRODUCT_COPY.hero.title}</h1>
-          <p className="lp-lead">{PRODUCT_COPY.hero.lead}</p>
-          <div className="lp-hero__cta">
+      <header
+        className={`${lpWrap} grid grid-cols-[1fr_1.1fr] items-center gap-10 pt-14 pb-16 min-[1101px]:gap-24 min-[901px]:pt-[72px] min-[901px]:pb-[84px] max-[900px]:grid-cols-1`}
+      >
+        <div className="flex flex-col gap-5">
+          <h1 className={`${lpHeading} text-[clamp(40px,4.4vw,58px)] leading-[1.02]`}>{PRODUCT_COPY.hero.title}</h1>
+          <p className={lpLead}>{PRODUCT_COPY.hero.lead}</p>
+          <div className="mt-1 flex flex-wrap gap-3 max-sm:flex-col">
             <MarketingButton href={MARKETING_ROUTES.ethereum101} size="lg" icon>
               Start Ethereum 101
             </MarketingButton>
@@ -430,10 +520,13 @@ const Home: NextPage = () => {
               See how it works
             </MarketingButton>
           </div>
-          <div className="lp-hero__trust">
+          <div className="mt-2.5 flex flex-wrap gap-4">
             {PRODUCT_COPY.hero.trust.map(item => (
-              <span key={item}>
-                <CheckIcon className="h-[15px] w-[15px]" />
+              <span
+                key={item}
+                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-bold text-[var(--lp-text-secondary)]"
+              >
+                <CheckIcon className="h-[15px] w-[15px] text-[var(--lp-trust-check)]" />
                 {item}
               </span>
             ))}
@@ -442,24 +535,24 @@ const Home: NextPage = () => {
         <LabShot />
       </header>
 
-      <section className="lp-section lp-band" id="how-it-works">
-        <div className="lp-wrap">
-          <div className="lp-featured">
-            <div className="lp-featured__text">
+      <section className={`${lpSection} bg-[var(--lp-band)]`} id="how-it-works">
+        <div className={lpWrap}>
+          <div className="grid grid-cols-2 items-center gap-10 min-[1101px]:gap-24 max-[900px]:grid-cols-1">
+            <div className="flex flex-col gap-4">
               <Eyebrow>{PRODUCT_COPY.socratic.eyebrow}</Eyebrow>
-              <h2 className="lp-h2">{PRODUCT_COPY.socratic.title}</h2>
-              <p className="lp-lead">{PRODUCT_COPY.socratic.lead}</p>
-              <ul className="lp-featured__list">
-                <li>
-                  <ChatBubbleLeftRightIcon className="h-5 w-5" />
+              <h2 className={lpH2}>{PRODUCT_COPY.socratic.title}</h2>
+              <p className={`${lpLead} text-lg`}>{PRODUCT_COPY.socratic.lead}</p>
+              <ul className="mt-1.5 flex list-none flex-col gap-3 p-0">
+                <li className="flex gap-2.5 text-base leading-normal text-[var(--lp-text-primary)]">
+                  <ChatBubbleLeftRightIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--lp-accent)]" />
                   Questions that build real intuition, not copy-paste habits
                 </li>
-                <li>
-                  <RectangleStackIcon className="h-5 w-5" />
+                <li className="flex gap-2.5 text-base leading-normal text-[var(--lp-text-primary)]">
+                  <RectangleStackIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--lp-accent)]" />
                   Hints that go only as far as you actually need
                 </li>
-                <li>
-                  <AcademicCapIcon className="h-5 w-5" />
+                <li className="flex gap-2.5 text-base leading-normal text-[var(--lp-text-primary)]">
+                  <AcademicCapIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--lp-accent)]" />
                   You finish knowing the <em>why</em> behind every line
                 </li>
               </ul>
@@ -469,25 +562,25 @@ const Home: NextPage = () => {
         </div>
       </section>
 
-      <section className="lp-section lp-wrap" id="evm">
-        <div className="lp-section__head is-center">
-          <h2 className="lp-h2">{PRODUCT_COPY.capabilities.title}</h2>
-          <p className="lp-lead">{PRODUCT_COPY.capabilities.lead}</p>
+      <section className={`${lpSection} mx-auto w-full max-w-[1320px] px-5 sm:px-8 min-[1100px]:px-12`} id="evm">
+        <div className="mb-8 flex max-w-none flex-col items-center gap-3.5 text-center min-[641px]:mb-12">
+          <h2 className={lpH2}>{PRODUCT_COPY.capabilities.title}</h2>
+          <p className={lpLead}>{PRODUCT_COPY.capabilities.lead}</p>
         </div>
-        <div className="lp-feat-grid">
+        <div className="grid grid-cols-1 gap-5 min-[640px]:grid-cols-2 min-[901px]:grid-cols-4">
           {featureCards.map(card => (
             <FeatureCard key={card.title} {...card} />
           ))}
         </div>
       </section>
 
-      <section className="lp-section lp-band-lav" id="curriculum">
-        <div className="lp-wrap">
-          <div className="lp-section__head is-center">
+      <section className={`${lpSection} bg-[var(--lp-band-lav)]`} id="curriculum">
+        <div className={lpWrap}>
+          <div className="mb-8 flex max-w-none flex-col items-center gap-3.5 text-center min-[641px]:mb-12 [&_span]:self-center [&_span]:bg-[var(--lp-eyebrow-on-lav)]">
             <Eyebrow>{PRODUCT_COPY.curriculum.eyebrow}</Eyebrow>
-            <h2 className="lp-h2">{PRODUCT_COPY.curriculum.title}</h2>
+            <h2 className={lpH2}>{PRODUCT_COPY.curriculum.title}</h2>
           </div>
-          <div className="lp-module-grid">
+          <div className="grid grid-cols-1 gap-6 min-[901px]:grid-cols-2">
             {curriculumModules.map(module => (
               <ModuleCard key={module.title} {...module} />
             ))}
@@ -495,13 +588,15 @@ const Home: NextPage = () => {
         </div>
       </section>
 
-      <footer className="lp-footer">
-        <div className="lp-footer__brand">
-          <span className="lp-footer__brand-row">
+      <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-[color:var(--lp-border)] bg-[var(--lp-bg)] px-5 py-7 sm:px-8 min-[1100px]:px-12 max-sm:flex-col max-sm:items-start">
+        <div className="flex flex-col gap-2">
+          <span className="inline-flex items-center gap-[9px] text-base font-black leading-none text-[var(--lp-text-primary)]">
             <Image src="/eth-diamond-purple.svg" alt="" width={22} height={22} />
             Learning Lab
           </span>
-          <small>Interactive Ethereum labs, concepts to code.</small>
+          <small className="max-w-[40ch] text-[13px] leading-normal text-[var(--lp-text-tertiary)]">
+            Interactive Ethereum labs, concepts to code.
+          </small>
         </div>
       </footer>
     </div>
