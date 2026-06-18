@@ -1,4 +1,5 @@
 import { CardFrame } from "../CardFrame";
+import { Markdown } from "../Markdown";
 import type { ConceptCard as ConceptCardType } from "~~/lib/lab/types";
 
 type Props = {
@@ -8,7 +9,7 @@ type Props = {
 export const ConceptCard = ({ card }: Props) => {
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap m-0">{card.body}</p>
+      <Markdown className="text-base-content/90 leading-relaxed">{card.body}</Markdown>
     </CardFrame>
   );
 };
