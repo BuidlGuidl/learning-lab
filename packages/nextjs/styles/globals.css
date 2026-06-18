@@ -8,8 +8,8 @@
 
   /* Ethereum.org palette — the single source of raw
      colors. Semantic + dark-mode tokens below reference these; registering them
-     in @theme also exposes utilities like `bg-lavender-paper`. */
-  --color-lavender-paper: #ece0ff;
+     in @theme also exposes utilities like `bg-lavender`. */
+  --color-lavender: #ece0ff;
   --color-pure-white: #ffffff;
   --color-ash-gray: #cfcfcf;
   --color-onyx: #121212;
@@ -57,7 +57,7 @@
   /* Landing page (.lp) */
   --color-lp-bg: var(--color-pure-white);
   --color-lp-band: var(--color-light-violet-band);
-  --color-lp-band-lav: var(--color-lavender-paper);
+  --color-lp-band-lav: var(--color-lavender);
   --color-lp-surface: var(--color-pure-white);
   --color-lp-text-primary: var(--color-onyx);
   --color-lp-text-secondary: var(--color-graphite);
@@ -65,7 +65,7 @@
   --color-lp-border: var(--color-ash-gray);
   --color-lp-accent: var(--color-ethereum-violet);
   --color-lp-accent-press: var(--color-deep-iris);
-  --color-lp-eyebrow-bg: var(--color-lavender-paper);
+  --color-lp-eyebrow-bg: var(--color-lavender);
   --color-lp-eyebrow-on-lav: var(--color-pure-white);
   --color-lp-btn-bg: var(--color-ethereum-violet);
   --color-lp-btn-bg-hover: var(--color-deep-iris);
@@ -80,14 +80,14 @@
   --color-lp-feat-text: var(--color-onyx);
   --color-lp-module-art-lavender: var(--color-pastel-lavender);
   --color-lp-module-art-mint: var(--color-pastel-mint);
-  --color-lp-pill-bg: var(--color-lavender-paper);
+  --color-lp-pill-bg: var(--color-lavender);
   --color-lp-pill-fg: var(--color-ethereum-violet);
   --color-lp-pill-mint-bg: var(--color-pastel-mint);
   --color-lp-pill-mint-fg: var(--color-mint);
   --color-lp-trust-check: var(--color-mint);
   --color-lp-mode-fg: var(--color-hot-magenta);
   --color-lp-mode-bg: var(--color-pastel-pink);
-  --color-lp-bubble-tutor: var(--color-lavender-paper);
+  --color-lp-bubble-tutor: var(--color-lavender);
   --color-lp-bubble-you: var(--color-pure-white);
   --color-lp-bubble-you-border: var(--color-ash-gray);
   --color-lp-bubble-code-bg: rgb(108 36 224 / 0.1);
@@ -334,7 +334,7 @@
 
 .site-theme-switch.theme-switch .theme-switch__toggle:hover {
   border-color: var(--color-ethereum-violet);
-  background-color: var(--color-lavender-paper);
+  background-color: var(--color-lavender);
 }
 
 .site-theme-switch.theme-switch .theme-switch__toggle:checked {
