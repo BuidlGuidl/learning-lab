@@ -111,7 +111,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Deploy it",
           scenario:
-            "One click. Your contract — your GOAL line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
+            "One click. Your contract — your `GOAL` line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
           console: "open",
         },
         {
@@ -119,7 +119,7 @@ export const lab = defineLab({
           id: "what-just-happened",
           label: "CONCEPT",
           title: "What just happened",
-          body: "Your Solidity source was compiled to bytecode, and that bytecode is now running on an EVM in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here — it's the default condition of code on Ethereum.",
+          body: "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here — it's the default condition of code on Ethereum.",
         },
       ],
     },
@@ -132,7 +132,7 @@ export const lab = defineLab({
           id: "eth-is-native",
           label: "CONCEPT",
           title: "ETH is native",
-          body: "Money isn't an add-on in Ethereum — contracts have balances, just like accounts do. Inside a function, `msg.sender` is whoever called it and `msg.value` is how much ETH they sent along. A function only accepts ETH if it's marked `payable`. Those three pieces are all fund() needs.",
+          body: "Money isn't an add-on in Ethereum — contracts have **balances**, just like accounts do. Inside a function, `msg.sender` is whoever called it and `msg.value` is how much ETH they sent along. A function only accepts ETH if it's marked `payable`. Those three pieces are all `fund()` needs.",
         },
         {
           type: "code-exercise",
@@ -141,7 +141,7 @@ export const lab = defineLab({
           title: "The ledger",
           region: "contributions",
           prompt:
-            "The contract needs to remember who sent what. Declare a `mapping(address => uint256)` named `contributions`, marked `public` — a ledger keyed by address. Every contributor gets a row; everyone else's row just reads zero.",
+            "The contract needs to remember who sent what. Declare a `mapping(address => uint256)` named `contributions`, marked `public` — a **ledger** keyed by address. Every contributor gets a row; everyone else's row just reads zero.",
           placeholder: "mapping(address => uint256) public scores;",
         },
         {
@@ -149,7 +149,7 @@ export const lab = defineLab({
           id: "the-ledger-is-public",
           label: "CONCEPT",
           title: "The ledger is public",
-          body: "Anyone can read every row of that mapping — every contribution, every address. Addresses are pseudonymous, not private: nobody knows it's you behind 0xab12…, but everything that address does is in the open. Honest framing: privacy on Ethereum is an open frontier the ecosystem is actively building, not a solved problem.",
+          body: "Anyone can read every row of that mapping — every contribution, every address. Addresses are **pseudonymous**, not private: nobody knows it's you behind 0xab12…, but everything that address does is in the open. Honest framing: privacy on Ethereum is an open frontier the ecosystem is actively building, not a solved problem.",
         },
         {
           type: "code-exercise",
@@ -186,7 +186,7 @@ export const lab = defineLab({
           id: "require-and-deadlines",
           label: "CONCEPT",
           title: "require and deadlines",
-          body: 'require(condition, "reason") is how a contract enforces its rules: if the condition fails, the whole transaction rolls back as if it never happened. And block.timestamp gives the contract a clock, so it can enforce a deadline without anyone checking a calendar. Escrow agent and referee, in one program.',
+          body: '`require(condition, "reason")` is how a contract enforces its rules: if the condition fails, the whole transaction rolls back as if it never happened. And `block.timestamp` gives the contract a clock, so it can enforce a **deadline** without anyone checking a calendar. Escrow agent and referee, in one program.',
         },
         {
           type: "code-exercise",
@@ -204,7 +204,7 @@ export const lab = defineLab({
           id: "reentrancy",
           label: "CONCEPT",
           title: "Reentrancy, and why code is forever",
-          body: "The receiver of ETH can be a contract too, with code that runs the moment the ETH arrives — and that code can call refund() again, mid-flight. If refund() sent first and zeroed after, those nested calls would each pass the checks and drain everything. That exact bug was TheDAO hack in 2016. Deployed code can't be patched, so the discipline — update state before external calls — and the audit culture around it are sacred in Ethereum.",
+          body: "The receiver of ETH can be a contract too, with code that runs the moment the ETH arrives — and that code can call `refund()` again, mid-flight. If `refund()` sent first and zeroed after, those nested calls would each pass the checks and drain everything. That exact bug was TheDAO hack in 2016. Deployed code can't be patched, so the discipline — update state before external calls — and the audit culture around it are sacred in Ethereum.",
         },
         {
           type: "question",
@@ -212,7 +212,7 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "Walk through the attack",
           question:
-            "A malicious contract calls refund(), and the moment the ETH arrives it calls refund() again. Walk through your code: why does the second call get nothing?",
+            "A malicious contract calls `refund()`, and the moment the ETH arrives it calls `refund()` again. Walk through your code: why does the second call get nothing?",
           rubricConcepts: [
             "the contribution was zeroed before the send",
             "the second call fails the require or has zero to transfer",
@@ -232,7 +232,7 @@ export const lab = defineLab({
           label: "CODE",
           title: "The finished contract",
           file: "Crowdfund.sol",
-          note: "The full reveal — every learner line in place, plus claim(), the function that pays the creator when the goal is hit. A fixed goal, a public ledger, a deadline, refunds that can't be gamed. The whole deal, enforced by code.",
+          note: "The full reveal — every learner line in place, plus `claim()`, the function that pays the creator when the goal is hit. A fixed goal, a public ledger, a deadline, refunds that can't be gamed. The whole deal, enforced by code.",
         },
         {
           type: "experiment",
@@ -249,7 +249,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Use it like an app",
           scenario:
-            "This is what your contract looks like from the outside — an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the fund() you wrote — watch the console log each one.",
+            "This is what your contract looks like from the outside — an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the `fund()` you wrote — watch the console log each one.",
           component: UseIt,
           console: "closed",
         },
@@ -258,7 +258,7 @@ export const lab = defineLab({
           id: "what-you-did",
           label: "SUMMARY",
           title: "You shipped a real contract",
-          body: "You read, wrote, and deployed a real smart contract. Along the way: a network nobody owns, accounts and gas, state and mappings, payable functions, require and deadlines, events, and the reentrancy discipline that separates working Solidity from safe Solidity. The crowdfund you built holds real value and enforces its own rules — no referee needed. That's Ethereum.",
+          body: "You read, wrote, and deployed a real smart contract. Along the way: a network nobody owns, accounts and gas, state and mappings, `payable` functions, `require` and deadlines, events, and the reentrancy discipline that separates working Solidity from safe Solidity. The crowdfund you built holds real value and enforces its own rules — no referee needed. That's Ethereum.",
         },
       ],
     },
