@@ -2,6 +2,7 @@
 
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { CodeBlock } from "~~/components/code/CodeBlock";
 
 // Element styling for lesson prose. react-markdown owns block layout, so callers
 // pass their text styling (color, size, block margin) via `className` on the
@@ -31,18 +32,35 @@ const components: Components = {
       <table className="table table-zebra table-sm">{children}</table>
     </div>
   ),
-  // Inline code gets a chip; fenced code (carries a language- class) stays plain inside <pre>.
-  code: ({ className, children }) =>
-    className?.includes("language-") ? (
-      <code className={className}>{children}</code>
-    ) : (
-      <code className="rounded bg-base-300 px-1.5 py-0.5 font-mono text-[0.85em] text-base-content">{children}</code>
-    ),
-  pre: ({ children }) => (
-    <pre className="mb-3 overflow-x-auto rounded-md bg-base-300 p-3 font-mono text-[0.85em] leading-relaxed last:mb-0">
-      {children}
-    </pre>
-  ),
+  // Inline code gets a chip. Fenced solidity routes through the same shiki
+  // CodeBlock the code cards use, so lesson prose and code reveals highlight
+  // identically; any other language stays a plain panel (the highlighter only
+  // loads solidity — see components/code/highlighter.ts). The fenced branches
+  // own their outer margin because `pre` below is a transparent pass-through.
+  code: ({ className, children }) => {
+    const lang = className?.match(/language-(\w+)/)?.[1];
+    if (!lang) {
+      return (
+        <code className="rounded bg-base-300 px-1.5 py-0.5 font-mono text-[0.85em] text-base-content">{children}</code>
+      );
+    }
+    const code = String(children).replace(/\n$/, "");
+    if (lang === "solidity") {
+      return (
+        <div className="mb-3 last:mb-0">
+          <CodeBlock code={code} lang="solidity" />
+        </div>
+      );
+    }
+    return (
+      <pre className="mb-3 overflow-x-auto rounded-md bg-base-300 p-3 font-mono text-[0.85em] leading-relaxed last:mb-0">
+        <code>{code}</code>
+      </pre>
+    );
+  },
+  // Fenced code renders its own block (above); pre just passes through —
+  // wrapping it would nest a block inside a <pre> and double the margin.
+  pre: ({ children }) => <>{children}</>,
 };
 
 // Inline variant unwraps the paragraph so formatting drops into a host line
