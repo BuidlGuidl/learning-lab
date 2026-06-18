@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Lab } from "~~/components/lab/Lab";
+import { LabLoader } from "./LabLoader";
 import { registry } from "~~/labs/registry";
 
 type Props = {
@@ -8,10 +8,8 @@ type Props = {
 
 const LabPage = async ({ params }: Props) => {
   const { id } = await params;
-  const entry = registry[id];
-  if (!entry) notFound();
-  const { lab } = await entry.load();
-  return <Lab lab={lab} />;
+  if (!registry[id]) notFound();
+  return <LabLoader id={id} />;
 };
 
 export default LabPage;

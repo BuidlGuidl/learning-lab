@@ -1,12 +1,14 @@
 import { create } from "zustand";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
 import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
+import type { DeployFn, LabTests } from "~~/lib/lab/harness";
+import type { Region, Segment } from "~~/lib/lab/regions";
+import type { RunReport } from "~~/lib/lab/run";
 import type { Card, Lab } from "~~/lib/lab/types";
 
 type ProgressEntry = {
   learnerInput: string;
-  file: string;
-  slot: string;
+  region: string;
 };
 
 // A spot in the lab, addressed the way the store already thinks: chapter then card.
@@ -25,15 +27,13 @@ type LabState = {
   // not move this, so peeking ahead leaves later cards visibly locked. When the
   // mastery gate lands, next() stops here and the locks past it become real.
   maxReached: Position;
-  skeleton: Record<string, string>;
-  sources: Record<string, string>;
-  // Every slot token this lab declares (one per code-exercise card). Captured at
-  // init so the compile path can tell a real slot from arbitrary learner text.
-  slotTokens: string[];
-  // slot token -> its canonical answer. The grading compile backfills every slot
-  // except the one under test with these, so a broken neighbour can't fail the
-  // answer being graded (see gradingSourceOf).
-  slotCanonicals: Record<string, string>;
+  // The lab's derived shape, captured at init: segments per file, regions by id.
+  // Sources are never stored — every view renders from these plus fills.
+  files: Record<string, Segment[]>;
+  regions: Record<string, Region>;
+  // the lab's boot + behavioural tests, captured at init for grade-time runs
+  deploy: DeployFn | null;
+  tests: LabTests | null;
   progress: Record<string, ProgressEntry>;
   transcript: LearningTranscript;
 };
@@ -43,7 +43,8 @@ type LabActions = {
   next: (lab: Lab) => void;
   prev: (lab: Lab) => void;
   goTo: (chapterIndex: number, cardIndex: number) => void;
-  completeCodeExercise: (cardId: string, file: string, slot: string, learnerInput: string) => void;
+  completeCodeExercise: (cardId: string, region: string, learnerInput: string) => void;
+  recordRunVerdict: (cardId: string, chapterId: string, learnerInput: string, report: RunReport) => void;
   appendGradingEvent: (event: GradingEvent) => void;
   skipCard: (card: Card, chapterId: string) => void;
   reset: () => void;
@@ -56,50 +57,25 @@ const initialState: LabState = {
   chapterIndex: 0,
   cardIndex: 0,
   maxReached: { chapterIndex: 0, cardIndex: 0 },
-  skeleton: {},
-  sources: {},
-  slotTokens: [],
-  slotCanonicals: {},
+  files: {},
+  regions: {},
+  deploy: null,
+  tests: null,
   progress: {},
   transcript: emptyTranscript,
 };
 
-// The source handed to the compiler when grading one exercise. The learner only
-// ever writes one slot; placing it and the rest of the file is the platform's job.
-// So we isolate the slot under test — learner input in its slot, every other slot
-// backfilled with its canonical — and compile that. A broken or not-yet-written
-// neighbour can't fail this answer, which is what stops a correct re-submit from
-// tripping over a wrong later card (and lets a slot that depends on a later one,
-// like the setter emitting an event, still grade). Same bargain SpeedRunEthereum
-// makes — every checkpoint ships a reference solution — here that reference also
-// backfills the file. Built from the skeleton, never sources, so the peek keeps
-// showing the learner's real, honest assembly.
-export const gradingSourceOf = (s: LabState, file: string, slot: string, learnerInput: string) => {
-  let src = s.skeleton[file] ?? "";
-  for (const token of s.slotTokens) {
-    if (!src.includes(token)) continue; // tokens from other files
-    src = src.split(token).join(token === slot ? learnerInput : (s.slotCanonicals[token] ?? ""));
-  }
-  return src;
-};
+// region id -> the learner's latest submitted text (a skip writes the
+// canonical). This is the store's one moving part for code; display,
+// grading, and the experiment world all render from it — the experiment on
+// purpose: the learner deploys what they actually wrote, passing or not,
+// and a broken fill surfaces as a real compile error, never a silent
+// canonical stand-in.
+export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
+  Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
 
 // Gradable cards gate forward nav; read-only types advance freely.
 const isGradable = (card: Card) => card.type === "code-exercise" || card.type === "question";
-
-// Re-derive sources from skeleton + all progress entries so re-submitting a code-exercise
-// card replaces its slot freshly instead of becoming a no-op against an already-filled source.
-const deriveSources = (skeleton: Record<string, string>, progress: Record<string, ProgressEntry>) => {
-  const sources: Record<string, string> = { ...skeleton };
-  for (const { file, slot, learnerInput } of Object.values(progress)) {
-    if (sources[file] !== undefined) {
-      // split/join, not String.replace: replace() treats `$&`, `$1` etc. in the
-      // replacement as special patterns, so a learner answer containing `$` would
-      // mangle. split/join inserts the text verbatim.
-      sources[file] = sources[file].split(slot).join(learnerInput);
-    }
-  }
-  return sources;
-};
 
 export const useLabStore = create<LabState & LabActions>(set => ({
   ...initialState,
@@ -108,19 +84,13 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       // Idempotent: re-mounting the same lab (e.g. React strict-mode double-effect)
       // must not wipe in-flight progress. Switching to a different lab restarts.
       if (s.currentLabId === lab.id) return s;
-      // Each code-exercise owns one slot and the canonical that fills it. Captured
-      // here so the grading compile can isolate the slot under test and backfill the
-      // rest of the file with canonicals (see gradingSourceOf).
-      const exercises = lab.chapters.flatMap(ch => ch.cards).flatMap(c => (c.type === "code-exercise" ? [c] : []));
-      const slotTokens = exercises.map(c => c.slot);
-      const slotCanonicals = Object.fromEntries(exercises.map(c => [c.slot, c.canonical]));
       return {
         ...initialState,
         currentLabId: lab.id,
-        skeleton: { ...lab.skeleton },
-        sources: { ...lab.skeleton },
-        slotTokens,
-        slotCanonicals,
+        files: lab.files,
+        regions: lab.regions,
+        deploy: lab.deploy,
+        tests: lab.tests,
         transcript: { labId: lab.id, events: [] },
       };
     }),
@@ -151,19 +121,34 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       }
       return s;
     }),
-  // Raw text stays in progress (not just the mutated source) so a re-grade can flip a verdict
-  // without losing what was typed.
-  completeCodeExercise: (cardId, file, slot, learnerInput) =>
+  // Raw text stays in progress (not a mutated source) so a re-grade can flip a verdict
+  // without losing what was typed; re-submitting replaces the region's fill freshly.
+  completeCodeExercise: (cardId, region, learnerInput) =>
+    set(s => ({ progress: { ...s.progress, [cardId]: { learnerInput, region } } })),
+  // The test run owns the gate. Submitting a code-exercise records its verdict straight off
+  // the report, so isCardCleared flips on the tests alone — Next never waits on the llm, and
+  // the coach (opt-in, separate) can't write here. Feedback stays off the event on purpose:
+  // it's transient coach output now, not part of the transcript.
+  recordRunVerdict: (cardId, chapterId, learnerInput, report) =>
     set(s => {
-      const progress = { ...s.progress, [cardId]: { learnerInput, file, slot } };
-      return { progress, sources: deriveSources(s.skeleton, progress) };
+      const event: GradingEvent = {
+        cardId,
+        chapterId,
+        attempt: nextAttempt(s.transcript, cardId),
+        outcome: report.verdict,
+        answer: learnerInput,
+        compilerErrors: report.stage === "compile" ? report.errors : undefined,
+        testResults: report.stage === "tests" ? report.results : undefined,
+        happenedAt: Date.now(),
+      };
+      return { transcript: { ...s.transcript, events: [...s.transcript.events, event] } };
     }),
   // Record a grade. The gate reads clearance back out of the transcript, so a pass here is
   // what opens next().
   appendGradingEvent: event => set(s => ({ transcript: { ...s.transcript, events: [...s.transcript.events, event] } })),
-  // Dev-only escape hatch. Writes a "skipped" event (captures where learners bail) and threads
-  // the canonical into sources — only on a deliberate skip, never a fail — so later reveal
-  // cards don't show a raw __SLOT__.
+  // Dev-only escape hatch. Writes a "skipped" event (captures where learners bail) and fills
+  // the region with its canonical — only on a deliberate skip, never a fail — so later reveal
+  // cards show real code instead of a placeholder.
   // TODO(remove-skip): drop before this is learner-facing.
   skipCard: (card, chapterId) =>
     set(s => {
@@ -171,12 +156,12 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       const event: GradingEvent = { cardId: card.id, chapterId, attempt, outcome: "skipped", happenedAt: Date.now() };
       let progress = s.progress;
       if (card.type === "code-exercise") {
-        progress = { ...s.progress, [card.id]: { learnerInput: card.canonical, file: card.file, slot: card.slot } };
+        const canonical = s.regions[card.region]?.canonical ?? "";
+        progress = { ...s.progress, [card.id]: { learnerInput: canonical, region: card.region } };
       }
       return {
         transcript: { ...s.transcript, events: [...s.transcript.events, event] },
         progress,
-        sources: deriveSources(s.skeleton, progress),
       };
     }),
   reset: () => set(initialState),

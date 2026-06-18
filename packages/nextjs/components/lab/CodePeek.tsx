@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CodeBracketIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { CodeBlock } from "~~/components/code/CodeBlock";
+import { renderDisplay } from "~~/lib/lab/render";
 import type { Lab } from "~~/lib/lab/types";
-import { useLabStore } from "~~/services/store/lab-store";
+import { fillsOf, useLabStore } from "~~/services/store/lab-store";
 
 // A `c` typed into an answer field is a literal c, not the peek shortcut. Only
 // text-entry fields swallow letters though — a checkbox/radio/toggle (the daisyUI
@@ -17,13 +18,15 @@ const isEditable = (el: EventTarget | null) => {
   return false;
 };
 
-// Always-available view of the running code. Reads sources straight from the
-// store and renders the current state of one file through the same CodeBlock
-// the lesson uses. Read-only, ephemeral — open-state stays local (ADR-0012).
+// Always-available view of the running code, rendered the same way reveal
+// cards render: segments + the learner's fills, with unwritten regions as
+// faded placeholders. Read-only, ephemeral — open-state stays local.
 // The sheet wears the github-dark-dimmed palette (#22272e et al) so its chrome
 // merges into the shiki code, which is always dark regardless of app theme.
 export const CodePeek = ({ lab }: { lab: Lab }) => {
-  const sources = useLabStore(s => s.sources);
+  const labFiles = useLabStore(s => s.files);
+  const regions = useLabStore(s => s.regions);
+  const progress = useLabStore(s => s.progress);
   const chapterIndex = useLabStore(s => s.chapterIndex);
   const cardIndex = useLabStore(s => s.cardIndex);
 
@@ -32,11 +35,17 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
   // Reset to null on close so each open lands on the current card again.
   const [pickedFile, setPickedFile] = useState<string | null>(null);
 
-  const files = Object.keys(sources);
+  const files = Object.keys(labFiles);
   const card = lab.chapters[chapterIndex]?.cards[cardIndex];
-  const cardFile = card && "file" in card ? card.file : undefined;
-  const defaultFile = cardFile && sources[cardFile] !== undefined ? cardFile : files[0];
+  // a code card names its file; an exercise card's file comes via its region
+  const cardFile =
+    card && "file" in card ? card.file : card?.type === "code-exercise" ? regions[card.region]?.file : undefined;
+  const defaultFile = cardFile && labFiles[cardFile] !== undefined ? cardFile : files[0];
   const shownFile = pickedFile ?? defaultFile;
+  const shown = useMemo(
+    () => (shownFile ? renderDisplay(labFiles[shownFile] ?? [], fillsOf(progress)) : { code: "", softLines: [] }),
+    [labFiles, shownFile, progress],
+  );
 
   const close = () => {
     setOpen(false);
@@ -140,7 +149,7 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
 
         {/* The running source, as a line-numbered editor pane filling the sheet. */}
         <div className="flex-1 overflow-auto">
-          {shownFile && <CodeBlock code={sources[shownFile] ?? ""} lang="solidity" showLineNumbers />}
+          {shownFile && <CodeBlock code={shown.code} softLines={shown.softLines} lang="solidity" showLineNumbers />}
         </div>
       </aside>
     </>
