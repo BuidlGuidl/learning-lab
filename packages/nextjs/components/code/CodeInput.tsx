@@ -57,7 +57,7 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
 
   return (
     <div
-      className={`overflow-hidden rounded-box border border-base-300 ${readOnly ? "opacity-70" : ""}`}
+      className={`code-input-panel overflow-hidden rounded-box border border-base-300 ${readOnly ? "opacity-70" : ""}`}
       style={{ background: PANEL_BG }}
     >
       <Editor
