@@ -1,0 +1,108 @@
+/*
+  Shared design primitives: the dark variant, the raw color palette + radii, and
+  the DaisyUI themes. Surface-specific tokens (lp-*, lab-*) live in @theme blocks
+  inside landing.css / lab.css — Tailwind merges every @theme across the bundle.
+  Imported first so the raw palette exists before anything references it.
+*/
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
+  --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  /* Ethereum.org palette — the single source of raw
+     colors. Semantic + dark-mode tokens elsewhere reference these; registering
+     them in @theme also exposes utilities like `bg-lavender`. */
+  --color-lavender: #ece0ff;
+  --color-pure-white: #ffffff;
+  --color-ash-gray: #cfcfcf;
+  --color-onyx: #121212;
+  --color-graphite: #616161;
+  --color-fog: #8c8c8c;
+  --color-ethereum-violet: #6c24e0;
+  --color-deep-iris: #41128c;
+  --color-hot-magenta: #f60e9d;
+  --color-sapphire: #3d4ceb;
+  --color-mint: #0f9972;
+  --color-lilac: #9357f4;
+  --color-light-violet-band: #f5f0ff;
+  --color-pastel-lavender: #ece0ff;
+  --color-pastel-mint: #d6f5ea;
+  --color-pastel-peach: #ffe7d6;
+  --color-pastel-pink: #ffe0f0;
+  --color-code-bg: #1c1430;
+  --color-code-keyword: #c4a6ff;
+  --color-code-type: #8f9bff;
+  --color-code-string: #54d6a8;
+  --color-code-number: #ff7ccb;
+  --color-code-comment: #7a7196;
+  --color-code-function: #e0d3ff;
+  --color-code-punctuation: #b6adcf;
+  --color-code-plain: #e7e1f5;
+
+  /* Radii (shared by the landing page + lab) */
+  --radius-buttons: 4px;
+  --radius-tags: 8px;
+  --radius-cards: 16px;
+  --radius-icon-tile: 12px;
+  --radius-pills: 9999px;
+}
+
+@plugin "daisyui" {
+  themes:
+    light,
+    dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+
+  --color-primary: #93bbfb;
+  --color-primary-content: #212638;
+  --color-secondary: #dae8ff;
+  --color-secondary-content: #212638;
+  --color-accent: #93bbfb;
+  --color-accent-content: #212638;
+  --color-neutral: #212638;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #ffffff;
+  --color-base-200: #f4f8ff;
+  --color-base-300: #dae8ff;
+  --color-base-content: #212638;
+  --color-info: #93bbfb;
+  --color-success: #34eeb6;
+  --color-warning: #ffcf72;
+  --color-error: #ff8863;
+
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+  --tt-tailw: 6px;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+
+  --color-primary: #212638;
+  --color-primary-content: #f9fbff;
+  --color-secondary: #323f61;
+  --color-secondary-content: #f9fbff;
+  --color-accent: #4969a6;
+  --color-accent-content: #f9fbff;
+  --color-neutral: #f9fbff;
+  --color-neutral-content: #385183;
+  --color-base-100: #385183;
+  --color-base-200: #2a3655;
+  --color-base-300: #212638;
+  --color-base-content: #f9fbff;
+  --color-info: #385183;
+  --color-success: #34eeb6;
+  --color-warning: #ffcf72;
+  --color-error: #ff8863;
+
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+
+  --tt-tailw: 6px;
+  --tt-bg: var(--color-primary);
+}

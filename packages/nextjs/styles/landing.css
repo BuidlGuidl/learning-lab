@@ -1,0 +1,246 @@
+/* Landing page (.lp): semantic tokens, dark overrides, and presentational bits. */
+
+/*
+  Light values live here so Tailwind generates the utilities (text-lp-accent,
+  bg-lp-surface…); each is overridden under [data-theme="dark"] .lp below so the
+  utilities flip with the theme.
+*/
+@theme {
+  --color-lp-bg: var(--color-pure-white);
+  --color-lp-band: var(--color-light-violet-band);
+  --color-lp-band-lav: var(--color-lavender);
+  --color-lp-surface: var(--color-pure-white);
+  --color-lp-text-primary: var(--color-onyx);
+  --color-lp-text-secondary: var(--color-graphite);
+  --color-lp-text-tertiary: var(--color-fog);
+  --color-lp-border: var(--color-ash-gray);
+  --color-lp-accent: var(--color-ethereum-violet);
+  --color-lp-accent-press: var(--color-deep-iris);
+  --color-lp-eyebrow-bg: var(--color-lavender);
+  --color-lp-eyebrow-on-lav: var(--color-pure-white);
+  --color-lp-btn-bg: var(--color-ethereum-violet);
+  --color-lp-btn-bg-hover: var(--color-deep-iris);
+  --color-lp-on-accent: var(--color-pure-white);
+  --color-lp-ghost-border: var(--color-ash-gray);
+  --color-lp-ghost-border-hover: var(--color-onyx);
+  --color-lp-icon-tile: rgb(255 255 255 / 0.6);
+  --color-lp-feat-lavender: var(--color-pastel-lavender);
+  --color-lp-feat-mint: var(--color-pastel-mint);
+  --color-lp-feat-peach: var(--color-pastel-peach);
+  --color-lp-feat-pink: var(--color-pastel-pink);
+  --color-lp-feat-text: var(--color-onyx);
+  --color-lp-module-art-lavender: var(--color-pastel-lavender);
+  --color-lp-module-art-mint: var(--color-pastel-mint);
+  --color-lp-pill-bg: var(--color-lavender);
+  --color-lp-pill-fg: var(--color-ethereum-violet);
+  --color-lp-pill-mint-bg: var(--color-pastel-mint);
+  --color-lp-pill-mint-fg: var(--color-mint);
+  --color-lp-trust-check: var(--color-mint);
+  --color-lp-mode-fg: var(--color-hot-magenta);
+  --color-lp-mode-bg: var(--color-pastel-pink);
+  --color-lp-bubble-tutor: var(--color-lavender);
+  --color-lp-bubble-you: var(--color-pure-white);
+  --color-lp-bubble-you-border: var(--color-ash-gray);
+  --color-lp-bubble-code-bg: rgb(108 36 224 / 0.1);
+  --color-lp-bubble-code-fg: var(--color-deep-iris);
+  --color-lp-shot-border: var(--color-ash-gray);
+  --color-lp-shot-bar: var(--color-light-violet-band);
+  --color-lp-shot-url-bg: var(--color-pure-white);
+  --color-lp-shot-concept: var(--color-pure-white);
+  --color-lp-shot-divider: rgb(108 36 224 / 0.12);
+  --color-lp-shot-dots: rgb(108 36 224 / 0.18);
+  --color-lp-code-highlight-bg: rgb(108 36 224 / 0.3);
+
+  /* Product-mock shadows; dark overrides live under [data-theme="dark"] .lp. */
+  --shadow-labshot: 0 30px 60px -28px rgb(65 18 140 / 0.3);
+  --shadow-socratic: 0 24px 50px -30px rgb(65 18 140 / 0.25);
+}
+
+.lp {
+  /* Raw palette now lives in @theme; .lp only declares its semantic tokens. */
+  --font-inter:
+    var(--font-lp-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-ibm-plex-mono: var(--font-lp-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  min-height: 100vh;
+  background: var(--color-lp-bg);
+  color: var(--color-lp-text-primary);
+  font-family: var(--font-inter);
+  font-size: 16px;
+}
+
+[data-theme="dark"] .lp {
+  --color-lp-bg: #13101b;
+  --color-lp-band: #181324;
+  --color-lp-band-lav: #1c1630;
+  --color-lp-surface: #1e1830;
+  --color-lp-text-primary: #f3eefc;
+  --color-lp-text-secondary: #b6abce;
+  --color-lp-text-tertiary: #897ea6;
+  --color-lp-border: #2f2745;
+  --color-lp-accent: #b99bff;
+  --color-lp-accent-press: #cdb6ff;
+  --color-lp-eyebrow-bg: rgb(168 125 255 / 0.14);
+  --color-lp-eyebrow-on-lav: rgb(185 155 255 / 0.16);
+  --color-lp-btn-bg: #7c3aed;
+  --color-lp-btn-bg-hover: #8b5cf6;
+  --color-lp-on-accent: #ffffff;
+  --color-lp-ghost-border: #3a3158;
+  --color-lp-ghost-border-hover: #b99bff;
+  --color-lp-icon-tile: rgb(168 125 255 / 0.12);
+  --color-lp-feat-lavender: #241d38;
+  --color-lp-feat-mint: #15271f;
+  --color-lp-feat-peach: #2b2017;
+  --color-lp-feat-pink: #2a1826;
+  --color-lp-feat-text: #f3eefc;
+  --color-lp-module-art-lavender: #ece0ff;
+  --color-lp-module-art-mint: #d6f5ea;
+  --color-lp-pill-bg: rgb(168 125 255 / 0.16);
+  --color-lp-pill-fg: #c6acff;
+  --color-lp-pill-mint-bg: rgb(61 220 151 / 0.16);
+  --color-lp-pill-mint-fg: #4fdca0;
+  --color-lp-trust-check: #3ddc97;
+  --color-lp-mode-fg: #ff7ccb;
+  --color-lp-mode-bg: rgb(246 14 157 / 0.16);
+  --color-lp-bubble-tutor: #322b50;
+  --color-lp-bubble-you: #221c37;
+  --color-lp-bubble-you-border: #4d4274;
+  --color-lp-bubble-code-bg: rgb(168 125 255 / 0.18);
+  --color-lp-bubble-code-fg: #cdb6ff;
+  --color-lp-shot-border: #2f2745;
+  --color-lp-shot-bar: #1b1528;
+  --color-lp-shot-url-bg: #110d1c;
+  --color-lp-shot-concept: #1a1428;
+  --color-lp-shot-divider: #2a2340;
+  --color-lp-shot-dots: #3a3158;
+  --shadow-labshot: 0 30px 60px -28px rgb(0 0 0 / 0.65);
+  --shadow-socratic: 0 24px 50px -30px rgb(0 0 0 / 0.6);
+}
+
+.lp * {
+  box-sizing: border-box;
+}
+
+.lp a {
+  text-decoration: none;
+}
+
+.site-theme-switch.theme-switch {
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-onyx);
+  box-shadow: none;
+  padding: 5px 10px;
+}
+
+.site-theme-switch.theme-switch .theme-switch__toggle {
+  border-color: var(--color-ash-gray);
+  background-color: var(--color-light-violet-band);
+}
+
+.site-theme-switch.theme-switch .theme-switch__toggle:hover {
+  border-color: var(--color-ethereum-violet);
+  background-color: var(--color-lavender);
+}
+
+.site-theme-switch.theme-switch .theme-switch__toggle:checked {
+  border-color: var(--color-ethereum-violet);
+  background-color: var(--color-ethereum-violet);
+}
+
+.site-theme-switch.theme-switch .theme-switch__icon {
+  color: var(--color-ethereum-violet);
+}
+
+[data-theme="dark"] .site-theme-switch.theme-switch {
+  border-color: #2f2745;
+  background: #1e1830;
+  color: #f3eefc;
+}
+
+[data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__toggle {
+  border-color: #3a3158;
+  background-color: #181324;
+}
+
+[data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__toggle:hover {
+  border-color: #b99bff;
+  background-color: rgb(168 125 255 / 0.14);
+}
+
+[data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__toggle:checked {
+  border-color: #b99bff;
+  background-color: #7c3aed;
+}
+
+[data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__icon {
+  color: #b99bff;
+}
+
+.lp-inline-mono {
+  border-radius: 5px;
+  background: var(--color-lp-eyebrow-bg);
+  color: var(--color-lp-accent);
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 0.9em;
+  padding: 1px 5px;
+}
+
+.lc-k {
+  color: var(--color-code-keyword);
+}
+
+.lc-t {
+  color: var(--color-code-type);
+}
+
+.lc-s {
+  color: var(--color-code-string);
+}
+
+.lc-n {
+  color: var(--color-code-number);
+}
+
+.lc-c {
+  color: var(--color-code-comment);
+  font-style: italic;
+}
+
+.lc-f {
+  color: var(--color-code-function);
+}
+
+.lc-p {
+  color: var(--color-code-punctuation);
+}
+
+.lc-pl {
+  color: var(--color-code-plain);
+}
+
+.lp-bubble code {
+  border-radius: 5px;
+  background: var(--color-lp-bubble-code-bg);
+  color: var(--color-lp-bubble-code-fg);
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 0.88em;
+  padding: 1px 5px;
+}
+
+.lp-tint-lavender {
+  background: var(--color-lp-feat-lavender);
+}
+
+.lp-tint-mint {
+  background: var(--color-lp-feat-mint);
+}
+
+.lp-tint-peach {
+  background: var(--color-lp-feat-peach);
+}
+
+.lp-tint-pink {
+  background: var(--color-lp-feat-pink);
+}

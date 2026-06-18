@@ -1,0 +1,520 @@
+/* Lab surfaces: header, content, DaisyUI overrides, build panel, code peek/editor. */
+
+/*
+  Light values live here so Tailwind generates the utilities (bg-lab-surface,
+  text-lab-text…); each is overridden under [data-theme="dark"] .lab below.
+  Colors mirror the raw palette in theme.css (referenced, not re-hexed).
+*/
+@theme {
+  --color-lab-canvas: var(--color-lavender);
+  --color-lab-surface: var(--color-pure-white);
+  --color-lab-inset: #faf7ff;
+  --color-lab-border: #e2d8f5;
+  --color-lab-border-strong: #dcd2f0;
+  --color-lab-track: #dccff7;
+  --color-lab-text: var(--color-onyx);
+  --color-lab-muted: var(--color-graphite);
+  --color-lab-faint: var(--color-fog);
+  --color-lab-violet: var(--color-ethereum-violet);
+  --color-lab-iris: var(--color-deep-iris);
+  --color-lab-magenta: var(--color-hot-magenta);
+  --color-lab-mint: var(--color-mint);
+  --color-lab-tint: var(--color-lab-canvas);
+  --color-lab-gutter: #bdaee4;
+  --shadow-lab:
+    0 2px 12px 1px rgb(65 18 140 / 0.02), 0 12px 16px -3px rgb(65 18 140 / 0.02),
+    0 24px 32px -6px rgb(65 18 140 / 0.02), 0 32px 40px -12px rgb(152 27 27 / 0.04);
+
+  /* Lab code panel */
+  --color-lab-code-panel-surface: #211436;
+  --color-lab-code-panel-head: #1a102c;
+  --color-lab-code-panel-code: #24163c;
+  --color-lab-code-panel-border: #3d2764;
+  --color-lab-code-panel-text: #eee8ff;
+  --color-lab-code-panel-muted: #b7a7d8;
+  --color-lab-code-panel-faint: #766892;
+  --color-lab-code-panel-accent: #a970ff;
+  --color-lab-code-panel-tint: rgb(139 92 246 / 0.26);
+  --color-lab-code-panel-stub: rgb(212 193 251 / 0.78);
+  --color-lab-code-panel-stub-border: rgb(157 120 222 / 0.72);
+  --color-lab-code-panel-stub-text: #2d164d;
+}
+
+.lab,
+.lab-header {
+  /* Layout tokens stay local; colors/shadows live in @theme (--color-lab-*). */
+  --lab-header-height: 52px;
+  --lab-build-panel-width: clamp(420px, 32vw, 520px);
+  color: var(--color-lab-text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.lab-header {
+  height: var(--lab-header-height);
+  background: var(--color-lab-surface);
+  border-bottom: 1px solid var(--color-lab-border);
+  box-shadow: none;
+}
+
+.lab-header a {
+  color: var(--color-lab-text);
+}
+
+.lab {
+  background: var(--color-lab-canvas);
+}
+
+.lab__content {
+  min-height: 100%;
+  padding: 32px clamp(16px, 4vw, 64px);
+  background:
+    radial-gradient(80% 54% at 50% -18%, rgb(147 87 244 / 0.18), rgb(147 87 244 / 0) 70%), var(--color-lab-canvas);
+}
+
+.lab__content--with-code {
+  /* room for the sticky mobile code trigger; the desktop side-rail gutter is added at >=1024px */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+.lab .btn {
+  min-height: 0;
+  border-radius: 4px;
+  border-color: var(--color-lab-border);
+  cursor: pointer;
+  box-shadow: none;
+  font-weight: 700;
+  text-transform: lowercase;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.lab .btn:hover {
+  transform: translateY(-1px);
+}
+
+.lab .btn:active {
+  transform: translateY(0);
+}
+
+.lab .btn-primary,
+.lab .btn-accent {
+  border-color: var(--color-lab-violet);
+  background: var(--color-lab-violet);
+  color: #ffffff;
+}
+
+.lab .btn-primary:hover,
+.lab .btn-accent:hover {
+  border-color: var(--color-lab-iris);
+  background: var(--color-lab-iris);
+}
+
+.lab .btn-ghost {
+  color: var(--color-lab-muted);
+}
+
+.lab .btn-ghost:hover {
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-text);
+}
+
+.lab .btn:disabled {
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-faint);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.lab .textarea {
+  border-radius: 8px;
+  border-color: var(--color-lab-border-strong);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-text);
+}
+
+.lab .textarea:focus {
+  outline: 2px solid rgb(108 36 224 / 0.18);
+  outline-offset: 2px;
+  border-color: var(--color-lab-violet);
+}
+
+.lab .kbd {
+  min-height: 0;
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-muted);
+}
+
+.lab .badge {
+  border-radius: 8px;
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-violet);
+}
+
+.lab .badge-success {
+  background: #d6f5ea;
+  color: var(--color-lab-mint);
+}
+
+.lab .badge-error {
+  background: #ffe0f0;
+  color: #b41469;
+}
+
+.lab .badge-warning {
+  background: #ffe7d6;
+  color: #9b4a13;
+}
+
+/* The card body prose is rendered by <Markdown>, which wraps it in a <div>;
+   the drop cap targets that wrapper's first paragraph. */
+.lab-card--dropcap .lab-card__body > div > p:first-of-type::first-letter {
+  float: left;
+  padding: 6px 12px 0 0;
+  color: var(--color-lab-violet);
+  font-size: 58px;
+  font-weight: 900;
+  line-height: 0.82;
+}
+
+.lab-card :not(pre) > code {
+  border-radius: 6px;
+  background: var(--color-lab-tint);
+  color: var(--color-lab-violet);
+  padding: 2px 6px;
+}
+
+.lab-card .alert,
+.lab-card .rounded-box,
+.lab-card details {
+  border-color: var(--color-lab-border);
+  border-radius: 12px;
+  background-color: rgb(250 247 255 / 0.72);
+}
+
+.lab-card .card-actions {
+  margin-top: 16px;
+}
+
+.lab .shiki,
+.lab .shiki pre {
+  background: var(--color-lab-inset) !important;
+}
+
+.lab .code-numbered .line::before {
+  color: var(--color-lab-gutter);
+}
+
+@media (min-width: 900px) {
+  .lab__content--with-code {
+    padding-right: calc(var(--lab-build-panel-width) + 32px);
+    padding-bottom: 32px;
+  }
+
+  .lab-build-panel {
+    position: fixed;
+    top: var(--lab-header-height);
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    width: var(--lab-build-panel-width);
+    flex: none;
+    border-left: 1px solid var(--color-lab-code-panel-border);
+    box-shadow: var(--shadow-lab);
+  }
+
+  .lab-code-host {
+    position: static;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    /* Deliberately no transform/translate reset: the slide is applied only below 900px
+       (see Lab.tsx), so the desktop host stays free of a containing block and the fixed
+       .lab-build-panel pins to the viewport rail. Setting transform AND translate here
+       backfires — Lightning merges them into transform: translate3d(0,0,0), which traps it. */
+  }
+}
+
+.lab-build-code {
+  flex: 1;
+  overflow: auto;
+  background: var(--color-lab-code-panel-code);
+  cursor: default;
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.62;
+}
+
+.lab-build-code--focus {
+  cursor: pointer;
+}
+
+.lab-build-code pre {
+  min-width: max-content;
+  margin: 0;
+  padding: 14px 0;
+}
+
+.lab-build-line {
+  display: flex;
+  min-height: 20px;
+  padding: 0 12px 0 0;
+  border-left: 3px solid transparent;
+  color: var(--color-lab-code-panel-text);
+  white-space: pre;
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.lab-build-code--focus .lab-build-line:not(.lab-build-line--focus) {
+  opacity: 0.34;
+}
+
+.lab-build-line--focus {
+  border-left-color: var(--color-lab-code-panel-accent);
+  background: var(--color-lab-code-panel-tint);
+}
+
+.lab-build-line--focus-first {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.lab-build-line--focus-last {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.lab-build-line__number {
+  width: 36px;
+  flex: none;
+  padding-right: 10px;
+  color: var(--color-lab-code-panel-faint);
+  text-align: right;
+  user-select: none;
+}
+
+.lab-build-line__stub {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-lab-code-panel-stub-border);
+  border-radius: 6px;
+  background: var(--color-lab-code-panel-stub);
+  color: var(--color-lab-code-panel-stub-text);
+  font-style: italic;
+  font-weight: 400;
+  padding: 0 7px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+}
+
+[data-theme="dark"] .lab,
+[data-theme="dark"] .lab-header {
+  --color-lab-canvas: #14111c;
+  --color-lab-surface: #1f1a2c;
+  --color-lab-inset: #16121f;
+  --color-lab-border: #2f2848;
+  --color-lab-border-strong: #3a3158;
+  --color-lab-track: #2c2540;
+  --color-lab-text: #f2eefb;
+  --color-lab-muted: #b3aac9;
+  --color-lab-faint: #857c9e;
+  --color-lab-violet: #a87dff;
+  --color-lab-iris: #c4a6ff;
+  --color-lab-magenta: #ff7ccb;
+  --color-lab-mint: #54d6a8;
+  --color-lab-tint: rgb(168 125 255 / 0.16);
+  --color-lab-gutter: #564a7a;
+  --color-lab-code-panel-surface: #1b1528;
+  --color-lab-code-panel-head: #16111f;
+  --color-lab-code-panel-code: #16121f;
+  --color-lab-code-panel-border: #2f2848;
+  --color-lab-code-panel-text: #f2eefb;
+  --color-lab-code-panel-muted: #b3aac9;
+  --color-lab-code-panel-faint: #756b91;
+  --color-lab-code-panel-accent: #a87dff;
+  --color-lab-code-panel-tint: rgb(168 125 255 / 0.2);
+  --color-lab-code-panel-stub: rgb(200 179 248 / 0.78);
+  --color-lab-code-panel-stub-border: rgb(123 97 191 / 0.72);
+  --color-lab-code-panel-stub-text: #1a102c;
+  --shadow-lab: 0 10px 34px -16px rgb(0 0 0 / 0.7);
+}
+
+[data-theme="dark"] .lab__content {
+  background:
+    radial-gradient(80% 54% at 50% -18%, rgb(168 125 255 / 0.14), rgb(168 125 255 / 0) 70%), var(--color-lab-canvas);
+}
+
+[data-theme="dark"] .lab .btn-primary,
+[data-theme="dark"] .lab .btn-accent,
+[data-theme="dark"] .lab .btn-primary:hover,
+[data-theme="dark"] .lab .btn-accent:hover {
+  color: #14111c;
+}
+
+[data-theme="dark"] .lab .btn:disabled,
+[data-theme="dark"] .lab .btn.btn-disabled {
+  border-color: var(--color-lab-border-strong);
+  background: rgb(168 125 255 / 0.1);
+  color: var(--color-lab-muted);
+  cursor: pointer;
+  opacity: 1;
+}
+
+[data-theme="dark"] .lab .btn-primary:disabled,
+[data-theme="dark"] .lab .btn-accent:disabled {
+  border-color: rgb(168 125 255 / 0.28);
+  background: rgb(168 125 255 / 0.16);
+  color: var(--color-lab-muted);
+}
+
+[data-theme="dark"] .lab .btn-ghost:disabled {
+  border-color: var(--color-lab-border);
+  background: transparent;
+  color: var(--color-lab-muted);
+}
+
+[data-theme="dark"] .lab .btn:disabled svg,
+[data-theme="dark"] .lab .btn.btn-disabled svg {
+  color: var(--color-lab-muted);
+}
+
+[data-theme="dark"] .lab-header .theme-switch {
+  color: var(--color-lab-iris);
+}
+
+.lab-header .theme-switch__toggle,
+.lab-header .theme-switch__icon {
+  cursor: pointer;
+}
+
+.lab-header .theme-switch__toggle {
+  border-color: var(--color-lab-border-strong);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.lab-header .theme-switch__toggle:hover {
+  border-color: var(--color-lab-violet);
+  background-color: var(--color-lab-tint);
+}
+
+.lab-header .theme-switch__icon {
+  color: var(--color-lab-muted);
+  transition: color 160ms ease;
+}
+
+.lab-header .theme-switch__icon:hover {
+  color: var(--color-lab-violet);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__toggle {
+  border-color: var(--color-lab-border-strong);
+  background-color: var(--color-lab-track);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__toggle:checked {
+  border-color: rgb(168 125 255 / 0.6);
+  background-color: rgb(168 125 255 / 0.28);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__toggle:hover {
+  border-color: var(--color-lab-violet);
+  background-color: rgb(168 125 255 / 0.36);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__icon {
+  color: var(--color-lab-iris);
+}
+
+[data-theme="dark"] .lab .badge-success {
+  background: rgb(84 214 168 / 0.15);
+  color: #54d6a8;
+}
+
+[data-theme="dark"] .lab .badge-error {
+  background: rgb(255 124 203 / 0.15);
+  color: #ff8fd3;
+}
+
+[data-theme="dark"] .lab .badge-warning {
+  background: rgb(240 168 104 / 0.15);
+  color: #f0a868;
+}
+
+[data-theme="dark"] .lab .lab-card .alert,
+[data-theme="dark"] .lab .lab-card .rounded-box,
+[data-theme="dark"] .lab .lab-card details {
+  background-color: rgb(255 255 255 / 0.03);
+}
+
+@media (max-width: 767px) {
+  .lab__content {
+    padding: 20px 16px 28px;
+  }
+}
+
+/*
+  Line numbers for the code peek. shiki wraps every line in <span class="line">;
+  a CSS counter (shiki's own documented approach) prepends the number as
+  ::before content, so it's unselectable and never lands in a copy of the code.
+  Scoped to .code-numbered so inline lesson code blocks stay gutter-free.
+*/
+.code-numbered code {
+  counter-reset: step;
+  counter-increment: step 0;
+}
+
+.code-numbered .line {
+  line-height: 1.7;
+}
+
+.code-numbered .line::before {
+  content: counter(step);
+  counter-increment: step;
+  display: inline-block;
+  width: 1.75rem;
+  margin-right: 1.5rem;
+  text-align: right;
+  color: #545d68;
+  user-select: none;
+}
+
+/* CodeInput (code-exercise editor): overlay textarea + its rounded panel.
+   The overlay paints the textarea text transparent, so we restore the placeholder
+   and move the focus ring off the square textarea onto the rounded wrapper. */
+
+.code-slot-textarea::placeholder {
+  -webkit-text-fill-color: #768390;
+  color: #768390;
+  opacity: 1;
+}
+
+.code-slot-textarea:focus {
+  outline: none;
+}
+
+/* TODO:(github-dark-dimmed accent) is hardcoded — revisit if the panel
+   theme changes. DaisyUI `primary` reads near-black on this dark panel. */
+.code-input-panel:focus-within {
+  border-color: #539bf5;
+  box-shadow: 0 0 0 1px #539bf5;
+}
