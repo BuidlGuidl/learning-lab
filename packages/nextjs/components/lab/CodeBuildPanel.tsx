@@ -84,7 +84,9 @@ function scrollWithin(container: HTMLElement, el: HTMLElement) {
   container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
 }
 
-function fontStyleOf(fontStyle?: number) {
+// Mirror of shikiFontStyleToCss (highlighter.ts) — same bit positions, React CSSProperties output.
+// Keep both in sync if Shiki adds new flags.
+function fontStyleOf(fontStyle?: number): React.CSSProperties {
   if (!fontStyle || fontStyle < 0) return {};
   const style: React.CSSProperties = {};
   if (fontStyle & 1) style.fontStyle = "italic";
@@ -123,6 +125,8 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
   const cardIndex = useLabStore(s => s.cardIndex);
 
   const [showFocus, setShowFocus] = useState(true);
+  // null = follow the current card's file; string = tab the learner picked.
+  const [pickedFile, setPickedFile] = useState<string | null>(null);
   const [tokens, setTokens] = useState<ThemedToken[][] | null>(null);
   const codeRef = useRef<HTMLDivElement>(null);
   const codeTheme = "github-dark-dimmed";
@@ -130,7 +134,8 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
   const files = Object.keys(labFiles);
   const card = lab.chapters[chapterIndex]?.cards[cardIndex];
   const focus = useMemo(() => focusForCard(card, lab), [card, lab]);
-  const shownFile = focus.file && labFiles[focus.file] ? focus.file : files[0];
+  const defaultFile = focus.file && labFiles[focus.file] ? focus.file : files[0];
+  const shownFile = pickedFile ?? defaultFile;
   const fills = useMemo(() => fillsOf(progress), [progress]);
   const fileRegions = useMemo(
     () => Object.values(regions).filter(region => region.file === shownFile),
@@ -143,7 +148,9 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
   );
   const textLines = useMemo(() => renderedLines.map(line => line.text), [renderedLines]);
   const fullText = useMemo(() => textLines.join("\n"), [textLines]);
-  const focusKey = JSON.stringify(focus);
+  // Keyed on card position, not focus content — two cards with identical focus
+  // (e.g. same region) still reset showFocus and scroll on navigation.
+  const focusKey = `${chapterIndex}:${cardIndex}`;
 
   const focusLines = useMemo(() => {
     const set = new Set<number>();
@@ -187,7 +194,8 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
 
   useEffect(() => {
     setShowFocus(true);
-  }, [focusKey, shownFile]);
+    setPickedFile(null);
+  }, [focusKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -224,22 +232,42 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
       aria-label={`Building ${shownFile}`}
     >
       <div className="shrink-0 border-b border-lab-code-panel-border bg-lab-code-panel-head px-[18px] pt-4 pb-3.5">
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm text-lab-code-panel-text">
-            <CodeBracketIcon className="h-4 w-4 shrink-0 text-lab-code-panel-accent" />
-            <span className="overflow-hidden text-ellipsis">{shownFile}</span>
+        {files.length > 1 ? (
+          <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+            {files.map(f => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setPickedFile(f)}
+                className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border-0 bg-transparent px-2.5 py-1.5 font-mono text-xs leading-none transition-colors ${
+                  f === shownFile
+                    ? "bg-lab-code-panel-tint text-lab-code-panel-accent"
+                    : "text-lab-code-panel-muted hover:text-lab-code-panel-text"
+                }`}
+              >
+                <CodeBracketIcon className="h-3.5 w-3.5" />
+                {f}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm text-lab-code-panel-text">
+              <CodeBracketIcon className="h-4 w-4 shrink-0 text-lab-code-panel-accent" />
+              <span className="overflow-hidden text-ellipsis">{shownFile}</span>
+              {fileRegions.length > 0 && (
+                <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:hidden">
+                  <strong className="font-normal">{writtenCount}</strong> of {fileRegions.length} tasks
+                </span>
+              )}
+            </span>
             {fileRegions.length > 0 && (
-              <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:hidden">
-                <strong className="font-normal">{writtenCount}</strong> of {fileRegions.length} tasks
+              <span className="hidden shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:inline-flex">
+                <strong className="font-normal">{writtenCount}</strong>/{fileRegions.length}
               </span>
             )}
-          </span>
-          {fileRegions.length > 0 && (
-            <span className="hidden shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:inline-flex">
-              <strong className="font-normal">{writtenCount}</strong>/{fileRegions.length}
-            </span>
-          )}
-        </div>
+          </div>
+        )}
         {focus.label && hasFocus ? (
           <button
             type="button"

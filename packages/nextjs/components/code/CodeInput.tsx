@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getHighlighter } from "./highlighter";
+import { getHighlighter, shikiFontStyleToCss } from "./highlighter";
 import Editor from "react-simple-code-editor";
 import type { Highlighter } from "shiki";
 
@@ -21,10 +21,7 @@ const toHtml = (highlighter: Highlighter, code: string) =>
     .map(line =>
       line
         .map(tok => {
-          const styles = [tok.color ? `color:${tok.color}` : ""];
-          const fontStyle = tok.fontStyle ?? 0;
-          if (fontStyle & 1) styles.push("font-style:italic");
-          if (fontStyle & 2) styles.push("font-weight:bold");
+          const styles = [tok.color ? `color:${tok.color}` : "", ...shikiFontStyleToCss(tok.fontStyle)];
           return `<span style="${styles.filter(Boolean).join(";")}">${escapeHtml(tok.content)}</span>`;
         })
         .join(""),

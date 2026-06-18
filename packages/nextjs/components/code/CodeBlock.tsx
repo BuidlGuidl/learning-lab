@@ -21,6 +21,8 @@ export const CodeBlock = ({ code, lang = "solidity", theme, softLines, showLineN
   const { resolvedTheme } = useTheme();
   const activeTheme = theme ?? (resolvedTheme === "dark" ? "github-dark-dimmed" : "github-light");
   const [html, setHtml] = useState<string>("");
+  // Stable key so callers passing a fresh inline array don't re-trigger the effect.
+  const softLinesKey = softLines ? softLines.join(",") : "";
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +46,8 @@ export const CodeBlock = ({ code, lang = "solidity", theme, softLines, showLineN
     return () => {
       cancelled = true;
     };
-  }, [code, lang, activeTheme, softLines]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, lang, activeTheme, softLinesKey]);
 
   // Numbered mode fills its pane like an editor (no rounded corners); the
   // default mode stays a rounded inline block for lesson cards.
