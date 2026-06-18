@@ -464,14 +464,14 @@ const SocraticMock = () => (
       </span>
       <b className="text-[15px] font-bold text-lp-text-primary">AI Tutor</b>
     </div>
-    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-buttons bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
       Your <code>withdraw()</code> reverts. Before I help, what do you expect <code>balances[msg.sender]</code> to hold
       at this point?
     </div>
-    <div className="lp-bubble self-end max-w-[88%] rounded-[14px] rounded-br-[var(--radius-buttons)] border border-lp-bubble-you-border bg-lp-bubble-you px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full">
+    <div className="lp-bubble self-end max-w-[88%] rounded-[14px] rounded-br-buttons border border-lp-bubble-you-border bg-lp-bubble-you px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full">
       The full amount they contributed?
     </div>
-    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-buttons bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
       Right. So if you send the ETH first and zero it out after, what could a malicious contract do in between?
     </div>
     <div className="mt-0.5 flex items-center gap-[7px] border-t border-dashed border-lp-border pt-3 text-[12.5px] text-lp-text-secondary">
