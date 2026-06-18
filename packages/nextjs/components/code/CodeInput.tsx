@@ -5,13 +5,13 @@ import { getHighlighter } from "./highlighter";
 import Editor from "react-simple-code-editor";
 import type { Highlighter } from "shiki";
 
-// Same github-dark-dimmed ground as the read-only CodeBlock.
+// github-dark-dimmed editor.background / editor.foreground — same ground as CodeBlock.
 const PANEL_BG = "#22272e";
 const PANEL_FG = "#adbac7";
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-// C2 overlay editor: a transparent textarea over a Shiki-highlighted layer. The
+// Overlay editor: a transparent textarea over a Shiki-highlighted layer. The
 // highlight runs through the SAME Shiki highlighter + theme as the read-only
 // CodeBlock, so the editor's colors match the reveal panel exactly — including
 // tokens a CodeMirror grammar classifies differently (function names, pragma).
