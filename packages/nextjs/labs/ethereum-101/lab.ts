@@ -181,8 +181,8 @@ export const lab = defineLab({
           type: "concept",
           id: "require-and-deadlines",
           label: "CONCEPT",
-          title: "require and deadlines",
-          body: 'require(condition, "reason") is how a contract enforces its rules: if the condition fails, the whole transaction rolls back as if it never happened. And block.timestamp gives the contract a clock, so it can enforce a deadline without anyone checking a calendar. Escrow agent and referee, in one program.',
+          title: "Require and deadlines",
+          body: '`require(condition, "reason")` is how a contract enforces its rules: if the condition fails, the whole transaction rolls back as if it never happened. And `block.timestamp` gives the contract a clock, so it can enforce a deadline without anyone checking a calendar. Escrow agent and referee, in one program.',
         },
         {
           type: "code-exercise",
