@@ -19,7 +19,7 @@ export const Header = () => {
   return (
     <div
       className={`sticky top-0 z-20 flex items-center justify-between px-4 py-2 shadow-sm navbar bg-base-100 min-h-0 shrink-0 ${
-        isLab ? "lab-paper-header" : ""
+        isLab ? "lab-header" : ""
       }`}
     >
       <Link href="/" className="flex items-center gap-[9px] text-base font-black tracking-tight">

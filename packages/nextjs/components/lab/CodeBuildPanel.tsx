@@ -220,22 +220,22 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
 
   return (
     <aside
-      className="lab-build-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-[var(--lab-code-panel-surface)] text-[var(--lab-code-panel-text)]"
+      className="lab-build-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-lab-code-panel-surface text-lab-code-panel-text"
       aria-label={`Building ${shownFile}`}
     >
-      <div className="shrink-0 border-b border-[color:var(--lab-code-panel-border)] bg-[var(--lab-code-panel-head)] px-[18px] pt-4 pb-3.5">
+      <div className="shrink-0 border-b border-lab-code-panel-border bg-lab-code-panel-head px-[18px] pt-4 pb-3.5">
         <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm text-[var(--lab-code-panel-text)]">
-            <CodeBracketIcon className="h-4 w-4 shrink-0 text-[var(--lab-code-panel-accent)]" />
+          <span className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm text-lab-code-panel-text">
+            <CodeBracketIcon className="h-4 w-4 shrink-0 text-lab-code-panel-accent" />
             <span className="overflow-hidden text-ellipsis">{shownFile}</span>
             {fileRegions.length > 0 && (
-              <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-[color:var(--lab-code-panel-border)] bg-[var(--lab-code-panel-tint)] px-2 py-1 font-mono text-[11px] leading-none text-[var(--lab-code-panel-text)] max-[520px]:hidden">
+              <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:hidden">
                 <strong className="font-normal">{writtenCount}</strong> of {fileRegions.length} tasks
               </span>
             )}
           </span>
           {fileRegions.length > 0 && (
-            <span className="hidden shrink-0 items-center gap-[3px] rounded-full border border-[color:var(--lab-code-panel-border)] bg-[var(--lab-code-panel-tint)] px-2 py-1 font-mono text-[11px] leading-none text-[var(--lab-code-panel-text)] max-[520px]:inline-flex">
+            <span className="hidden shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:inline-flex">
               <strong className="font-normal">{writtenCount}</strong>/{fileRegions.length}
             </span>
           )}
@@ -243,23 +243,23 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
         {focus.label && hasFocus ? (
           <button
             type="button"
-            className="mt-3 inline-flex max-w-full cursor-pointer items-center gap-[7px] border-0 bg-transparent p-0 text-left font-mono text-xs leading-normal text-[var(--lab-code-panel-muted)] hover:text-[var(--lab-code-panel-text)]"
+            className="mt-3 inline-flex max-w-full cursor-pointer items-center gap-[7px] border-0 bg-transparent p-0 text-left font-mono text-xs leading-normal text-lab-code-panel-muted hover:text-lab-code-panel-text"
             onClick={() => setShowFocus(value => !value)}
             title={focusOn ? "Show the whole contract" : "Focus the current task"}
           >
             <span
               className={`h-[7px] w-[7px] shrink-0 rounded-full ${
-                focusOn ? "bg-[var(--lab-code-panel-accent)]" : "bg-[var(--lab-code-panel-faint)]"
+                focusOn ? "bg-lab-code-panel-accent" : "bg-lab-code-panel-faint"
               }`}
               aria-hidden
             />
             {focusOn ? "on this card" : "focus this card"} ·{" "}
-            <strong className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[var(--lab-code-panel-accent)]">
+            <strong className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-lab-code-panel-accent">
               {focus.label}
             </strong>
           </button>
         ) : (
-          <p className="mt-3 mb-0 text-xs leading-normal text-[var(--lab-code-panel-muted)]">
+          <p className="mt-3 mb-0 text-xs leading-normal text-lab-code-panel-muted">
             The contract updates as you finish each task. Lavender labels mark the parts you still write.
           </p>
         )}

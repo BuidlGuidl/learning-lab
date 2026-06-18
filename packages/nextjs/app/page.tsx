@@ -88,13 +88,12 @@ const cn = (...classes: Array<string | false | null | undefined>) => classes.fil
 
 const lpWrap = "w-full max-w-[1216px] mx-auto px-5 sm:px-8 min-[1100px]:px-12";
 const lpSection = "py-[72px] min-[901px]:py-[92px]";
-const lpHeading = "m-0 text-[var(--lp-text-primary)] font-black";
+const lpHeading = "m-0 text-lp-text-primary font-black";
 const lpH2 = `${lpHeading} text-[clamp(32px,3.6vw,46px)] leading-[1.06]`;
-const lpLead = "max-w-[56ch] m-0 text-[19px] leading-[1.6] text-[var(--lp-text-secondary)]";
+const lpLead = "max-w-[56ch] m-0 text-[19px] leading-[1.6] text-lp-text-secondary";
 const lpEyebrow =
-  "inline-flex items-center self-start gap-[7px] rounded-[var(--radius-tags)] bg-[var(--lp-eyebrow-bg)] px-3 py-1.5 text-sm font-bold uppercase text-[var(--lp-accent)]";
-const lpIconTile =
-  "flex h-12 w-12 items-center justify-center rounded-[var(--radius-icon-tile)] bg-[var(--lp-icon-tile)] text-[var(--lp-accent)]";
+  "inline-flex items-center self-start gap-[7px] rounded-tags bg-lp-eyebrow-bg px-3 py-1.5 text-sm font-bold uppercase text-lp-accent";
+const lpIconTile = "flex h-12 w-12 items-center justify-center rounded-icon-tile bg-lp-icon-tile text-lp-accent";
 
 const featureCards: FeatureCardProps[] = [
   {
@@ -173,11 +172,11 @@ const MarketingButton = ({ href, children, variant = "primary", size = "md", ico
   return (
     <Link
       className={cn(
-        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-buttons)] text-base leading-none no-underline transition-colors whitespace-nowrap max-sm:w-full max-sm:px-[18px]",
+        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-buttons text-base leading-none no-underline transition-colors whitespace-nowrap max-sm:w-full max-sm:px-[18px]",
         variant === "primary" &&
-          "border border-[var(--lp-btn-bg)] bg-[var(--lp-btn-bg)] px-6 py-[13px] font-bold text-[var(--lp-on-accent)] hover:border-[var(--lp-btn-bg-hover)] hover:bg-[var(--lp-btn-bg-hover)]",
+          "border border-lp-btn-bg bg-lp-btn-bg px-6 py-[13px] font-bold text-lp-on-accent hover:border-lp-btn-bg-hover hover:bg-lp-btn-bg-hover",
         variant === "ghost" &&
-          "border border-[var(--lp-ghost-border)] bg-transparent px-5 py-3 text-[var(--lp-text-primary)] hover:border-[var(--lp-ghost-border-hover)]",
+          "border border-lp-ghost-border bg-transparent px-5 py-3 text-lp-text-primary hover:border-lp-ghost-border-hover",
         size === "lg" && "px-7 py-[15px] text-[17px]",
         className,
       )}
@@ -208,12 +207,7 @@ type FeatureCardProps = {
 };
 
 const FeatureCard = ({ tint, icon: Icon, title, body }: FeatureCardProps) => (
-  <article
-    className={cn(
-      "flex flex-col gap-3.5 rounded-[var(--radius-cards)] p-7 text-[var(--lp-feat-text)]",
-      `lp-tint-${tint}`,
-    )}
-  >
+  <article className={cn("flex flex-col gap-3.5 rounded-cards p-7 text-lp-feat-text", `lp-tint-${tint}`)}>
     <div className={lpIconTile}>
       <Icon className="h-6 w-6" />
     </div>
@@ -237,7 +231,7 @@ type ModuleCardProps = {
 };
 
 const ArrowLink = ({ children }: { children: ReactNode }) => (
-  <span className="mt-1.5 inline-flex items-center gap-[5px] text-base font-bold text-[var(--lp-accent)]">
+  <span className="mt-1.5 inline-flex items-center gap-[5px] text-base font-bold text-lp-accent">
     {children}
     <ArrowRightIcon className="h-4 w-4" />
   </span>
@@ -263,16 +257,16 @@ const ModuleCard = ({
           "relative flex h-[200px] items-center justify-center overflow-hidden",
           artFill ? "p-0 [&_img]:h-full [&_img]:w-full [&_img]:max-h-none [&_img]:object-cover" : "p-6",
           !artFill && "[&_img]:h-auto [&_img]:max-h-40 [&_img]:w-auto [&_img]:object-contain",
-          artTint === "lavender" ? "bg-[var(--lp-module-art-lavender)]" : "bg-[var(--lp-module-art-mint)]",
+          artTint === "lavender" ? "bg-lp-module-art-lavender" : "bg-lp-module-art-mint",
         )}
       >
         {artFill ? (
-          <Image src={imageSrc} alt={imageAlt} width={800} height={500} quality={95} priority={false} />
+          <Image src={imageSrc} alt={imageAlt} width={800} height={500} priority={false} />
         ) : (
           <Image src={imageSrc} alt={imageAlt} width={260} height={180} priority={false} />
         )}
         {comingSoon && (
-          <span className="absolute top-3.5 right-3.5 rounded-[var(--radius-tags)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] px-2.5 py-[5px] text-[11px] font-bold uppercase text-[var(--lp-text-secondary)]">
+          <span className="absolute top-3.5 right-3.5 rounded-tags border border-lp-border bg-lp-surface px-2.5 py-[5px] text-[11px] font-bold uppercase text-lp-text-secondary">
             Coming soon
           </span>
         )}
@@ -283,20 +277,18 @@ const ModuleCard = ({
             <span
               key={item}
               className={cn(
-                "rounded-[var(--radius-tags)] px-2.5 py-1 text-xs font-bold",
-                mintMetaIndex === index
-                  ? "bg-[var(--lp-pill-mint-bg)] text-[var(--lp-pill-mint-fg)]"
-                  : "bg-[var(--lp-pill-bg)] text-[var(--lp-pill-fg)]",
+                "rounded-tags px-2.5 py-1 text-xs font-bold",
+                mintMetaIndex === index ? "bg-lp-pill-mint-bg text-lp-pill-mint-fg" : "bg-lp-pill-bg text-lp-pill-fg",
               )}
             >
               {item}
             </span>
           ))}
         </div>
-        <h3 className="m-0 text-[28px] font-black text-[var(--lp-text-primary)]">{title}</h3>
-        <p className="m-0 text-base leading-[1.6] text-[var(--lp-text-secondary)]">{body}</p>
+        <h3 className="m-0 text-[28px] font-black text-lp-text-primary">{title}</h3>
+        <p className="m-0 text-base leading-[1.6] text-lp-text-secondary">{body}</p>
         {comingSoon ? (
-          <span className="mt-1.5 inline-flex items-center gap-[5px] text-base font-bold text-[var(--lp-text-tertiary)]">
+          <span className="mt-1.5 inline-flex items-center gap-[5px] text-base font-bold text-lp-text-tertiary">
             {action}
           </span>
         ) : (
@@ -309,7 +301,7 @@ const ModuleCard = ({
   if (comingSoon) {
     return (
       <div
-        className="flex cursor-default flex-col overflow-hidden rounded-[var(--radius-cards)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] no-underline [&_img]:opacity-70"
+        className="flex cursor-default flex-col overflow-hidden rounded-cards border border-lp-border bg-lp-surface no-underline [&_img]:opacity-70"
         aria-disabled
       >
         {content}
@@ -319,7 +311,7 @@ const ModuleCard = ({
 
   return (
     <Link
-      className="flex flex-col overflow-hidden rounded-[var(--radius-cards)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] no-underline transition hover:-translate-y-0.5 hover:border-[color:var(--lp-accent)]"
+      className="flex flex-col overflow-hidden rounded-cards border border-lp-border bg-lp-surface no-underline transition hover:-translate-y-0.5 hover:border-lp-accent"
       href={href}
     >
       {content}
@@ -330,7 +322,7 @@ const ModuleCard = ({
 const Brand = () => (
   <Link
     href={MARKETING_ROUTES.home}
-    className="inline-flex items-center gap-[9px] text-base font-black leading-none text-[var(--lp-text-primary)] no-underline"
+    className="inline-flex items-center gap-[9px] text-base font-black leading-none text-lp-text-primary no-underline"
   >
     <Image src="/eth-diamond-purple.svg" alt="" width={24} height={24} />
     <span>Learning Lab</span>
@@ -339,47 +331,45 @@ const Brand = () => (
 
 const LabShot = () => (
   <div
-    className="overflow-hidden rounded-[var(--radius-cards)] border border-[color:var(--lp-shot-border)] bg-[var(--lp-surface)] shadow-[var(--shadow-labshot)]"
+    className="overflow-hidden rounded-cards border border-lp-shot-border bg-lp-surface shadow-labshot"
     aria-label="Learning Lab product preview"
   >
-    <div className="flex items-center gap-2 border-b border-[color:var(--lp-shot-border)] bg-[var(--lp-shot-bar)] px-3.5 py-[11px]">
+    <div className="flex items-center gap-2 border-b border-lp-shot-border bg-lp-shot-bar px-3.5 py-[11px]">
       <span className="flex shrink-0 gap-1.5" aria-hidden>
-        <i className="h-[11px] w-[11px] rounded-full bg-[var(--lp-shot-dots)]" />
-        <i className="h-[11px] w-[11px] rounded-full bg-[var(--lp-shot-dots)]" />
-        <i className="h-[11px] w-[11px] rounded-full bg-[var(--lp-shot-dots)]" />
+        <i className="h-[11px] w-[11px] rounded-full bg-lp-shot-dots" />
+        <i className="h-[11px] w-[11px] rounded-full bg-lp-shot-dots" />
+        <i className="h-[11px] w-[11px] rounded-full bg-lp-shot-dots" />
       </span>
-      <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-[color:var(--lp-shot-border)] bg-[var(--lp-shot-url-bg)] px-3 py-1 font-mono text-xs text-[var(--lp-text-secondary)]">
+      <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-lp-shot-border bg-lp-shot-url-bg px-3 py-1 font-mono text-xs text-lp-text-secondary">
         Learning Lab · ethereum-101 / your-first-contract
       </span>
     </div>
     <div className="grid min-h-80 grid-cols-[0.85fr_1.15fr] max-[900px]:grid-cols-1">
-      <div className="flex flex-col gap-3 border-r border-[color:var(--lp-shot-divider)] bg-[var(--lp-shot-concept)] px-6 py-[26px] max-[900px]:border-r-0 max-[900px]:border-b">
-        <span className="inline-flex items-center self-start gap-1.5 rounded-[7px] bg-[var(--lp-eyebrow-bg)] px-[9px] py-1 text-[11px] font-bold uppercase text-[var(--lp-accent)]">
+      <div className="flex flex-col gap-3 border-r border-lp-shot-divider bg-lp-shot-concept px-6 py-[26px] max-[900px]:border-r-0 max-[900px]:border-b">
+        <span className="inline-flex items-center self-start gap-1.5 rounded-[7px] bg-lp-eyebrow-bg px-[9px] py-1 text-[11px] font-bold uppercase text-lp-accent">
           <LightBulbIcon className="h-3 w-3" />
           Concept
         </span>
-        <h4 className="mt-1 mb-0.5 text-[23px] font-black leading-[1.08] text-[var(--lp-text-primary)]">
-          Storing a value
-        </h4>
-        <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--lp-text-primary)]">
+        <h4 className="mt-1 mb-0.5 text-[23px] font-black leading-[1.08] text-lp-text-primary">Storing a value</h4>
+        <p className="m-0 text-[13.5px] leading-[1.55] text-lp-text-primary">
           A contract&apos;s state lives onchain. Give <span className="lp-inline-mono">CrowdFund</span> a public{" "}
           <span className="lp-inline-mono">goal</span> and the network remembers it forever.
         </p>
-        <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--lp-text-primary)]">
+        <p className="m-0 text-[13.5px] leading-[1.55] text-lp-text-primary">
           Run it and watch the EVM commit your change.
         </p>
         <div className="mt-auto flex items-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-buttons)] bg-[var(--lp-btn-bg)] px-4 py-[9px] text-[13px] font-bold text-[var(--lp-on-accent)]">
+          <span className="inline-flex items-center gap-1.5 rounded-buttons bg-lp-btn-bg px-4 py-[9px] text-[13px] font-bold text-lp-on-accent">
             <PlayIcon className="h-[13px] w-[13px]" />
             Run
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--lp-trust-check)]">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-lp-trust-check">
             <CheckCircleIcon className="h-3.5 w-3.5" />1 / 1 passing
           </span>
         </div>
       </div>
       <div
-        className="overflow-hidden bg-[var(--color-code-bg)] py-[18px] font-mono text-[10.5px] leading-[1.65] text-[var(--color-code-plain)]"
+        className="overflow-hidden bg-code-bg py-[18px] font-mono text-[10.5px] leading-[1.65] text-code-plain"
         aria-hidden
       >
         {[
@@ -444,10 +434,10 @@ const LabShot = () => (
             key={String(lineNumber)}
             className={cn(
               "flex whitespace-pre px-4",
-              highlighted && "bg-[var(--lp-code-highlight-bg)] shadow-[inset_3px_0_0_var(--color-lilac)]",
+              highlighted && "bg-lp-code-highlight-bg shadow-[inset_3px_0_0_var(--color-lilac)]",
             )}
           >
-            <span className="w-5 shrink-0 pr-3.5 text-right text-[var(--color-code-comment)]">{lineNumber}</span>
+            <span className="w-5 shrink-0 pr-3.5 text-right text-code-comment">{lineNumber}</span>
             <span>{line}</span>
           </div>
         ))}
@@ -458,27 +448,27 @@ const LabShot = () => (
 
 const SocraticMock = () => (
   <div
-    className="flex flex-col gap-3.5 rounded-[var(--radius-cards)] border border-[color:var(--lp-border)] bg-[var(--lp-surface)] p-[22px] shadow-[var(--shadow-socratic)]"
+    className="flex flex-col gap-3.5 rounded-cards border border-lp-border bg-lp-surface p-[22px] shadow-socratic"
     id="ai-tutor"
   >
     <div className="flex items-center gap-2.5 pb-1 max-sm:flex-wrap">
-      <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-[var(--lp-eyebrow-bg)] text-[var(--lp-accent)]">
+      <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-lp-eyebrow-bg text-lp-accent">
         <SparklesIcon className="h-[18px] w-[18px]" />
       </span>
-      <b className="text-[15px] font-bold text-[var(--lp-text-primary)]">AI Tutor</b>
+      <b className="text-[15px] font-bold text-lp-text-primary">AI Tutor</b>
     </div>
-    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-[var(--lp-bubble-tutor)] px-[15px] py-3 text-[14.5px] leading-[1.55] text-[var(--lp-text-primary)] max-sm:max-w-full dark:border dark:border-[#463d6b]">
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
       Your <code>withdraw()</code> reverts. Before I help, what do you expect <code>balances[msg.sender]</code> to hold
       at this point?
     </div>
-    <div className="lp-bubble self-end max-w-[88%] rounded-[14px] rounded-br-[var(--radius-buttons)] border border-[color:var(--lp-bubble-you-border)] bg-[var(--lp-bubble-you)] px-[15px] py-3 text-[14.5px] leading-[1.55] text-[var(--lp-text-primary)] max-sm:max-w-full">
+    <div className="lp-bubble self-end max-w-[88%] rounded-[14px] rounded-br-[var(--radius-buttons)] border border-lp-bubble-you-border bg-lp-bubble-you px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full">
       The full amount they contributed?
     </div>
-    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-[var(--lp-bubble-tutor)] px-[15px] py-3 text-[14.5px] leading-[1.55] text-[var(--lp-text-primary)] max-sm:max-w-full dark:border dark:border-[#463d6b]">
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-[var(--radius-buttons)] bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
       Right. So if you send the ETH first and zero it out after, what could a malicious contract do in between?
     </div>
-    <div className="mt-0.5 flex items-center gap-[7px] border-t border-dashed border-[color:var(--lp-border)] pt-3 text-[12.5px] text-[var(--lp-text-secondary)]">
-      <MapIcon className="h-[15px] w-[15px] shrink-0 text-[var(--lp-accent)]" />
+    <div className="mt-0.5 flex items-center gap-[7px] border-t border-dashed border-lp-border pt-3 text-[12.5px] text-lp-text-secondary">
+      <MapIcon className="h-[15px] w-[15px] shrink-0 text-lp-accent" />
       Guiding you to discover reentrancy, not just patching it.
     </div>
   </div>
@@ -488,7 +478,7 @@ const Home: NextPage = () => {
   return (
     <div className={`lp ${inter.variable} ${ibmPlexMono.variable}`}>
       <nav
-        className="flex h-[68px] items-center gap-10 border-b border-[color:var(--lp-border)] bg-[var(--lp-bg)] px-5 sm:px-8 min-[1100px]:px-12"
+        className="flex h-[68px] items-center gap-10 border-b border-lp-border bg-lp-bg px-5 sm:px-8 min-[1100px]:px-12"
         aria-label="Main navigation"
       >
         <Brand />
@@ -497,7 +487,7 @@ const Home: NextPage = () => {
             <Link
               key={link.label}
               href={link.href}
-              className="text-base font-bold leading-none text-[var(--lp-text-primary)] transition-colors hover:text-[var(--lp-accent)]"
+              className="text-base font-bold leading-none text-lp-text-primary transition-colors hover:text-lp-accent"
             >
               {link.label}
             </Link>
@@ -524,9 +514,9 @@ const Home: NextPage = () => {
             {PRODUCT_COPY.hero.trust.map(item => (
               <span
                 key={item}
-                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-bold text-[var(--lp-text-secondary)]"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-bold text-lp-text-secondary"
               >
-                <CheckIcon className="h-[15px] w-[15px] text-[var(--lp-trust-check)]" />
+                <CheckIcon className="h-[15px] w-[15px] text-lp-trust-check" />
                 {item}
               </span>
             ))}
@@ -535,7 +525,7 @@ const Home: NextPage = () => {
         <LabShot />
       </header>
 
-      <section className={`${lpSection} bg-[var(--lp-band)]`} id="how-it-works">
+      <section className={`${lpSection} bg-lp-band`} id="how-it-works">
         <div className={lpWrap}>
           <div className="grid grid-cols-2 items-center gap-10 min-[1101px]:gap-24 max-[900px]:grid-cols-1">
             <div className="flex flex-col gap-4">
@@ -543,16 +533,16 @@ const Home: NextPage = () => {
               <h2 className={lpH2}>{PRODUCT_COPY.socratic.title}</h2>
               <p className={`${lpLead} text-lg`}>{PRODUCT_COPY.socratic.lead}</p>
               <ul className="mt-1.5 flex list-none flex-col gap-3 p-0">
-                <li className="flex gap-2.5 text-base leading-normal text-[var(--lp-text-primary)]">
-                  <ChatBubbleLeftRightIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--lp-accent)]" />
+                <li className="flex gap-2.5 text-base leading-normal text-lp-text-primary">
+                  <ChatBubbleLeftRightIcon className="mt-0.5 h-5 w-5 shrink-0 text-lp-accent" />
                   Questions that build real intuition, not copy-paste habits
                 </li>
-                <li className="flex gap-2.5 text-base leading-normal text-[var(--lp-text-primary)]">
-                  <RectangleStackIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--lp-accent)]" />
+                <li className="flex gap-2.5 text-base leading-normal text-lp-text-primary">
+                  <RectangleStackIcon className="mt-0.5 h-5 w-5 shrink-0 text-lp-accent" />
                   Hints that go only as far as you actually need
                 </li>
-                <li className="flex gap-2.5 text-base leading-normal text-[var(--lp-text-primary)]">
-                  <AcademicCapIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--lp-accent)]" />
+                <li className="flex gap-2.5 text-base leading-normal text-lp-text-primary">
+                  <AcademicCapIcon className="mt-0.5 h-5 w-5 shrink-0 text-lp-accent" />
                   You finish knowing the <em>why</em> behind every line
                 </li>
               </ul>
@@ -574,9 +564,9 @@ const Home: NextPage = () => {
         </div>
       </section>
 
-      <section className={`${lpSection} bg-[var(--lp-band-lav)]`} id="curriculum">
+      <section className={`${lpSection} bg-lp-band-lav`} id="curriculum">
         <div className={lpWrap}>
-          <div className="mb-8 flex max-w-none flex-col items-center gap-3.5 text-center min-[641px]:mb-12 [&_span]:self-center [&_span]:bg-[var(--lp-eyebrow-on-lav)]">
+          <div className="mb-8 flex max-w-none flex-col items-center gap-3.5 text-center min-[641px]:mb-12 [&_span]:self-center [&_span]:bg-lp-eyebrow-on-lav">
             <Eyebrow>{PRODUCT_COPY.curriculum.eyebrow}</Eyebrow>
             <h2 className={lpH2}>{PRODUCT_COPY.curriculum.title}</h2>
           </div>
@@ -588,13 +578,13 @@ const Home: NextPage = () => {
         </div>
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-[color:var(--lp-border)] bg-[var(--lp-bg)] px-5 py-7 sm:px-8 min-[1100px]:px-12 max-sm:flex-col max-sm:items-start">
+      <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-lp-border bg-lp-bg px-5 py-7 sm:px-8 min-[1100px]:px-12 max-sm:flex-col max-sm:items-start">
         <div className="flex flex-col gap-2">
-          <span className="inline-flex items-center gap-[9px] text-base font-black leading-none text-[var(--lp-text-primary)]">
+          <span className="inline-flex items-center gap-[9px] text-base font-black leading-none text-lp-text-primary">
             <Image src="/eth-diamond-purple.svg" alt="" width={22} height={22} />
             Learning Lab
           </span>
-          <small className="max-w-[40ch] text-[13px] leading-normal text-[var(--lp-text-tertiary)]">
+          <small className="max-w-[40ch] text-[13px] leading-normal text-lp-text-tertiary">
             Interactive Ethereum labs, concepts to code.
           </small>
         </div>
