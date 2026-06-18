@@ -60,7 +60,8 @@ export type QuestionCard = CardBase & {
   label: "QUESTION";
   question: string;
   rubricConcepts: string[];
-  hint?: string;
+  // Optional scaffolding, revealed one rung at a time like a code exercise's ladder.
+  hints?: string[];
 };
 
 // Hands-on exploration, the whole deploy beat included. The world only
