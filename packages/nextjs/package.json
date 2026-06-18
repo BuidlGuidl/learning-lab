@@ -41,6 +41,7 @@
     "react-dom": "~19.2.5",
     "react-hot-toast": "~2.6.0",
     "react-markdown": "^10.1.0",
+    "react-simple-code-editor": "^0.14.1",
     "remark-gfm": "^4.0.1",
     "shiki": "^4.1.0",
     "solc": "^0.8.35",

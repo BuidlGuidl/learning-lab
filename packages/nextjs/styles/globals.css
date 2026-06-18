@@ -146,3 +146,24 @@
   color: #545d68;
   user-select: none;
 }
+
+/* CodeInput (code-exercise editor): overlay textarea + its rounded panel.
+   The overlay paints the textarea text transparent, so we restore the placeholder
+   and move the focus ring off the square textarea onto the rounded wrapper. */
+
+.code-slot-textarea::placeholder {
+  -webkit-text-fill-color: #768390;
+  color: #768390;
+  opacity: 1;
+}
+
+.code-slot-textarea:focus {
+  outline: none;
+}
+
+/* TODO:(github-dark-dimmed accent) is hardcoded — revisit if the panel
+   theme changes. DaisyUI `primary` reads near-black on this dark panel. */
+.code-input-panel:focus-within {
+  border-color: #539bf5;
+  box-shadow: 0 0 0 1px #539bf5;
+}

@@ -7,6 +7,7 @@ import { GradeFeedback } from "./GradeFeedback";
 import { TestRunPanel } from "./TestRunPanel";
 import { useGrade } from "./useGrade";
 import { LightBulbIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { CodeInput } from "~~/components/code/CodeInput";
 import { latestEvent } from "~~/lib/grader/transcript";
 import { gradeRegion } from "~~/lib/lab/grade";
 import type { RunProgress, RunReport } from "~~/lib/lab/run";
@@ -76,14 +77,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   return (
     <CardFrame card={card}>
       <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.prompt}</Markdown>
-      <textarea
-        className="textarea textarea-bordered font-mono text-sm w-full"
-        rows={3}
-        placeholder={card.placeholder}
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        disabled={running || isLoading}
-      />
+      <CodeInput value={input} onChange={setInput} placeholder={card.placeholder} readOnly={running || isLoading} />
       <div className="card-actions justify-end mt-3">
         <button
           className="btn btn-primary"

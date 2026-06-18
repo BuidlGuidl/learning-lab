@@ -5152,6 +5152,7 @@ __metadata:
     react-dom: "npm:~19.2.5"
     react-hot-toast: "npm:~2.6.0"
     react-markdown: "npm:^10.1.0"
+    react-simple-code-editor: "npm:^0.14.1"
     remark-gfm: "npm:^4.0.1"
     shiki: "npm:^4.1.0"
     solc: "npm:^0.8.35"
@@ -20029,6 +20030,16 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10/e6d7e8c42793ae24c9d4a6cb3ebdf3499c1b413fb0c93c3fbf047d875396e944e88a0520dd7db3a20db37125ffadef45b1ce8cb77b74da44daf47c5eb2155c9a
+  languageName: node
+  linkType: hard
+
+"react-simple-code-editor@npm:^0.14.1":
+  version: 0.14.1
+  resolution: "react-simple-code-editor@npm:0.14.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10/26fa7ce89daf4d2f80e3dcaebdfa7387549ca4648eb50c6102129e1dda890ecb123fa7312dd1063f2b54324f560e31c8b22acc4a30c9ea3971c7d14640300cdd
   languageName: node
   linkType: hard
 
