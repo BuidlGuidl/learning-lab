@@ -11,7 +11,8 @@ import type { ExperimentBoot } from "~~/lib/lab/learner-world";
 import type { RunProgress } from "~~/lib/lab/run";
 
 type Tone = "muted" | "info" | "ok" | "error";
-type Line = { tone: Tone; text: string; indent?: boolean };
+// a bytecode line carries its full hex so the row can unfurl the actual payload
+type Line = { tone: Tone; text: string; indent?: boolean; bytecode?: string };
 
 // One logged interaction: a read or a write the learner ran against the live
 // contract. The card wraps world.read/write to append these.
@@ -57,6 +58,10 @@ const formatValue = (value: unknown): string =>
 
 const formatArgs = (args: unknown[]) => args.map(formatValue).join(", ");
 
+// Head + tail of the deploy payload — enough to show the 0x60806040 Solidity
+// prologue without dumping kilobytes of hex into the receipt line.
+const bytecodePreview = (code: string) => `${code.slice(0, 10)}…${code.slice(-4)}`;
+
 // The deploy lifecycle, top of the log. A failed compile is kept to one line —
 // the card's failure UI shows the actual solc errors, no need to repeat them.
 function deployLines(progress: RunProgress | null, boot: ExperimentBoot | null, crash: string | null): Line[] {
@@ -92,6 +97,15 @@ function deployLines(progress: RunProgress | null, boot: ExperimentBoot | null, 
       }
       if (handle.deployment?.txHash) {
         lines.push({ tone: "muted", text: `tx        ${short(handle.deployment.txHash)}`, indent: true });
+      }
+      if (handle.deployment?.bytecode) {
+        const code = handle.deployment.bytecode;
+        const byteCount = (code.length - 2) / 2;
+        lines.push({
+          tone: "muted",
+          text: `bytecode  ${bytecodePreview(code)} · ${byteCount.toLocaleString()} bytes`,
+          bytecode: code,
+        });
       }
     }
     return lines;
@@ -142,6 +156,11 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
   // phases show at once — they change too fast to reveal cleanly.
   const [shown, setShown] = useState(0);
   useEffect(() => setShown(0), [epoch]);
+
+  // which bytecode rows the learner has unfurled; collapse them when a new
+  // deploy replays the receipt from the top.
+  const [openBytecode, setOpenBytecode] = useState<Set<number>>(() => new Set());
+  useEffect(() => setOpenBytecode(new Set()), [epoch]);
   useEffect(() => {
     if (live) {
       setShown(lines.length);
@@ -181,15 +200,53 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
       </summary>
 
       <div ref={bodyRef} className="max-h-80 overflow-y-auto px-4 py-3 font-mono text-xs leading-relaxed">
-        {lines.slice(0, visible).map((line, index) => (
-          <div
-            key={index}
-            className={`whitespace-pre-wrap break-all ${line.indent ? "pl-4" : ""} ${toneClass[line.tone]}`}
-          >
-            {line.text}
-            {typing && index === visible - 1 && <span className="ml-0.5 animate-pulse">▋</span>}
-          </div>
-        ))}
+        {lines.slice(0, visible).map((line, index) => {
+          const cursor = typing && index === visible - 1 ? <span className="ml-0.5 animate-pulse">▋</span> : null;
+
+          // the bytecode row: a chevron sits in the indent gutter (caret + gap
+          // ≈ pl-4, so "bytecode" aligns under "gas used"/"tx"), and clicking
+          // unfurls the full payload in a success-tinted dump below.
+          if (line.bytecode) {
+            const open = openBytecode.has(index);
+            return (
+              <div key={index}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenBytecode(prev => {
+                      const next = new Set(prev);
+                      if (next.has(index)) next.delete(index);
+                      else next.add(index);
+                      return next;
+                    })
+                  }
+                  className={`flex w-full items-center gap-1 text-left transition-colors hover:text-base-content/75 ${toneClass[line.tone]}`}
+                >
+                  <ChevronRightIcon
+                    className={`h-3 w-3 shrink-0 text-base-content/40 transition-transform ${open ? "rotate-90" : ""}`}
+                  />
+                  <span className="whitespace-pre-wrap break-all">{line.text}</span>
+                  {cursor}
+                </button>
+                {open && (
+                  <pre className="ml-4 mt-1.5 max-h-44 overflow-y-auto whitespace-pre-wrap break-all rounded-sm border-l-2 border-success/40 bg-base-300/50 py-2 pl-3 pr-2 text-[11px] leading-relaxed text-base-content/45">
+                    {line.bytecode}
+                  </pre>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={index}
+              className={`whitespace-pre-wrap break-all ${line.indent ? "pl-4" : ""} ${toneClass[line.tone]}`}
+            >
+              {line.text}
+              {cursor}
+            </div>
+          );
+        })}
       </div>
     </details>
   );
