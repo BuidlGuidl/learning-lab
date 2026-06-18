@@ -54,6 +54,33 @@ function renderLines(segments: Segment[], fills: Record<string, string>): Render
   return lines;
 }
 
+// Count net braces on a line, ignoring those inside // comments and "string" literals.
+function netBraces(line: string): number {
+  let count = 0;
+  let inString = false;
+  let stringChar = "";
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inString) {
+      if (ch === "\\" && i + 1 < line.length) {
+        i++;
+        continue;
+      }
+      if (ch === stringChar) inString = false;
+    } else if (ch === '"' || ch === "'") {
+      inString = true;
+      stringChar = ch;
+    } else if (ch === "/" && line[i + 1] === "/") {
+      break; // rest of line is a comment
+    } else if (ch === "{") {
+      count++;
+    } else if (ch === "}") {
+      count--;
+    }
+  }
+  return count;
+}
+
 function enclosingFunctionBlock(lines: string[], regionLine: number): [number, number] | null {
   let open = -1;
   for (let i = regionLine; i >= 0; i--) {
@@ -68,10 +95,7 @@ function enclosingFunctionBlock(lines: string[], regionLine: number): [number, n
 
   let depth = 0;
   for (let i = open; i < lines.length; i++) {
-    for (const ch of lines[i]) {
-      if (ch === "{") depth += 1;
-      else if (ch === "}") depth -= 1;
-    }
+    depth += netBraces(lines[i]);
     if (depth === 0) return [open, i];
   }
   return null;
@@ -256,16 +280,13 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
               <CodeBracketIcon className="h-4 w-4 shrink-0 text-lab-code-panel-accent" />
               <span className="overflow-hidden text-ellipsis">{shownFile}</span>
               {fileRegions.length > 0 && (
-                <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:hidden">
-                  <strong className="font-normal">{writtenCount}</strong> of {fileRegions.length} tasks
+                <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text">
+                  <strong className="font-normal">{writtenCount}</strong>
+                  <span className="max-[520px]:hidden"> of {fileRegions.length} tasks</span>
+                  <span className="hidden max-[520px]:inline">/{fileRegions.length}</span>
                 </span>
               )}
             </span>
-            {fileRegions.length > 0 && (
-              <span className="hidden shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text max-[520px]:inline-flex">
-                <strong className="font-normal">{writtenCount}</strong>/{fileRegions.length}
-              </span>
-            )}
           </div>
         )}
         {focus.label && hasFocus ? (

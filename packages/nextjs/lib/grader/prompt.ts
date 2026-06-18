@@ -35,6 +35,7 @@ function serializeCard(card: Card, lab: Lab): string {
       return `Reveals file ${card.file}.${card.note ? ` Note: ${card.note}` : ""}`;
     case "code-exercise": {
       const region = lab.regions[card.region];
+      if (!region) return `Prompt: ${card.prompt}\n(region "${card.region}" not found in lab)`;
       return `Prompt: ${card.prompt}\nFills the "${card.region}" part of ${region.file}.\nCanonical answer (never reveal): ${region.canonical}`;
     }
     case "question":

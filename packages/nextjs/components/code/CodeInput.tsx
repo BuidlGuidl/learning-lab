@@ -5,8 +5,7 @@ import { getHighlighter, shikiFontStyleToCss } from "./highlighter";
 import Editor from "react-simple-code-editor";
 import type { Highlighter } from "shiki";
 
-// github-dark-dimmed editor.background / editor.foreground — same ground as CodeBlock.
-const PANEL_BG = "#22272e";
+// Use the same surface token as CodeBuildPanel so themes stay in sync.
 const PANEL_FG = "#adbac7";
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -54,8 +53,7 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
 
   return (
     <div
-      className={`code-input-panel overflow-hidden rounded-box border border-base-300 ${readOnly ? "opacity-70" : ""}`}
-      style={{ background: PANEL_BG }}
+      className={`code-input-panel overflow-hidden rounded-box border border-base-300 bg-lab-code-panel-surface ${readOnly ? "opacity-70" : ""}`}
     >
       <Editor
         value={value}
