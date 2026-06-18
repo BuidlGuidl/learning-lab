@@ -18,6 +18,7 @@
 // every experiment card boots its own world on its own Deploy click.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CardFrame } from "../CardFrame";
+import { Markdown } from "../Markdown";
 import { Console, type ConsoleEntry } from "./Console";
 import { ArrowPathIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 import type { ContractHandle, World } from "~~/lib/lab/harness";
@@ -161,7 +162,7 @@ export const ExperimentCard = ({ card, lab }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed mt-0 mb-4 whitespace-pre-wrap">{card.scenario}</p>
+      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.scenario}</Markdown>
 
       {crash && (
         <div className="alert alert-error text-sm mb-3">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CardFrame } from "../CardFrame";
+import { Markdown } from "../Markdown";
 import { GradeFeedback } from "./GradeFeedback";
 import { useGrade } from "./useGrade";
 import { latestEvent } from "~~/lib/grader/transcript";
@@ -27,8 +28,12 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed mt-0 mb-4 whitespace-pre-wrap">{card.question}</p>
-      {card.hint && <p className="text-sm text-base-content/60 mt-0 mb-3">Hint: {card.hint}</p>}
+      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.question}</Markdown>
+      {card.hint && (
+        <div className="text-sm text-base-content/60 mb-3">
+          <span className="font-semibold">Hint:</span> <Markdown inline>{card.hint}</Markdown>
+        </div>
+      )}
       <textarea
         className="textarea textarea-bordered text-sm w-full leading-relaxed"
         rows={5}

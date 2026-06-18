@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { CardFrame } from "../CardFrame";
+import { Markdown } from "../Markdown";
 import { CodeBlock } from "~~/components/code/CodeBlock";
 import { renderDisplay } from "~~/lib/lab/render";
 import type { CodeCard as CodeCardType } from "~~/lib/lab/types";
@@ -72,7 +73,7 @@ export const CodeCard = ({ card }: Props) => {
 
   return (
     <CardFrame card={card}>
-      {card.note && <p className="text-base-content/90 leading-relaxed mt-0 mb-4">{card.note}</p>}
+      {card.note && <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.note}</Markdown>}
       <CodeBlock code={code} lang="solidity" softLines={softLines} />
     </CardFrame>
   );
