@@ -206,8 +206,15 @@ type FeatureCardProps = {
   body: string;
 };
 
+const FEATURE_TINT_BG: Record<FeatureCardProps["tint"], string> = {
+  lavender: "bg-lp-feat-lavender",
+  mint: "bg-lp-feat-mint",
+  peach: "bg-lp-feat-peach",
+  pink: "bg-lp-feat-pink",
+};
+
 const FeatureCard = ({ tint, icon: Icon, title, body }: FeatureCardProps) => (
-  <article className={cn("flex flex-col gap-3.5 rounded-cards p-7 text-lp-feat-text", `lp-tint-${tint}`)}>
+  <article className={cn("flex flex-col gap-3.5 rounded-cards p-7 text-lp-feat-text", FEATURE_TINT_BG[tint])}>
     <div className={lpIconTile}>
       <Icon className="h-6 w-6" />
     </div>

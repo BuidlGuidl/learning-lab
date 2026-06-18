@@ -205,10 +205,6 @@
   background-color: rgb(250 247 255 / 0.72);
 }
 
-.lab-card .card-actions {
-  margin-top: 16px;
-}
-
 .lab .shiki,
 .lab .shiki pre {
   background: var(--color-lab-inset) !important;
@@ -301,28 +297,6 @@
 .lab-build-line--focus-last {
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-}
-
-.lab-build-line__number {
-  width: 36px;
-  flex: none;
-  padding-right: 10px;
-  color: var(--color-lab-code-panel-faint);
-  text-align: right;
-  user-select: none;
-}
-
-.lab-build-line__stub {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--color-lab-code-panel-stub-border);
-  border-radius: 6px;
-  background: var(--color-lab-code-panel-stub);
-  color: var(--color-lab-code-panel-stub-text);
-  font-style: italic;
-  font-weight: 400;
-  padding: 0 7px;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
 }
 
 [data-theme="dark"] .lab,

@@ -329,11 +329,15 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
                   isFocusFirst ? "lab-build-line--focus-first" : ""
                 } ${isFocusLast ? "lab-build-line--focus-last" : ""}`}
               >
-                <span className="lab-build-line__number">{String(index + 1).padStart(2, " ")}</span>
+                <span className="w-9 flex-none pr-2.5 text-right text-lab-code-panel-faint select-none">
+                  {String(index + 1).padStart(2, " ")}
+                </span>
                 {line.ghost ? (
                   <>
                     <span style={{ whiteSpace: "pre" }}>{line.indent}</span>
-                    <span className="lab-build-line__stub">{placeholderFor(line.regionId ?? "task")}</span>
+                    <span className="inline-flex items-center rounded-md border border-lab-code-panel-stub-border bg-lab-code-panel-stub px-[7px] font-normal italic text-lab-code-panel-stub-text shadow-[0_1px_4px_rgb(0_0_0/0.1)]">
+                      {placeholderFor(line.regionId ?? "task")}
+                    </span>
                   </>
                 ) : !lineTokens ? (
                   line.text || " "

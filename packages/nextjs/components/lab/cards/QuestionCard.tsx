@@ -42,7 +42,7 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
         onChange={e => setInput(e.target.value)}
         disabled={isLoading}
       />
-      <div className="card-actions justify-end mt-3">
+      <div className="card-actions justify-end mt-4">
         <button
           className="btn btn-primary"
           onClick={() => grade(input)}
