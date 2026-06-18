@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { CardFrame } from "../CardFrame";
+import { Markdown } from "../Markdown";
 import { GradeFeedback } from "./GradeFeedback";
 import { TestRunPanel } from "./TestRunPanel";
 import { useGrade } from "./useGrade";
 import { LightBulbIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { CodeInput } from "~~/components/code/CodeInput";
 import { latestEvent } from "~~/lib/grader/transcript";
 import { gradeRegion } from "~~/lib/lab/grade";
 import type { RunProgress, RunReport } from "~~/lib/lab/run";
@@ -74,15 +76,8 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <p className="text-base-content/90 leading-relaxed mt-0 mb-4 whitespace-pre-wrap">{card.prompt}</p>
-      <textarea
-        className="textarea textarea-bordered font-mono text-sm w-full"
-        rows={3}
-        placeholder={card.placeholder}
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        disabled={running || isLoading}
-      />
+      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.prompt}</Markdown>
+      <CodeInput value={input} onChange={setInput} placeholder={card.placeholder} readOnly={running || isLoading} />
       <div className="card-actions justify-end mt-3">
         <button
           className="btn btn-primary"
@@ -145,7 +140,9 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
           {hints.slice(0, revealedHints).map((hint, i) => (
             <li key={i} className="flex items-baseline gap-2.5">
               <span className="font-mono text-[10px] uppercase tracking-wider text-warning/70">{i + 1}</span>
-              <span className="m-0 text-sm leading-relaxed text-base-content/80">{hint}</span>
+              <span className="m-0 text-sm leading-relaxed text-base-content/80">
+                <Markdown inline>{hint}</Markdown>
+              </span>
             </li>
           ))}
         </ul>
