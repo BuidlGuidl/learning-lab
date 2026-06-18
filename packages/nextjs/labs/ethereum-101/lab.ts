@@ -1,3 +1,4 @@
+import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
@@ -112,14 +113,19 @@ export const lab = defineLab({
           title: "Deploy it",
           scenario:
             "One click. Your contract, with your `GOAL` line in it, compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
+          sharesWorld: "crowdfund",
           console: "open",
         },
         {
-          type: "concept",
+          type: "experiment",
           id: "what-just-happened",
-          label: "CONCEPT",
+          label: "EXPERIMENT",
           title: "What just happened",
-          body: "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
+          scenario:
+            "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
+          reusesWorld: "crowdfund",
+          component: ReadGoal,
+          console: "open",
         },
       ],
     },
