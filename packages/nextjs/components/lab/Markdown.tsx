@@ -24,7 +24,7 @@ const components: Components = {
   ol: ({ children }) => <ol className="mb-3 ml-5 list-decimal space-y-1 last:mb-0">{children}</ol>,
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   blockquote: ({ children }) => (
-    <blockquote className="mb-3 border-l-2 border-base-300 pl-3 italic text-base-content/70 last:mb-0">
+    <blockquote className="mb-3 border-l-2 border-lab-border pl-3 italic text-lab-muted last:mb-0">
       {children}
     </blockquote>
   ),
@@ -33,8 +33,10 @@ const components: Components = {
   h3: ({ children }) => <h4 className="mb-2 mt-1 text-base font-semibold">{children}</h4>,
   // DaisyUI's table component restores the borders/padding Tailwind preflight strips.
   table: ({ children }) => (
-    <div className="mb-3 overflow-x-auto last:mb-0">
-      <table className="table table-zebra table-sm">{children}</table>
+    <div className="mb-3 overflow-x-auto rounded-lg border border-lab-border last:mb-0">
+      <table className="table table-sm [&_td]:border-lab-border [&_th]:border-lab-border [&_th]:bg-lab-tint [&_th]:text-lab-text [&_tbody_tr:nth-child(even)]:bg-lab-inset">
+        {children}
+      </table>
     </div>
   ),
   // Inline code gets a chip. Fenced solidity routes through the same shiki
@@ -58,7 +60,7 @@ const components: Components = {
       );
     }
     return (
-      <pre className="mb-3 overflow-x-auto rounded-md bg-base-300 p-3 font-mono text-[0.85em] leading-relaxed last:mb-0">
+      <pre className="mb-3 overflow-x-auto rounded-md border border-lab-border bg-lab-inset p-3 font-mono text-[0.85em] leading-relaxed text-lab-text last:mb-0">
         <code>{code}</code>
       </pre>
     );
