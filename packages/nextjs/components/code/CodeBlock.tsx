@@ -52,8 +52,8 @@ export const CodeBlock = ({ code, lang = "solidity", theme, softLines, showLineN
   // Numbered mode fills its pane like an editor (no rounded corners); the
   // default mode stays a rounded inline block for lesson cards.
   const wrapperClass = showLineNumbers
-    ? "code-numbered text-sm overflow-x-auto [&_pre]:p-4 [&_pre]:m-0 [&_pre]:min-h-full"
-    : "text-sm overflow-x-auto [&_pre]:p-4 [&_pre]:rounded [&_pre]:m-0";
+    ? "code-numbered text-sm overflow-x-auto bg-[var(--color-lab-inset)] [&_pre]:p-4 [&_pre]:m-0 [&_pre]:min-h-full [&_pre]:min-w-full"
+    : "text-sm overflow-x-auto bg-[var(--color-lab-inset)] rounded [&_pre]:p-4 [&_pre]:rounded [&_pre]:m-0 [&_pre]:min-w-full";
 
   if (!html) {
     return (
