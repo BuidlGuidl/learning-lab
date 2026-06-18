@@ -577,7 +577,9 @@
   color: #9b4a13;
 }
 
-.lab-card--dropcap .lab-card__body > p:first-of-type::first-letter {
+/* The card body prose is rendered by <Markdown>, which wraps it in a <div>;
+   the drop cap targets that wrapper's first paragraph. */
+.lab-card--dropcap .lab-card__body > div > p:first-of-type::first-letter {
   float: left;
   padding: 6px 12px 0 0;
   color: var(--color-lab-violet);

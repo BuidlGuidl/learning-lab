@@ -28,7 +28,7 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.question}</Markdown>
+      <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.question}</Markdown>
       {card.hint && (
         <div className="text-sm text-base-content/60 mb-3">
           <span className="font-semibold">Hint:</span> <Markdown inline>{card.hint}</Markdown>

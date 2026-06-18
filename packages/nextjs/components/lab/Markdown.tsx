@@ -11,7 +11,12 @@ const components: Components = {
   p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
   a: ({ href, children }) => (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="link link-primary">
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium text-lab-violet underline underline-offset-2 transition-colors hover:text-lab-iris"
+    >
       {children}
     </a>
   ),
