@@ -146,7 +146,9 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
           {hints.slice(0, revealedHints).map((hint, i) => (
             <li key={i} className="flex items-baseline gap-2.5">
               <span className="font-mono text-[10px] uppercase tracking-wider text-warning/70">{i + 1}</span>
-              <span className="m-0 text-sm leading-relaxed text-base-content/80">{hint}</span>
+              <span className="m-0 text-sm leading-relaxed text-base-content/80">
+                <Markdown inline>{hint}</Markdown>
+              </span>
             </li>
           ))}
         </ul>
