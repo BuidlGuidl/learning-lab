@@ -1,15 +1,40 @@
 import { create } from "zustand";
+// type-only — no runtime dependency on these modules
+import type { ConsoleEntry } from "~~/components/lab/cards/Console";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
 import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
+import type { ExperimentBoot } from "~~/lib/lab/learner-world";
 import type { Region, Segment } from "~~/lib/lab/regions";
-import type { RunReport } from "~~/lib/lab/run";
+import type { RunProgress, RunReport } from "~~/lib/lab/run";
 import type { Card, Lab } from "~~/lib/lab/types";
 
 type ProgressEntry = {
   learnerInput: string;
   region: string;
 };
+
+// One experiment's deployed world and the state its card renders: the boot
+// result, in-flight deploy progress, the console log, and a revealed flag for
+// the receipt animation. Keyed by world id so it persists while the learner
+// navigates between cards.
+export type WorldState = {
+  boot: ExperimentBoot | null;
+  progress: RunProgress | null;
+  crash: string | null;
+  log: ConsoleEntry[];
+  epoch: number;
+  revealed: boolean; // has the deploy receipt finished its typewriter reveal
+};
+
+const newWorld = (): WorldState => ({
+  boot: null,
+  progress: null,
+  crash: null,
+  log: [],
+  epoch: 0,
+  revealed: false,
+});
 
 // A spot in the lab, addressed the way the store already thinks: chapter then card.
 export type Position = { chapterIndex: number; cardIndex: number };
@@ -36,6 +61,10 @@ type LabState = {
   tests: LabTests | null;
   progress: Record<string, ProgressEntry>;
   transcript: LearningTranscript;
+  // every experiment's world, keyed by world id. Deploying writes here and the
+  // card reads it back, so a deployed world survives navigation. Holds an
+  // in-memory chain, so it's dropped on lab switch.
+  worlds: Record<string, WorldState>;
 };
 
 type LabActions = {
@@ -47,6 +76,12 @@ type LabActions = {
   recordRunVerdict: (cardId: string, chapterId: string, learnerInput: string, report: RunReport) => void;
   appendGradingEvent: (event: GradingEvent) => void;
   skipCard: (card: Card, chapterId: string) => void;
+  startDeploy: (worldId: string) => void;
+  setDeployProgress: (worldId: string, progress: RunProgress) => void;
+  finishDeploy: (worldId: string, boot: ExperimentBoot) => void;
+  failDeploy: (worldId: string, crash: string) => void;
+  markRevealed: (worldId: string) => void;
+  appendConsoleEntry: (worldId: string, entry: ConsoleEntry) => void;
   reset: () => void;
 };
 
@@ -63,6 +98,7 @@ const initialState: LabState = {
   tests: null,
   progress: {},
   transcript: emptyTranscript,
+  worlds: {},
 };
 
 // region id -> the learner's latest submitted text (a skip writes the
@@ -163,6 +199,59 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         transcript: { ...s.transcript, events: [...s.transcript.events, event] },
         progress,
       };
+    }),
+  // Deploy lifecycle for one world: startDeploy clears the last result and goes
+  // live; setDeployProgress narrates the checks; finishDeploy lands the boot and
+  // arms a fresh receipt reveal; failDeploy records an unexpected throw.
+  startDeploy: worldId =>
+    set(s => ({
+      worlds: {
+        ...s.worlds,
+        [worldId]: {
+          ...(s.worlds[worldId] ?? newWorld()),
+          boot: null,
+          crash: null,
+          log: [],
+          progress: { step: "compiling" },
+        },
+      },
+    })),
+  setDeployProgress: (worldId, progress) =>
+    set(s => {
+      const world = s.worlds[worldId];
+      if (!world) return s;
+      return { worlds: { ...s.worlds, [worldId]: { ...world, progress } } };
+    }),
+  finishDeploy: (worldId, boot) =>
+    set(s => {
+      const world = s.worlds[worldId] ?? newWorld();
+      return {
+        worlds: {
+          ...s.worlds,
+          [worldId]: { ...world, boot, progress: null, crash: null, log: [], epoch: world.epoch + 1, revealed: false },
+        },
+      };
+    }),
+  failDeploy: (worldId, crash) =>
+    set(s => {
+      const world = s.worlds[worldId] ?? newWorld();
+      return { worlds: { ...s.worlds, [worldId]: { ...world, crash, progress: null } } };
+    }),
+  // the console flips this once the receipt finishes typing, so navigating back
+  // to a deployed card shows it static instead of re-animating.
+  markRevealed: worldId =>
+    set(s => {
+      const world = s.worlds[worldId];
+      if (!world || world.revealed) return s;
+      return { worlds: { ...s.worlds, [worldId]: { ...world, revealed: true } } };
+    }),
+  // a surface read/write appends here, so the console shows the deploy receipt
+  // and the surface's activity in one log.
+  appendConsoleEntry: (worldId, entry) =>
+    set(s => {
+      const world = s.worlds[worldId];
+      if (!world) return s;
+      return { worlds: { ...s.worlds, [worldId]: { ...world, log: [...world.log, entry] } } };
     }),
   reset: () => set(initialState),
 }));
