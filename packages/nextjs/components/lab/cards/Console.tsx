@@ -229,7 +229,7 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
                   {cursor}
                 </button>
                 {open && (
-                  <pre className="ml-4 mt-1.5 max-h-44 overflow-y-auto whitespace-pre-wrap break-all rounded-sm border-l-2 border-success/40 bg-base-300/50 py-2 pl-3 pr-2 text-[11px] leading-relaxed text-base-content/45">
+                  <pre className="ml-4 mt-1.5 max-h-44 overflow-y-auto whitespace-pre-wrap break-all rounded-sm bg-base-300/50 py-2 pl-3 pr-2 text-[11px] leading-relaxed text-base-content/45">
                     {line.bytecode}
                   </pre>
                 )}
