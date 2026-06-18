@@ -15,6 +15,7 @@ export type GradingEvent = {
   feedback?: string; // absent on a skip
   missedConcepts?: string[]; // absent on a skip
   compilerErrors?: string[]; // raw solc errors, only on a code-exercise that failed to compile
+  testResults?: { name: string; passed: boolean; error?: string }[]; // behavioural run, code-exercises only
   happenedAt: number;
 };
 

@@ -5,33 +5,44 @@
 export type CompiledContract = { name: string; abi: unknown[]; bytecode: `0x${string}` };
 
 export type CompileResult =
-  | {
-      ok: true;
-      abi: unknown[];
-      bytecode: `0x${string}`;
-      contracts: Record<string, CompiledContract>;
-      warnings: string[];
-    }
+  | { ok: true; contracts: Record<string, CompiledContract>; warnings: string[] }
   | { ok: false; errors: string[] };
 
+// What the compiler is doing right now, for callers that want to show progress.
+export type CompilerPhase = "downloading" | "compiling";
+
+// The worker couldn't load soljson (CDN unreachable). This is an infra error,
+// not the learner's code — callers reframe it as a retry, not a compile fail.
+export const COMPILER_UNAVAILABLE = "the Solidity compiler couldn't load — check your connection and try again";
+export const isCompilerUnavailable = (errors?: string[]) => !!errors?.some(e => e === COMPILER_UNAVAILABLE);
+
 let worker: Worker | null = null;
+let ready = false;
 let nextId = 0;
 // id routes each response back to the right caller. without it, concurrent compiles race on arrival order.
 const pending = new Map<string, (r: CompileResult) => void>();
+// callers stuck behind the soljson download, flipped to "compiling" when ready lands.
+const phaseWatchers = new Map<string, (phase: CompilerPhase) => void>();
 
 function ensureWorker(): Worker {
   if (worker) return worker;
   worker = new Worker(new URL("./solc-worker.ts", import.meta.url));
   worker.onmessage = (event: MessageEvent) => {
-    const { id, ...rest } = event.data as { id: string } & Record<string, unknown>;
+    const data = event.data as Record<string, unknown>;
+    if (data.type === "ready") {
+      ready = true;
+      // every request queued during the download is about to actually compile
+      for (const watch of phaseWatchers.values()) watch("compiling");
+      phaseWatchers.clear();
+      return;
+    }
+    const { id, ...rest } = data as { id: string } & Record<string, unknown>;
     const resolver = pending.get(id);
     if (!resolver) return;
     pending.delete(id);
     if (rest.ok === true) {
       resolver({
         ok: true,
-        abi: rest.abi as unknown[],
-        bytecode: rest.bytecode as `0x${string}`,
         contracts: (rest.contracts as Record<string, CompiledContract>) ?? {},
         warnings: (rest.warnings as string[]) ?? [],
       });
@@ -39,14 +50,40 @@ function ensureWorker(): Worker {
       resolver({ ok: false, errors: (rest.errors as string[]) ?? ["unknown error"] });
     }
   };
+  // A worker that dies before posting (the soljson CDN blocked or unreachable)
+  // would otherwise leave every request pending forever — and stay cached, so
+  // even retries hang. Fail what's in flight and let the next call respawn.
+  worker.onerror = () => {
+    for (const resolve of pending.values()) {
+      resolve({ ok: false, errors: [COMPILER_UNAVAILABLE] });
+    }
+    pending.clear();
+    phaseWatchers.clear();
+    worker?.terminate();
+    worker = null;
+    ready = false;
+  };
   return worker;
 }
 
-export function compileSolidity(source: string): Promise<CompileResult> {
+// Spawning the worker starts the soljson download immediately, so call this on
+// lab mount and the compiler is usually in memory before the first submit.
+export function warmCompiler(): void {
+  ensureWorker();
+}
+
+export function compileContracts(
+  sources: Record<string, string>,
+  onPhase?: (phase: CompilerPhase) => void,
+): Promise<CompileResult> {
   const w = ensureWorker();
   const id = String(nextId++);
+  if (onPhase) {
+    onPhase(ready ? "compiling" : "downloading");
+    if (!ready) phaseWatchers.set(id, onPhase);
+  }
   return new Promise(resolve => {
     pending.set(id, resolve);
-    w.postMessage({ id, source });
+    w.postMessage({ id, sources });
   });
 }

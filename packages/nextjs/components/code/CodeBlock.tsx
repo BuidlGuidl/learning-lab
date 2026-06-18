@@ -6,25 +6,41 @@ import { getHighlighter } from "./highlighter";
 type Props = {
   code: string;
   lang?: string;
+  // 1-based lines rendered quieter than real code (placeholder comments for
+  // not-yet-written exercises)
+  softLines?: number[];
   // Render a left gutter of line numbers (editor-pane look). The numbering and
   // gutter live in the `.code-numbered` block in globals.css — they only apply
   // when this is on, so inline lesson code blocks never grow a gutter.
   showLineNumbers?: boolean;
 };
 
-export const CodeBlock = ({ code, lang = "solidity", showLineNumbers = false }: Props) => {
+export const CodeBlock = ({ code, lang = "solidity", softLines, showLineNumbers = false }: Props) => {
   const [html, setHtml] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
+    const soft = new Set(softLines ?? []);
     getHighlighter().then(h => {
       if (cancelled) return;
-      setHtml(h.codeToHtml(code, { lang, theme: "github-dark-dimmed" }));
+      setHtml(
+        h.codeToHtml(code, {
+          lang,
+          theme: "github-dark-dimmed",
+          transformers: [
+            {
+              line(node, line) {
+                if (soft.has(line)) node.properties.style = "opacity:.45;font-style:italic";
+              },
+            },
+          ],
+        }),
+      );
     });
     return () => {
       cancelled = true;
     };
-  }, [code, lang]);
+  }, [code, lang, softLines]);
 
   // Numbered mode fills its pane like an editor (no rounded corners); the
   // default mode stays a rounded inline block for lesson cards.
