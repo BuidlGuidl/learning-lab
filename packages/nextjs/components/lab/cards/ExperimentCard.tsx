@@ -78,7 +78,7 @@ function findSharer(
     const cards = lab.chapters[chapterIndex].cards;
     for (let cardIndex = 0; cardIndex < cards.length; cardIndex++) {
       const candidate = cards[cardIndex];
-      if (candidate.type === "experiment" && candidate.sharesWorld === worldId) {
+      if (candidate.type === "experiment" && candidate.id === worldId && candidate.sharesWorld) {
         return { card: candidate, chapterIndex, cardIndex };
       }
     }
@@ -102,10 +102,10 @@ const Suspects = ({ regions, verb }: { regions: string[]; verb: string }) => (
 export const ExperimentCard = ({ card, lab }: Props) =>
   card.reusesWorld ? <ReuseWorldCard card={card} lab={lab} /> : <DeployWorldCard card={card} lab={lab} />;
 
-// Deploys a world and mounts its surface on green. Uses card.sharesWorld as the
-// world id when set, otherwise its own card id.
+// Deploys a world (keyed by the card's id) and mounts its surface on green.
+// sharesWorld marks that world as reusable by a later card.
 const DeployWorldCard = ({ card, lab }: Props) => {
-  const worldId = card.sharesWorld ?? card.id;
+  const worldId = card.id;
   const regionIds = useMemo(() => regionsBeforeCard(lab, card.id), [lab, card.id]);
 
   const world = useLabStore(s => s.worlds[worldId]);

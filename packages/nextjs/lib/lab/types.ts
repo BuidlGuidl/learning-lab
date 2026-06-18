@@ -87,10 +87,11 @@ export type ExperimentCard = CardBase & {
   // expanded (a deploy card, where the log is the point); "closed" folds it
   // by default (a surface card, where the experience leads).
   console?: "open" | "closed";
-  // Share one deployed world across cards. A card with sharesWorld deploys the
-  // world and exposes it under this id; a later card with reusesWorld mounts its
-  // component on that same world instead of deploying its own.
-  sharesWorld?: string;
+  // Share one deployed world across cards. A card with sharesWorld: true exposes
+  // its deployed world (keyed by its own id) for reuse; a later card sets
+  // reusesWorld to that card's id to mount its component on the same world
+  // instead of deploying its own.
+  sharesWorld?: boolean;
   reusesWorld?: string;
 };
 

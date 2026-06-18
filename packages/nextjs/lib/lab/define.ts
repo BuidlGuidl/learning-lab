@@ -51,7 +51,7 @@ export function defineLab(spec: LabSpec): Lab {
     }
   }
 
-  // a reusesWorld must point at a world some earlier card shares, and a card
+  // a reusesWorld must name an earlier card that shares its world, and a card
   // reusing a world needs a component to mount on it.
   const sharedWorlds = new Set<string>();
   for (const chapter of spec.chapters) {
@@ -60,11 +60,11 @@ export function defineLab(spec: LabSpec): Lab {
       if (card.sharesWorld && card.reusesWorld) {
         throw new Error(`lab "${spec.id}": card "${card.id}" both shares and reuses a world — pick one`);
       }
-      if (card.sharesWorld) sharedWorlds.add(card.sharesWorld);
+      if (card.sharesWorld) sharedWorlds.add(card.id);
       if (card.reusesWorld) {
         if (!sharedWorlds.has(card.reusesWorld)) {
           throw new Error(
-            `lab "${spec.id}": card "${card.id}" reuses world "${card.reusesWorld}" that no earlier card shares`,
+            `lab "${spec.id}": card "${card.id}" reuses world "${card.reusesWorld}", which no earlier card shares`,
           );
         }
         if (!card.component) {
