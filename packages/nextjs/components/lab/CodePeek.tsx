@@ -43,7 +43,8 @@ export const CodePeek = ({ lab }: { lab: Lab }) => {
   const defaultFile = cardFile && labFiles[cardFile] !== undefined ? cardFile : files[0];
   const shownFile = pickedFile ?? defaultFile;
   const shown = useMemo(
-    () => (shownFile ? renderDisplay(labFiles[shownFile] ?? [], fillsOf(progress)) : { code: "", softLines: [] }),
+    () =>
+      shownFile ? renderDisplay(labFiles[shownFile] ?? [], fillsOf(progress)) : { code: "", softLines: [], focus: {} },
     [labFiles, shownFile, progress],
   );
 
