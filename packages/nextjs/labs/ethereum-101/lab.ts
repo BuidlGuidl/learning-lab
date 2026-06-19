@@ -143,6 +143,11 @@ export const lab = defineLab({
           prompt:
             "The contract needs to remember who sent what, so we want a **ledger**: one row per contributor, an address on the left and the amount they sent on the right. That's exactly what a `mapping(address => uint256)` is. Declare one named `contributions`, marked `public`. Any address that hasn't contributed just reads zero.",
           placeholder: "mapping(address => uint256) public scores;",
+          hints: [
+            "Read the type as key then value: the `address` is who contributed, the `uint256` is how much they sent.",
+            "Mark it `public` the same way you did with `GOAL`. The placeholder shows the exact shape, just rename it.",
+            "Write `mapping(address => uint256) public contributions;`.",
+          ],
         },
         {
           type: "concept",
