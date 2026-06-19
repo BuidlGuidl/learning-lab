@@ -7,7 +7,7 @@
 */
 @theme {
   --color-lp-bg: var(--color-pure-white);
-  --color-lp-band: var(--color-light-violet-band);
+  --color-lp-band: var(--color-surface-subtle);
   --color-lp-band-lav: var(--color-lavender);
   --color-lp-surface: var(--color-pure-white);
   --color-lp-text-primary: var(--color-onyx);
@@ -23,7 +23,7 @@
   --color-lp-on-accent: var(--color-pure-white);
   --color-lp-ghost-border: var(--color-ash-gray);
   --color-lp-ghost-border-hover: var(--color-onyx);
-  --color-lp-icon-tile: rgb(255 255 255 / 0.6);
+  --color-lp-icon-tile: color-mix(in srgb, var(--color-pure-white) 60%, transparent);
   --color-lp-feat-lavender: var(--color-pastel-lavender);
   --color-lp-feat-mint: var(--color-pastel-mint);
   --color-lp-feat-peach: var(--color-pastel-peach);
@@ -41,15 +41,15 @@
   --color-lp-bubble-tutor: var(--color-lavender);
   --color-lp-bubble-you: var(--color-pure-white);
   --color-lp-bubble-you-border: var(--color-ash-gray);
-  --color-lp-bubble-code-bg: rgb(108 36 224 / 0.1);
+  --color-lp-bubble-code-bg: color-mix(in srgb, var(--color-ethereum-violet) 10%, transparent);
   --color-lp-bubble-code-fg: var(--color-deep-iris);
   --color-lp-shot-border: var(--color-ash-gray);
-  --color-lp-shot-bar: var(--color-light-violet-band);
+  --color-lp-shot-bar: var(--color-surface-subtle);
   --color-lp-shot-url-bg: var(--color-pure-white);
   --color-lp-shot-concept: var(--color-pure-white);
-  --color-lp-shot-divider: rgb(108 36 224 / 0.12);
-  --color-lp-shot-dots: rgb(108 36 224 / 0.18);
-  --color-lp-code-highlight-bg: rgb(108 36 224 / 0.3);
+  --color-lp-shot-divider: color-mix(in srgb, var(--color-ethereum-violet) 12%, transparent);
+  --color-lp-shot-dots: color-mix(in srgb, var(--color-ethereum-violet) 18%, transparent);
+  --color-lp-code-highlight-bg: color-mix(in srgb, var(--color-ethereum-violet) 30%, transparent);
 
   /* Product-mock shadows; dark overrides live under [data-theme="dark"] .lp. */
   --shadow-labshot: 0 30px 60px -28px rgb(65 18 140 / 0.3);
@@ -69,49 +69,49 @@
 }
 
 [data-theme="dark"] .lp {
-  --color-lp-bg: #13101b;
-  --color-lp-band: #181324;
-  --color-lp-band-lav: #1c1630;
-  --color-lp-surface: #1e1830;
-  --color-lp-text-primary: #f3eefc;
-  --color-lp-text-secondary: #b6abce;
-  --color-lp-text-tertiary: #897ea6;
-  --color-lp-border: #2f2745;
-  --color-lp-accent: #b99bff;
-  --color-lp-accent-press: #cdb6ff;
-  --color-lp-eyebrow-bg: rgb(168 125 255 / 0.14);
-  --color-lp-eyebrow-on-lav: rgb(185 155 255 / 0.16);
-  --color-lp-btn-bg: #7c3aed;
-  --color-lp-btn-bg-hover: #8b5cf6;
-  --color-lp-on-accent: #ffffff;
-  --color-lp-ghost-border: #3a3158;
-  --color-lp-ghost-border-hover: #b99bff;
-  --color-lp-icon-tile: rgb(168 125 255 / 0.12);
-  --color-lp-feat-lavender: #241d38;
-  --color-lp-feat-mint: #15271f;
-  --color-lp-feat-peach: #2b2017;
-  --color-lp-feat-pink: #2a1826;
-  --color-lp-feat-text: #f3eefc;
-  --color-lp-module-art-lavender: #ece0ff;
-  --color-lp-module-art-mint: #d6f5ea;
-  --color-lp-pill-bg: rgb(168 125 255 / 0.16);
-  --color-lp-pill-fg: #c6acff;
-  --color-lp-pill-mint-bg: rgb(61 220 151 / 0.16);
-  --color-lp-pill-mint-fg: #4fdca0;
-  --color-lp-trust-check: #3ddc97;
-  --color-lp-mode-fg: #ff7ccb;
-  --color-lp-mode-bg: rgb(246 14 157 / 0.16);
-  --color-lp-bubble-tutor: #322b50;
-  --color-lp-bubble-you: #221c37;
-  --color-lp-bubble-you-border: #4d4274;
-  --color-lp-bubble-code-bg: rgb(168 125 255 / 0.18);
-  --color-lp-bubble-code-fg: #cdb6ff;
-  --color-lp-shot-border: #2f2745;
-  --color-lp-shot-bar: #1b1528;
-  --color-lp-shot-url-bg: #110d1c;
-  --color-lp-shot-concept: #1a1428;
-  --color-lp-shot-divider: #2a2340;
-  --color-lp-shot-dots: #3a3158;
+  --color-lp-bg: var(--color-dark-bg);
+  --color-lp-band: var(--color-dark-surface);
+  --color-lp-band-lav: var(--color-dark-surface);
+  --color-lp-surface: var(--color-dark-surface);
+  --color-lp-text-primary: var(--color-dark-text);
+  --color-lp-text-secondary: var(--color-dark-text-muted);
+  --color-lp-text-tertiary: var(--color-dark-text-faint);
+  --color-lp-border: var(--color-dark-border);
+  --color-lp-accent: var(--color-violet-bright);
+  --color-lp-accent-press: var(--color-violet-bright-strong);
+  --color-lp-eyebrow-bg: color-mix(in srgb, var(--color-violet-bright) 14%, transparent);
+  --color-lp-eyebrow-on-lav: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
+  --color-lp-btn-bg: var(--color-violet-fill);
+  --color-lp-btn-bg-hover: var(--color-violet-fill-strong);
+  --color-lp-on-accent: var(--color-pure-white);
+  --color-lp-ghost-border: var(--color-dark-border-strong);
+  --color-lp-ghost-border-hover: var(--color-violet-bright);
+  --color-lp-icon-tile: color-mix(in srgb, var(--color-violet-bright) 12%, transparent);
+  --color-lp-feat-lavender: var(--color-dark-feat-lavender);
+  --color-lp-feat-mint: var(--color-dark-feat-mint);
+  --color-lp-feat-peach: var(--color-dark-feat-peach);
+  --color-lp-feat-pink: var(--color-dark-feat-pink);
+  --color-lp-feat-text: var(--color-dark-text);
+  --color-lp-module-art-lavender: var(--color-lavender);
+  --color-lp-module-art-mint: var(--color-pastel-mint);
+  --color-lp-pill-bg: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
+  --color-lp-pill-fg: var(--color-violet-bright-strong);
+  --color-lp-pill-mint-bg: color-mix(in srgb, var(--color-mint-bright) 16%, transparent);
+  --color-lp-pill-mint-fg: var(--color-mint-bright);
+  --color-lp-trust-check: var(--color-mint-bright);
+  --color-lp-mode-fg: var(--color-magenta-bright);
+  --color-lp-mode-bg: color-mix(in srgb, var(--color-hot-magenta) 16%, transparent);
+  --color-lp-bubble-tutor: var(--color-dark-elevated);
+  --color-lp-bubble-you: var(--color-dark-surface);
+  --color-lp-bubble-you-border: var(--color-dark-border-strong);
+  --color-lp-bubble-code-bg: color-mix(in srgb, var(--color-violet-bright) 18%, transparent);
+  --color-lp-bubble-code-fg: var(--color-violet-bright-strong);
+  --color-lp-shot-border: var(--color-dark-border);
+  --color-lp-shot-bar: var(--color-dark-surface);
+  --color-lp-shot-url-bg: var(--color-dark-bg);
+  --color-lp-shot-concept: var(--color-dark-surface);
+  --color-lp-shot-divider: var(--color-dark-elevated);
+  --color-lp-shot-dots: var(--color-dark-border-strong);
   --shadow-labshot: 0 30px 60px -28px rgb(0 0 0 / 0.65);
   --shadow-socratic: 0 24px 50px -30px rgb(0 0 0 / 0.6);
 }
@@ -136,7 +136,7 @@
 
 .site-theme-switch.theme-switch .theme-switch__toggle {
   border-color: var(--color-ash-gray);
-  background-color: var(--color-light-violet-band);
+  background-color: var(--color-surface-subtle);
 }
 
 .site-theme-switch.theme-switch .theme-switch__toggle:hover {
@@ -154,28 +154,28 @@
 }
 
 [data-theme="dark"] .site-theme-switch.theme-switch {
-  border-color: #2f2745;
-  background: #1e1830;
-  color: #f3eefc;
+  border-color: var(--color-dark-border);
+  background: var(--color-dark-surface);
+  color: var(--color-dark-text);
 }
 
 [data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__toggle {
-  border-color: #3a3158;
-  background-color: #181324;
+  border-color: var(--color-dark-border-strong);
+  background-color: var(--color-dark-bg);
 }
 
 [data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__toggle:hover {
-  border-color: #b99bff;
-  background-color: rgb(168 125 255 / 0.14);
+  border-color: var(--color-violet-bright);
+  background-color: color-mix(in srgb, var(--color-violet-bright) 14%, transparent);
 }
 
 [data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__toggle:checked {
-  border-color: #b99bff;
-  background-color: #7c3aed;
+  border-color: var(--color-violet-bright);
+  background-color: var(--color-violet-fill);
 }
 
 [data-theme="dark"] .site-theme-switch.theme-switch .theme-switch__icon {
-  color: #b99bff;
+  color: var(--color-violet-bright);
 }
 
 .lp-inline-mono {

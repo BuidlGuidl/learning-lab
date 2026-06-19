@@ -8,10 +8,10 @@
 @theme {
   --color-lab-canvas: var(--color-lavender);
   --color-lab-surface: var(--color-pure-white);
-  --color-lab-inset: #faf7ff;
-  --color-lab-border: #e2d8f5;
-  --color-lab-border-strong: #dcd2f0;
-  --color-lab-track: #dccff7;
+  --color-lab-inset: var(--color-surface-subtle);
+  --color-lab-border: var(--color-border-violet);
+  --color-lab-border-strong: var(--color-border-violet);
+  --color-lab-track: var(--color-border-violet);
   --color-lab-text: var(--color-onyx);
   --color-lab-muted: var(--color-graphite);
   --color-lab-faint: var(--color-fog);
@@ -25,19 +25,21 @@
     0 2px 12px 1px rgb(65 18 140 / 0.02), 0 12px 16px -3px rgb(65 18 140 / 0.02),
     0 24px 32px -6px rgb(65 18 140 / 0.02), 0 32px 40px -12px rgb(152 27 27 / 0.04);
 
-  /* Lab code panel */
-  --color-lab-code-panel-surface: #211436;
-  --color-lab-code-panel-head: #1a102c;
-  --color-lab-code-panel-code: #24163c;
-  --color-lab-code-panel-border: #3d2764;
-  --color-lab-code-panel-text: #eee8ff;
-  --color-lab-code-panel-muted: #b7a7d8;
-  --color-lab-code-panel-faint: #766892;
-  --color-lab-code-panel-accent: #a970ff;
-  --color-lab-code-panel-tint: rgb(139 92 246 / 0.26);
-  --color-lab-code-panel-stub: rgb(212 193 251 / 0.78);
-  --color-lab-code-panel-stub-border: rgb(157 120 222 / 0.72);
-  --color-lab-code-panel-stub-text: #2d164d;
+  /* Lab code panel — always dark in both themes, so it reads from the shared
+     dark palette and has no [data-theme="dark"] override. The stub washes are
+     intentionally transparent (their base isn't a brand token) and stay as rgb. */
+  --color-lab-code-panel-surface: var(--color-dark-surface);
+  --color-lab-code-panel-head: var(--color-dark-bg);
+  --color-lab-code-panel-code: var(--color-dark-bg);
+  --color-lab-code-panel-border: var(--color-dark-border);
+  --color-lab-code-panel-text: var(--color-dark-text);
+  --color-lab-code-panel-muted: var(--color-dark-text-muted);
+  --color-lab-code-panel-faint: var(--color-dark-text-faint);
+  --color-lab-code-panel-accent: var(--color-violet-bright);
+  --color-lab-code-panel-tint: color-mix(in srgb, var(--color-violet-bright) 20%, transparent);
+  --color-lab-code-panel-stub: rgb(200 179 248 / 0.78);
+  --color-lab-code-panel-stub-border: rgb(123 97 191 / 0.72);
+  --color-lab-code-panel-stub-text: #1a102c;
 }
 
 .lab,
@@ -75,7 +77,8 @@
   min-height: 100%;
   padding: 32px clamp(16px, 4vw, 64px);
   background:
-    radial-gradient(80% 54% at 50% -18%, rgb(147 87 244 / 0.18), rgb(147 87 244 / 0) 70%), var(--color-lab-canvas);
+    radial-gradient(80% 54% at 50% -18%, color-mix(in srgb, var(--color-lilac) 18%, transparent), transparent 70%),
+    var(--color-lab-canvas);
 }
 
 .lab__content--with-code {
@@ -110,7 +113,7 @@
 .lab .btn-accent {
   border-color: var(--color-lab-violet);
   background: var(--color-lab-violet);
-  color: #ffffff;
+  color: var(--color-pure-white);
 }
 
 .lab .btn-primary:hover,
@@ -145,7 +148,7 @@
 }
 
 .lab .textarea:focus {
-  outline: 2px solid rgb(108 36 224 / 0.18);
+  outline: 2px solid color-mix(in srgb, var(--color-ethereum-violet) 18%, transparent);
   outline-offset: 2px;
   border-color: var(--color-lab-violet);
 }
@@ -165,18 +168,18 @@
 }
 
 .lab .badge-success {
-  background: #d6f5ea;
+  background: var(--color-pastel-mint);
   color: var(--color-lab-mint);
 }
 
 .lab .badge-error {
-  background: #ffe0f0;
-  color: #b41469;
+  background: var(--color-pastel-pink);
+  color: var(--color-magenta-deep);
 }
 
 .lab .badge-warning {
-  background: #ffe7d6;
-  color: #9b4a13;
+  background: var(--color-pastel-peach);
+  color: var(--color-peach-deep);
 }
 
 /* The card body prose is rendered by <Markdown>, which wraps it in a <div>;
@@ -202,7 +205,7 @@
 .lab-card details {
   border-color: var(--color-lab-border);
   border-radius: 12px;
-  background-color: rgb(250 247 255 / 0.72);
+  background-color: color-mix(in srgb, var(--color-surface-subtle) 72%, transparent);
 }
 
 .lab .shiki,
@@ -301,52 +304,41 @@
 
 [data-theme="dark"] .lab,
 [data-theme="dark"] .lab-header {
-  --color-lab-canvas: #14111c;
-  --color-lab-surface: #1f1a2c;
-  --color-lab-inset: #16121f;
-  --color-lab-border: #2f2848;
-  --color-lab-border-strong: #3a3158;
-  --color-lab-track: #2c2540;
-  --color-lab-text: #f2eefb;
-  --color-lab-muted: #b3aac9;
-  --color-lab-faint: #857c9e;
-  --color-lab-violet: #a87dff;
-  --color-lab-iris: #c4a6ff;
-  --color-lab-magenta: #ff7ccb;
-  --color-lab-mint: #54d6a8;
-  --color-lab-tint: rgb(168 125 255 / 0.16);
-  --color-lab-gutter: #564a7a;
-  --color-lab-code-panel-surface: #1b1528;
-  --color-lab-code-panel-head: #16111f;
-  --color-lab-code-panel-code: #16121f;
-  --color-lab-code-panel-border: #2f2848;
-  --color-lab-code-panel-text: #f2eefb;
-  --color-lab-code-panel-muted: #b3aac9;
-  --color-lab-code-panel-faint: #756b91;
-  --color-lab-code-panel-accent: #a87dff;
-  --color-lab-code-panel-tint: rgb(168 125 255 / 0.2);
-  --color-lab-code-panel-stub: rgb(200 179 248 / 0.78);
-  --color-lab-code-panel-stub-border: rgb(123 97 191 / 0.72);
-  --color-lab-code-panel-stub-text: #1a102c;
+  --color-lab-canvas: var(--color-dark-bg);
+  --color-lab-surface: var(--color-dark-surface);
+  --color-lab-inset: var(--color-dark-bg);
+  --color-lab-border: var(--color-dark-border);
+  --color-lab-border-strong: var(--color-dark-border-strong);
+  --color-lab-track: var(--color-dark-elevated);
+  --color-lab-text: var(--color-dark-text);
+  --color-lab-muted: var(--color-dark-text-muted);
+  --color-lab-faint: var(--color-dark-text-faint);
+  --color-lab-violet: var(--color-violet-bright);
+  --color-lab-iris: var(--color-violet-bright-strong);
+  --color-lab-magenta: var(--color-magenta-bright);
+  --color-lab-mint: var(--color-mint-bright);
+  --color-lab-tint: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
+  --color-lab-gutter: var(--color-dark-gutter);
   --shadow-lab: 0 10px 34px -16px rgb(0 0 0 / 0.7);
 }
 
 [data-theme="dark"] .lab__content {
   background:
-    radial-gradient(80% 54% at 50% -18%, rgb(168 125 255 / 0.14), rgb(168 125 255 / 0) 70%), var(--color-lab-canvas);
+    radial-gradient(80% 54% at 50% -18%, color-mix(in srgb, var(--color-violet-bright) 14%, transparent), transparent 70%),
+    var(--color-lab-canvas);
 }
 
 [data-theme="dark"] .lab .btn-primary,
 [data-theme="dark"] .lab .btn-accent,
 [data-theme="dark"] .lab .btn-primary:hover,
 [data-theme="dark"] .lab .btn-accent:hover {
-  color: #14111c;
+  color: var(--color-dark-bg);
 }
 
 [data-theme="dark"] .lab .btn:disabled,
 [data-theme="dark"] .lab .btn.btn-disabled {
   border-color: var(--color-lab-border-strong);
-  background: rgb(168 125 255 / 0.1);
+  background: color-mix(in srgb, var(--color-violet-bright) 10%, transparent);
   color: var(--color-lab-muted);
   cursor: pointer;
   opacity: 1;
@@ -354,8 +346,8 @@
 
 [data-theme="dark"] .lab .btn-primary:disabled,
 [data-theme="dark"] .lab .btn-accent:disabled {
-  border-color: rgb(168 125 255 / 0.28);
-  background: rgb(168 125 255 / 0.16);
+  border-color: color-mix(in srgb, var(--color-violet-bright) 28%, transparent);
+  background: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
   color: var(--color-lab-muted);
 }
 
@@ -406,13 +398,13 @@
 }
 
 [data-theme="dark"] .lab-header .theme-switch__toggle:checked {
-  border-color: rgb(168 125 255 / 0.6);
-  background-color: rgb(168 125 255 / 0.28);
+  border-color: color-mix(in srgb, var(--color-violet-bright) 60%, transparent);
+  background-color: color-mix(in srgb, var(--color-violet-bright) 28%, transparent);
 }
 
 [data-theme="dark"] .lab-header .theme-switch__toggle:hover {
   border-color: var(--color-lab-violet);
-  background-color: rgb(168 125 255 / 0.36);
+  background-color: color-mix(in srgb, var(--color-violet-bright) 36%, transparent);
 }
 
 [data-theme="dark"] .lab-header .theme-switch__icon {
@@ -420,24 +412,24 @@
 }
 
 [data-theme="dark"] .lab .badge-success {
-  background: rgb(84 214 168 / 0.15);
-  color: #54d6a8;
+  background: color-mix(in srgb, var(--color-mint-bright) 15%, transparent);
+  color: var(--color-mint-bright);
 }
 
 [data-theme="dark"] .lab .badge-error {
-  background: rgb(255 124 203 / 0.15);
-  color: #ff8fd3;
+  background: color-mix(in srgb, var(--color-magenta-bright) 15%, transparent);
+  color: var(--color-magenta-bright);
 }
 
 [data-theme="dark"] .lab .badge-warning {
-  background: rgb(240 168 104 / 0.15);
-  color: #f0a868;
+  background: color-mix(in srgb, var(--color-peach-bright) 15%, transparent);
+  color: var(--color-peach-bright);
 }
 
 [data-theme="dark"] .lab .lab-card .alert,
 [data-theme="dark"] .lab .lab-card .rounded-box,
 [data-theme="dark"] .lab .lab-card details {
-  background-color: rgb(255 255 255 / 0.03);
+  background-color: color-mix(in srgb, var(--color-pure-white) 3%, transparent);
 }
 
 @media (max-width: 767px) {
@@ -468,7 +460,7 @@
   width: 1.75rem;
   margin-right: 1.5rem;
   text-align: right;
-  color: #545d68;
+  color: var(--color-editor-line-number);
   user-select: none;
 }
 
@@ -477,8 +469,8 @@
    and move the focus ring off the square textarea onto the rounded wrapper. */
 
 .code-slot-textarea::placeholder {
-  -webkit-text-fill-color: #768390;
-  color: #768390;
+  -webkit-text-fill-color: var(--color-editor-placeholder);
+  color: var(--color-editor-placeholder);
   opacity: 1;
 }
 
@@ -489,6 +481,6 @@
 /* TODO:(github-dark-dimmed accent) is hardcoded — revisit if the panel
    theme changes. DaisyUI `primary` reads near-black on this dark panel. */
 .code-input-panel:focus-within {
-  border-color: #539bf5;
-  box-shadow: 0 0 0 1px #539bf5;
+  border-color: var(--color-editor-focus);
+  box-shadow: 0 0 0 1px var(--color-editor-focus);
 }
