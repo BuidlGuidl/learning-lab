@@ -76,9 +76,9 @@ export const lab = defineLab({
           label: "CODE",
           title: "Read it: it's most of a Kickstarter",
           file: "Crowdfund.sol",
-          focus: ["state", "fund"],
+          focus: ["fund"],
           reveal: true,
-          note: "This is the whole crowdfunding contract, shorter than you'd expect. The lit part is the gist: a `GOAL` and a `contributions` ledger up top, then `fund()`, the function people call to chip in ETH. Read `fund()` top to bottom, it takes the ETH someone sends and records their share in the ledger. That's most of what a crowdfunding app does. `refund()` and `claim()` sit dimmed below, hover the block to read the whole thing.",
+          note: "This is real **Solidity**, you don't need to read all of it yet. It's just a Kickstarter. The part in focus is `fund()`: it takes the ETH someone sends and records their share in the `contributions` ledger. Hover to see everything else.",
         },
         {
           type: "question",
