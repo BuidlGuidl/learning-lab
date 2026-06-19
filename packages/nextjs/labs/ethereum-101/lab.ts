@@ -274,6 +274,7 @@ export const lab = defineLab({
             "This is what your contract looks like from the outside: an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the `fund()` you wrote, and the console logs each one.",
           component: UseIt,
           reusesWorld: "ship-final",
+          console: "closed",
         },
         {
           type: "summary",
