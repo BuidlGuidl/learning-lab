@@ -131,8 +131,8 @@ export const lab = defineLab({
           type: "concept",
           id: "eth-is-native",
           label: "CONCEPT",
-          title: "ETH is native",
-          body: "Money isn't an add-on in Ethereum — contracts have **balances**, just like accounts do. Inside a function, `msg.sender` is whoever called it and `msg.value` is how much ETH they sent along. A function only accepts ETH if it's marked `payable`. Those three pieces are all `fund()` needs.",
+          title: "Contracts have balance too",
+          body: "Money isn't an add-on in Ethereum. Contracts have **balances**, just like accounts do. Inside a function, `msg.sender` is whoever called it and `msg.value` is how much ETH they sent along. A function only accepts ETH if it's marked `payable`. `fund()` is built from exactly those three.",
         },
         {
           type: "code-exercise",
@@ -141,7 +141,7 @@ export const lab = defineLab({
           title: "The ledger",
           region: "contributions",
           prompt:
-            "The contract needs to remember who sent what. Declare a `mapping(address => uint256)` named `contributions`, marked `public` — a **ledger** keyed by address. Every contributor gets a row; everyone else's row just reads zero.",
+            "The contract needs to remember who sent what, so we want a **ledger**: one row per contributor, an address on the left and the amount they sent on the right. That's exactly what a `mapping(address => uint256)` is. Declare one named `contributions`, marked `public`. Any address that hasn't contributed just reads zero.",
           placeholder: "mapping(address => uint256) public scores;",
         },
         {
@@ -149,7 +149,7 @@ export const lab = defineLab({
           id: "the-ledger-is-public",
           label: "CONCEPT",
           title: "The ledger is public",
-          body: "Anyone can read every row of that mapping — every contribution, every address. Addresses are **pseudonymous**, not private: nobody knows it's you behind 0xab12…, but everything that address does is in the open. Honest framing: privacy on Ethereum is an open frontier the ecosystem is actively building, not a solved problem.",
+          body: "Anyone can read every row of that mapping: every contribution, every address. Addresses are **pseudonymous**, not private: nobody knows it's you behind 0xab12…, but everything that address does is in the open.\n\n> Privacy on Ethereum is an open frontier the ecosystem is actively building, not a solved problem.",
         },
         {
           type: "code-exercise",
@@ -158,8 +158,13 @@ export const lab = defineLab({
           title: "Record the funding",
           region: "fund-body",
           prompt:
-            "The requires are already in place — funding is open and some ETH arrived. Your job is the two lines that matter: add `msg.value` to `msg.sender`'s row in `contributions`, then `emit Funded(msg.sender, msg.value);` so the outside world hears about it.",
+            "> You're only writing the body. Hit **peek code** or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and cleared the `require`s. Two things still need to happen:\n\n1. the ledger has to remember this contributor's new total\n2. the contract should announce that a contribution landed, using the `Funded` event it already declares",
           placeholder: "balances[msg.sender] += msg.value;\nemit Deposited(msg.sender, msg.value);",
+          hints: [
+            "The ledger is `contributions[address]`. Adding to a running total is `+=`, not `=`.",
+            "`Funded` takes who paid and how much, and you already have both in scope: `msg.sender` and `msg.value`.",
+            "Write `contributions[msg.sender] += msg.value;` then `emit Funded(msg.sender, msg.value);`.",
+          ],
         },
         {
           type: "question",
@@ -167,11 +172,11 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "Why keep the mapping?",
           question:
-            "`address(this).balance` already tells the contract how much was raised in total. Why does it also keep `contributions`, a per-address record?",
+            "You just recorded each contribution in `contributions`, keyed by who sent it. The contract also knows `address(this).balance`, the total it holds. Why keep the per-person record when the total is already there?",
           rubricConcepts: [
-            "refunds require knowing who paid what",
-            "the balance is only an aggregate",
-            "the mapping is the ledger that makes refunds possible",
+            "the balance is only a total: it says how much was raised, never who contributed what",
+            "a failed campaign has to return each contributor their exact amount, which the total can't give you",
+            "the mapping is the per-contributor record the rest of the contract reads, refunds now and accounting later",
           ],
           hints: ["Think back to the deal: what did we promise contributors if the goal isn't reached?"],
         },
