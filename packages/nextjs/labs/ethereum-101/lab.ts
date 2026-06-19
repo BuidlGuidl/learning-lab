@@ -100,9 +100,9 @@ export const lab = defineLab({
             "> Hit **peek code** or press `c` any time to see the whole file, your lines filled in and the faded gaps still to come.\n\nEvery campaign needs a target. Declare a constant named `GOAL` set to `10 ether`. The shape is `type visibility constant NAME = value;`: use `uint256`, mark it `public`, and `constant` because the goal never changes after deployment. Solidity understands `ether` as a unit, so `10 ether` means exactly what it says.",
           placeholder: "uint256 public constant FEE = 2 ether;",
           hints: [
-            "Follow the placeholder's shape — only the name and value change.",
+            "Follow the placeholder's shape; only the name and value change.",
             "`public` lets anyone read it; `constant` bakes the value in at deploy time.",
-            "Write `uint256 public constant GOAL = 10 ether;` — `ether` is a built-in unit, no maths needed.",
+            "Write `uint256 public constant GOAL = 10 ether;`. `ether` is a built-in unit, no maths needed.",
           ],
         },
         {
@@ -191,7 +191,7 @@ export const lab = defineLab({
           id: "require-and-deadlines",
           label: "CONCEPT",
           title: "require and deadlines",
-          body: '`require(condition, "reason")` is how a contract enforces its rules: if the condition fails, the whole transaction rolls back as if it never happened. And `block.timestamp` gives the contract a clock, so it can enforce a **deadline** without anyone checking a calendar. Escrow agent and referee, in one program.',
+          body: 'Every deal needs someone to enforce it, and here that someone is the contract itself. It has to be able to say no: when a condition isn\'t met, it **reverts** the whole transaction, rolling everything back as if it never happened. The tool for that is `require(condition, "reason")`. Time is a rule too, so the contract reads `block.timestamp` as its clock and holds people to a **deadline** with nobody checking a calendar. Escrow agent and referee in one.',
         },
         {
           type: "code-exercise",
@@ -200,16 +200,21 @@ export const lab = defineLab({
           title: "Write refund()",
           region: "refund",
           prompt:
-            "The deal's other half: if the goal isn't reached, contributors get their money back. Write the body of refund(), in this order: require the deadline has passed (`block.timestamp >= deadline`), require the goal wasn't reached (`address(this).balance < GOAL`), read the caller's contribution into `uint256 amount` and require it's more than zero, set their row in `contributions` to zero, send with `(bool ok, ) = msg.sender.call{ value: amount }(\"\");` and require `ok`. Finish with `emit Refunded(msg.sender, amount);`. Zero first, then send — the next card is about why that order matters.",
+            "`refund()` is the deal's other half: if the campaign fell short, each contributor can take their money back. The order of these steps matters, and the next card is about why. Write the body in order:\n\n1. allow the refund only if the deadline has passed and the goal wasn't reached\n2. read the caller's own contribution, and require it's more than zero\n3. zero their row in `contributions`, before any ETH moves\n4. send them their amount, and require the send succeeded\n5. emit `Refunded`",
           placeholder:
             'require(block.timestamp >= deadline, "too early");\nuint256 amount = balances[msg.sender];\nbalances[msg.sender] = 0;\n(bool ok, ) = msg.sender.call{ value: amount }("");\nrequire(ok, "send failed");',
+          hints: [
+            "The two guards are `block.timestamp >= deadline` and `address(this).balance < GOAL`. Then `uint256 amount = contributions[msg.sender];` and require `amount > 0`.",
+            'Sending raw ETH is `(bool ok, ) = msg.sender.call{ value: amount }("")` followed by `require(ok, "send failed")`. That pattern is the one new thing here, the rest you\'ve met.',
+            "Order: set `contributions[msg.sender] = 0;` before the `call`, then `emit Refunded(msg.sender, amount);` last.",
+          ],
         },
         {
           type: "concept",
           id: "reentrancy",
           label: "CONCEPT",
           title: "Reentrancy, and why code is forever",
-          body: "The receiver of ETH can be a contract too, with code that runs the moment the ETH arrives — and that code can call `refund()` again, mid-flight. If `refund()` sent first and zeroed after, those nested calls would each pass the checks and drain everything. That exact bug was TheDAO hack in 2016. Deployed code can't be patched, so the discipline — update state before external calls — and the audit culture around it are sacred in Ethereum.",
+          body: "The receiver of ETH can be a contract too, with code that runs the moment the ETH arrives, and that code can call `refund()` again, mid-flight. If `refund()` sent first and zeroed after, those nested calls would each pass the checks and drain everything. That exact bug was TheDAO hack in 2016. Deployed code can't be patched, so the discipline of updating state before external calls, and the audit culture around it, are sacred in Ethereum.",
         },
         {
           type: "question",
@@ -219,9 +224,9 @@ export const lab = defineLab({
           question:
             "A malicious contract calls `refund()`, and the moment the ETH arrives it calls `refund()` again. Walk through your code: why does the second call get nothing?",
           rubricConcepts: [
-            "the contribution was zeroed before the send",
-            "the second call fails the require or has zero to transfer",
-            "state was updated before the external call",
+            "the contribution was set to zero before any ETH was sent",
+            "so when the nested call runs, `contributions[attacker]` is already zero and it fails the `amount > 0` require",
+            "updating state before the external call is the general defense, not a quirk of this one contract",
           ],
           hints: ["Follow your lines in order: what is contributions[attacker] by the time the second call runs?"],
         },
@@ -237,7 +242,7 @@ export const lab = defineLab({
           label: "CODE",
           title: "The finished contract",
           file: "Crowdfund.sol",
-          note: "The full reveal — every learner line in place, plus `claim()`, the function that pays the creator when the goal is hit. A fixed goal, a public ledger, a deadline, refunds that can't be gamed. The whole deal, enforced by code.",
+          note: "The full reveal, every learner line in place, plus `claim()`, the function that pays the creator when the goal is hit. A fixed goal, a public ledger, a deadline, refunds that can't be gamed. The whole deal, enforced by code.",
         },
         {
           type: "experiment",
@@ -254,7 +259,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Use it like an app",
           scenario:
-            "This is what your contract looks like from the outside — an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the `fund()` you wrote — watch the console log each one.",
+            "This is what your contract looks like from the outside: an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the `fund()` you wrote, and the console logs each one.",
           component: UseIt,
           console: "closed",
         },
@@ -263,7 +268,7 @@ export const lab = defineLab({
           id: "what-you-did",
           label: "SUMMARY",
           title: "You shipped a real contract",
-          body: "You read, wrote, and deployed a real smart contract. Along the way: a network nobody owns, accounts and gas, state and mappings, `payable` functions, `require` and deadlines, events, and the reentrancy discipline that separates working Solidity from safe Solidity. The crowdfund you built holds real value and enforces its own rules — no referee needed. That's Ethereum.",
+          body: "You read, wrote, and deployed a real smart contract. Along the way: a network nobody owns, accounts and gas, state and mappings, `payable` functions, `require` and deadlines, events, and the reentrancy discipline that separates working Solidity from safe Solidity. The crowdfund you built holds real value and enforces its own rules, no referee needed. That's Ethereum.",
         },
       ],
     },
