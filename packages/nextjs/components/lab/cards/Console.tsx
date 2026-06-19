@@ -34,8 +34,10 @@ type Props = {
   boot: ExperimentBoot | null; // the settled deploy result; null before the first deploy
   crash: string | null; // an unexpected failure (worker death, deploy script throw)
   interactions: ConsoleEntry[]; // reads/writes since the current deploy
-  defaultOpen?: boolean; // start expanded (deploy beat) vs folded (a surface's log)
+  defaultOpen?: boolean; // start expanded (a deploy card) vs folded (a surface's log)
   epoch?: number; // bumps on each successful deploy — replays the receipt reveal
+  revealed?: boolean; // receipt already animated once — render it static, don't re-type
+  onRevealed?: () => void; // fired when the receipt finishes typing, to persist `revealed`
 };
 
 const REVEAL_MS = 120; // per-line delay for the typewriter reveal
@@ -138,7 +140,16 @@ const status = (progress: RunProgress | null, boot: ExperimentBoot | null, crash
   return { label: "idle", cls: "text-base-content/40" };
 };
 
-export const Console = ({ progress, boot, crash, interactions, defaultOpen = false, epoch = 0 }: Props) => {
+export const Console = ({
+  progress,
+  boot,
+  crash,
+  interactions,
+  defaultOpen = false,
+  epoch = 0,
+  revealed = false,
+  onRevealed,
+}: Props) => {
   const lines = [...deployLines(progress, boot, crash), ...interactionLines(interactions)];
   const consoleStatus = status(progress, boot, crash);
   const live = progress !== null;
@@ -150,12 +161,17 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
   // the page.
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
-  // Typewriter reveal: lines appear one at a time, a block cursor on the line
-  // being written. The receipt replays on each deploy (epoch resets the count
-  // to 0), then each new interaction line types itself in as it lands. Live
-  // phases show at once — they change too fast to reveal cleanly.
-  const [shown, setShown] = useState(0);
-  useEffect(() => setShown(0), [epoch]);
+  // Typewriter reveal: lines appear one at a time. A fresh deploy (epoch change)
+  // replays the receipt from the top; an already-revealed world mounts straight
+  // to its end, so navigating back shows it static. New interaction lines still
+  // type in as they land; live phases appear at once.
+  const [shown, setShown] = useState(() => (revealed ? lines.length : 0));
+
+  // A fresh deploy flips revealed to false (in the store); re-run the reveal
+  // from the top. A remount of an already-revealed world keeps shown at its end.
+  useEffect(() => {
+    if (!revealed) setShown(0);
+  }, [revealed]);
 
   // which bytecode rows the learner has unfurled; collapse them when a new
   // deploy replays the receipt from the top.
@@ -172,6 +188,11 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
   }, [live, shown, lines.length]);
   const visible = Math.min(shown, lines.length);
   const typing = !live && visible < lines.length;
+
+  // Once the receipt finishes typing, persist it so a later mount renders it static.
+  useEffect(() => {
+    if (!live && !revealed && lines.length > 0 && visible >= lines.length) onRevealed?.();
+  }, [live, revealed, visible, lines.length, onRevealed]);
 
   // keep the write-head in view as lines reveal/append inside the capped body
   const bodyRef = useRef<HTMLDivElement>(null);

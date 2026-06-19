@@ -1,3 +1,4 @@
+import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
@@ -112,14 +113,19 @@ export const lab = defineLab({
           title: "Deploy it",
           scenario:
             "One click. Your contract, with your `GOAL` line in it, compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
+          sharesWorld: true,
           console: "open",
         },
         {
-          type: "concept",
+          type: "experiment",
           id: "what-just-happened",
-          label: "CONCEPT",
+          label: "EXPERIMENT",
           title: "What just happened",
-          body: "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
+          scenario:
+            "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
+          reusesWorld: "deploy-goal",
+          component: ReadGoal,
+          console: "open",
         },
       ],
     },
@@ -257,6 +263,7 @@ export const lab = defineLab({
           scenario:
             "Deploy the finished contract, your lines and all. Every check you've earned in this lab runs against it on the way in. On mainnet, this exact same deploy would put your crowdfund at an address reachable by anyone on Earth.",
           console: "open",
+          sharesWorld: true,
         },
         {
           type: "experiment",
@@ -266,6 +273,7 @@ export const lab = defineLab({
           scenario:
             "This is what your contract looks like from the outside: an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the `fund()` you wrote, and the console logs each one.",
           component: UseIt,
+          reusesWorld: "ship-final",
           console: "closed",
         },
         {
