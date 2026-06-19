@@ -110,6 +110,11 @@ const initialState: LabState = {
 export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
   Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
 
+// Every region rendered as its finished canonical source — the "reveal" view a
+// read-only card uses to show completed code before the learner has written it.
+export const canonicalFills = (regions: Record<string, Region>): Record<string, string> =>
+  Object.fromEntries(Object.entries(regions).map(([id, r]) => [id, r.canonical]));
+
 // Gradable cards gate forward nav; read-only types advance freely.
 const isGradable = (card: Card) => card.type === "code-exercise" || card.type === "question";
 

@@ -12,10 +12,11 @@
 //
 // Red here = the lab is incoherent and must not ship. Run:
 //   yarn validate-labs
+import { analyzeFocus } from "../lib/lab/focus";
 import { type CompileFn, type Compiled } from "../lib/lab/harness";
 import { extractLabContracts } from "../lib/lab/regions";
 import { runRegionTests } from "../lib/lab/run";
-import type { CodeExerciseCard, Lab } from "../lib/lab/types";
+import type { CodeCard, CodeExerciseCard, Lab } from "../lib/lab/types";
 import { OZ_SOURCES } from "../lib/solc/oz-sources";
 import { resolveSources } from "../lib/solc/resolve-imports";
 import fs from "node:fs";
@@ -99,6 +100,26 @@ async function validateLab(labId: string) {
   }
   if (failures > failuresBefore) return;
   console.log(`  ✓ every region referenced by exactly one code-exercise card`);
+
+  // 3b. focus markers are structurally sound, and every card focus names a real
+  // span — so a focus typo or a marker collision fails the build, never silently
+  // dims nothing
+  const focusByFile: Record<string, string[]> = {};
+  for (const [file, src] of Object.entries(contracts)) {
+    const { ids, errors } = analyzeFocus(src);
+    focusByFile[file] = ids;
+    for (const e of errors) fail(labId, `${file}: ${e}`);
+  }
+  const codeCards = lab.chapters.flatMap(c => c.cards).filter((c): c is CodeCard => c.type === "code");
+  for (const card of codeCards) {
+    for (const id of card.focus ?? []) {
+      if (!focusByFile[card.file]?.includes(id)) {
+        fail(labId, `card "${card.id}" focuses "${id}", which is not a <focus id> in ${card.file}`);
+      }
+    }
+  }
+  if (failures > failuresBefore) return;
+  console.log(`  ✓ focus markers valid, every card focus names a real span`);
 
   // 4. tests cover regions, keys are real (off the lab object — single source)
   const { tests, deploy } = lab;
