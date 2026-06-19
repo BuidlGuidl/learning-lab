@@ -24,7 +24,7 @@ export type WorldState = {
   crash: string | null;
   log: ConsoleEntry[];
   epoch: number;
-  revealed: boolean; // has the deploy receipt finished its typewriter reveal
+  revealed: boolean; // false only while a fresh deploy receipt is mid-reveal
 };
 
 const newWorld = (): WorldState => ({
@@ -33,7 +33,7 @@ const newWorld = (): WorldState => ({
   crash: null,
   log: [],
   epoch: 0,
-  revealed: false,
+  revealed: true,
 });
 
 // A spot in the lab, addressed the way the store already thinks: chapter then card.

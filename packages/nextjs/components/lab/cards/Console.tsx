@@ -167,13 +167,11 @@ export const Console = ({
   // type in as they land; live phases appear at once.
   const [shown, setShown] = useState(() => (revealed ? lines.length : 0));
 
-  // Re-animate only on an actual redeploy (epoch change), not on remount.
-  const lastEpoch = useRef(epoch);
+  // A fresh deploy flips revealed to false (in the store); re-run the reveal
+  // from the top. A remount of an already-revealed world keeps shown at its end.
   useEffect(() => {
-    if (lastEpoch.current === epoch) return;
-    lastEpoch.current = epoch;
-    setShown(0);
-  }, [epoch]);
+    if (!revealed) setShown(0);
+  }, [revealed]);
 
   // which bytecode rows the learner has unfurled; collapse them when a new
   // deploy replays the receipt from the top.
