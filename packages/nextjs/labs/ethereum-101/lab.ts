@@ -1,4 +1,6 @@
 import { UseIt } from "./UseIt";
+import { TransactionJourney } from "./assets/TransactionJourney";
+import { WorldComputer } from "./assets/WorldComputer";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -23,6 +25,7 @@ export const lab = defineLab({
           label: "CONCEPT",
           title: "The world computer",
           body: "Ethereum is one computer run by thousands of independent machines around the world. Every node runs the same programs and agrees on the result, so there's no off switch, no admin, no one who can block a transaction, change the rules, or rewrite history. The network as a whole is the computer, and nobody owns it.",
+          asset: WorldComputer,
         },
         {
           type: "concept",
@@ -30,6 +33,7 @@ export const lab = defineLab({
           label: "CONCEPT",
           title: "Accounts, transactions, gas",
           body: "You act on Ethereum through an account. To change anything you sign a transaction, broadcast it, and a node includes it in a block — from then on it's permanent. Every change costs gas, a fee paid to the network for the computation it does on your behalf, which is what keeps a shared world computer from being spammed to death.",
+          asset: TransactionJourney,
         },
         {
           type: "question",

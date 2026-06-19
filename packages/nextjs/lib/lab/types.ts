@@ -11,13 +11,23 @@ type CardBase = {
   title: string;
 };
 
+// A read-only card may pair its prose with a visual asset — an interactive,
+// an animation, a video — shown in the side rail in place of the code panel
+// (see SidePanel). Full react, co-located with the lab like an experiment's
+// surface; the host (AssetPanel) supplies the rail chrome, the component just
+// fills the body. Omit it and the rail falls back to the code panel.
+type WithAsset = {
+  asset?: ComponentType;
+};
+
 // The mental-model knowledge nugget.
 // read-only, no interaction.
-export type ConceptCard = CardBase & {
-  type: "concept";
-  label: "CONCEPT";
-  body: string;
-};
+export type ConceptCard = CardBase &
+  WithAsset & {
+    type: "concept";
+    label: "CONCEPT";
+    body: string;
+  };
 
 // Code reveal. Renders a file from the lab's segments with the learner's
 // region fills threaded in (unfilled regions show a placeholder). Read-only.
@@ -55,13 +65,14 @@ export type CodeExerciseCard = CardBase & {
 
 // Open-form prose prompt. Learner writes their own answer; no canonical.
 // TODO: Future AI grading scores the response against rubricConcepts.
-export type QuestionCard = CardBase & {
-  type: "question";
-  label: "QUESTION";
-  question: string;
-  rubricConcepts: string[];
-  hint?: string;
-};
+export type QuestionCard = CardBase &
+  WithAsset & {
+    type: "question";
+    label: "QUESTION";
+    question: string;
+    rubricConcepts: string[];
+    hint?: string;
+  };
 
 // Hands-on exploration, the whole deploy beat included. The world only
 // exists after the learner presses Deploy — the shell requires every region
@@ -90,11 +101,12 @@ export type ExperimentCard = CardBase & {
 
 // End-of-chapter prose. Ties the chapter's cards together (what was
 // built, what the learner should now hold). Read-only.
-export type SummaryCard = CardBase & {
-  type: "summary";
-  label: "SUMMARY";
-  body: string;
-};
+export type SummaryCard = CardBase &
+  WithAsset & {
+    type: "summary";
+    label: "SUMMARY";
+    body: string;
+  };
 
 export type Card = ConceptCard | CodeCard | CodeExerciseCard | QuestionCard | ExperimentCard | SummaryCard;
 

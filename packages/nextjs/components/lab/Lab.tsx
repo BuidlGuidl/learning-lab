@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
-import { CodeBuildPanel } from "./CodeBuildPanel";
+import { SidePanel } from "./SidePanel";
 import { Sidebar } from "./Sidebar";
 import {
   ArrowLeftIcon,
@@ -11,6 +11,7 @@ import {
   ChevronDoubleLeftIcon,
   ChevronUpIcon,
   CodeBracketIcon,
+  CubeTransparentIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { isCardCleared } from "~~/lib/grader/transcript";
@@ -67,6 +68,12 @@ export const Lab = ({ lab }: Props) => {
   const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
   const hasContracts = Object.keys(lab.files).length > 0;
   const primaryFile = Object.keys(lab.files)[0];
+  // The rail can also carry a card's visual asset, so it exists whenever the
+  // lab has contracts OR any card brings an asset.
+  const labHasAsset = lab.chapters.some(item => item.cards.some(c => "asset" in c && c.asset));
+  const hasPanel = hasContracts || labHasAsset;
+  // What the rail shows for the current card decides the mobile trigger's face.
+  const currentAsset = "asset" in card ? card.asset : undefined;
   const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
   const currentLabCard = completedBeforeCurrent + cardIndex + 1;
   const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
@@ -95,7 +102,7 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
-      <div className={`lab__content ${hasContracts ? "lab__content--with-code" : ""} overflow-y-auto drawer-content`}>
+      <div className={`lab__content ${hasPanel ? "lab__content--with-code" : ""} overflow-y-auto drawer-content`}>
         <div className="mx-auto w-[min(100%,760px)]">
           <section className="min-w-0">
             <div className="w-full max-w-3xl mx-auto shrink-0 relative z-[1]">
@@ -170,9 +177,9 @@ export const Lab = ({ lab }: Props) => {
             </div>
           </section>
         </div>
-        {hasContracts && (
+        {hasPanel && (
           <>
-            {/* Mobile: sticky bar that opens the code as a bottom sheet. Hidden on desktop, where the panel is a fixed side rail. */}
+            {/* Mobile: sticky bar that opens the rail as a bottom sheet. Hidden on desktop, where the panel is a fixed side rail. Its face follows the current card — an asset's title and "view", or the contract file and "view code". */}
             <button
               type="button"
               className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(56px+env(safe-area-inset-bottom))] items-center gap-2 border-t border-lab-border bg-lab-surface px-4 pb-[env(safe-area-inset-bottom)] font-mono text-[13px] font-semibold text-lab-text shadow-[0_-6px_20px_-10px_rgb(0_0_0/0.25)] min-[900px]:hidden"
@@ -180,10 +187,12 @@ export const Lab = ({ lab }: Props) => {
               aria-expanded={codeSheetOpen}
               aria-controls="lab-code-sheet"
             >
-              <CodeBracketIcon className="w-4 h-4" />
-              <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{primaryFile}</span>
+              {currentAsset ? <CubeTransparentIcon className="w-4 h-4" /> : <CodeBracketIcon className="w-4 h-4" />}
+              <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">
+                {currentAsset ? card.title : primaryFile}
+              </span>
               <span className="inline-flex items-center gap-1 text-[11px] uppercase text-lab-violet">
-                view code
+                {currentAsset ? "view" : "view code"}
                 <ChevronUpIcon className="w-4 h-4" />
               </span>
             </button>
@@ -202,7 +211,7 @@ export const Lab = ({ lab }: Props) => {
                 codeSheetOpen ? "max-[899px]:translate-y-0" : "max-[899px]:translate-y-full"
               }`}
               role="dialog"
-              aria-label="Contract code"
+              aria-label={currentAsset ? card.title : "Contract code"}
               aria-modal={codeSheetOpen || undefined}
             >
               <div className="relative flex shrink-0 items-center justify-center border-b border-lab-code-panel-border bg-lab-code-panel-head px-3 py-2.5 min-[900px]:hidden">
@@ -216,7 +225,7 @@ export const Lab = ({ lab }: Props) => {
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <CodeBuildPanel lab={lab} />
+              <SidePanel lab={lab} />
             </div>
           </>
         )}
