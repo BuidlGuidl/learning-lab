@@ -67,7 +67,7 @@ export const lab = defineLab({
           id: "the-deal",
           label: "CONCEPT",
           title: "The deal",
-          body: "Here's what we're building: a **crowdfunding contract**. Contributors send ETH and the contract holds onto it, with the rules set up front. If the goal is reached, the creator gets the money. If it isn't, everyone can pull their refund. No company in the middle, no one to trust. The contract itself is an escrow agent and enforces the deal",
+          body: "Here's what we're building: a **crowdfunding contract**. Contributors send ETH and the contract holds onto it, with the rules set up front. If the goal is reached, the creator gets the money. If it isn't, everyone can pull their refund. No company in the middle, no one to trust. The contract itself is an escrow agent and enforces the deal.",
         },
         {
           type: "code",
@@ -97,7 +97,7 @@ export const lab = defineLab({
           title: "Declare the goal",
           region: "goal",
           prompt:
-            "Every campaign needs a target. Declare a constant named `GOAL` set to `10 ether`. The shape is `type visibility constant NAME = value;` — use `uint256`, mark it `public`, and `constant` because the goal never changes after deployment. Solidity understands `ether` as a unit, so `10 ether` means exactly what it says. Press `c` anytime to see the whole file — the gaps are yours to fill.",
+            "> Hit **peek code** or press `c` any time to see the whole file, your lines filled in and the faded gaps still to come.\n\nEvery campaign needs a target. Declare a constant named `GOAL` set to `10 ether`. The shape is `type visibility constant NAME = value;`: use `uint256`, mark it `public`, and `constant` because the goal never changes after deployment. Solidity understands `ether` as a unit, so `10 ether` means exactly what it says.",
           placeholder: "uint256 public constant FEE = 2 ether;",
           hints: [
             "Follow the placeholder's shape — only the name and value change.",
@@ -111,7 +111,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Deploy it",
           scenario:
-            "One click. Your contract — your `GOAL` line included — compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
+            "One click. Your contract, with your `GOAL` line in it, compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
           console: "open",
         },
         {
@@ -119,7 +119,7 @@ export const lab = defineLab({
           id: "what-just-happened",
           label: "CONCEPT",
           title: "What just happened",
-          body: "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here — it's the default condition of code on Ethereum.",
+          body: "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
         },
       ],
     },
