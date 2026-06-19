@@ -60,7 +60,8 @@ export type QuestionCard = CardBase & {
   label: "QUESTION";
   question: string;
   rubricConcepts: string[];
-  hint?: string;
+  // Optional scaffolding, revealed one rung at a time like a code exercise's ladder.
+  hints?: string[];
 };
 
 // Hands-on exploration, the whole deploy beat included. The world only
@@ -86,6 +87,13 @@ export type ExperimentCard = CardBase & {
   // expanded (a deploy card, where the log is the point); "closed" folds it
   // by default (a surface card, where the experience leads).
   console?: "open" | "closed";
+  // Share one deployed world across cards. A card sets sharesWorld: true to opt
+  // its world (keyed by its own id) into reuse; a later card sets reusesWorld to
+  // that card's id to mount its component on the same world instead of deploying
+  // its own. sharesWorld doesn't change where the world is stored — it declares
+  // intent at the deploy site and is what reusesWorld is validated against.
+  sharesWorld?: boolean;
+  reusesWorld?: string;
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was

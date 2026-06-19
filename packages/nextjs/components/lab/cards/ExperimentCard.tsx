@@ -1,22 +1,12 @@
 "use client";
 
-// The experiment shell owns the deploy beat. The world only exists after the
-// learner presses Deploy — and the button stays off until every region this
-// card checks has a fill, so a sidebar peek gets pointed back to the writing,
-// never a green run of reference code presented as theirs. The click compiles
-// the learner's actual fills and runs every check earned so far against the
-// whole assembly — silently: those checks are the gate that keeps a broken
-// contract off the surface, not a readout. A green door mounts the author's
-// surface; a compile error or a red check shows the actual errors with the
-// suspect cards named, "run the reference solution" the labelled escape.
-// Redeploy reboots the world and swaps the surface's react key, so author-side
-// state clears for free. An opt-in <Console> (card.console) logs the deploy and
-// every read/write the surface makes against the live contract.
-//
-// TODO(state-sharing): a deploy card and a following experiment card should
-// share one world — deploy once, experiment on the same live contract. Today
-// every experiment card boots its own world on its own Deploy click.
-import { useEffect, useMemo, useRef, useState } from "react";
+// Experiment card: the learner deploys the contract they've been writing, then
+// gets the author's interactive surface once the deploy passes its checks, plus
+// an optional activity console. World state lives in the lab store keyed by
+// world id, so a deployed world persists as the learner moves between cards and
+// the card only renders it. A card deploys its own world, or reuses one an
+// earlier card deployed (sharesWorld / reusesWorld).
+import { useMemo } from "react";
 import { CardFrame } from "../CardFrame";
 import { Markdown } from "../Markdown";
 import { Console, type ConsoleEntry } from "./Console";
@@ -28,7 +18,6 @@ import {
   bootReferenceWorld,
   regionsBeforeCard,
 } from "~~/lib/lab/learner-world";
-import type { RunProgress } from "~~/lib/lab/run";
 import type { ExperimentCard as ExperimentCardType, Lab } from "~~/lib/lab/types";
 import { COMPILER_UNAVAILABLE, isCompilerUnavailable } from "~~/lib/solc/solc";
 import { fillsOf, useLabStore } from "~~/services/store/lab-store";
@@ -37,6 +26,65 @@ type Props = {
   card: ExperimentCardType;
   lab: Lab;
 };
+
+// Wraps a world so the surface's reads and writes are appended to the console
+// log. Kept out of the harness so the validator runs console-free.
+function makeLoggedWorld(bootedWorld: World, appendEntry: (entry: ConsoleEntry) => void): World {
+  const contractNameOf = (contract: ContractHandle) =>
+    Object.keys(bootedWorld.contracts).find(name => bootedWorld.contracts[name].address === contract.address) ??
+    "contract";
+  return {
+    ...bootedWorld,
+    read: async (contract, functionName, args) => {
+      try {
+        const result = await bootedWorld.read(contract, functionName, args);
+        appendEntry({ kind: "read", contract: contractNameOf(contract), fn: functionName, args: args ?? [], result });
+        return result;
+      } catch (error) {
+        appendEntry({
+          kind: "read",
+          contract: contractNameOf(contract),
+          fn: functionName,
+          args: args ?? [],
+          error: (error as Error).message,
+        });
+        throw error;
+      }
+    },
+    write: async (contract, functionName, options) => {
+      const result = await bootedWorld.write(contract, functionName, options);
+      const firstError = result.errors?.[0];
+      appendEntry({
+        kind: "write",
+        contract: contractNameOf(contract),
+        fn: functionName,
+        args: options?.args ?? [],
+        from: options?.from,
+        value: options?.value,
+        ok: !firstError,
+        error: firstError ? (firstError.message ?? firstError.name) : undefined,
+      });
+      return result;
+    },
+  };
+}
+
+// Finds the card that deploys a given world, so a card reusing it can link back.
+function findSharer(
+  lab: Lab,
+  worldId: string,
+): { card: ExperimentCardType; chapterIndex: number; cardIndex: number } | null {
+  for (let chapterIndex = 0; chapterIndex < lab.chapters.length; chapterIndex++) {
+    const cards = lab.chapters[chapterIndex].cards;
+    for (let cardIndex = 0; cardIndex < cards.length; cardIndex++) {
+      const candidate = cards[cardIndex];
+      if (candidate.type === "experiment" && candidate.id === worldId && candidate.sharesWorld) {
+        return { card: candidate, chapterIndex, cardIndex };
+      }
+    }
+  }
+  return null;
+}
 
 const Suspects = ({ regions, verb }: { regions: string[]; verb: string }) => (
   <p className="text-sm text-base-content/70 mt-1 mb-0">
@@ -51,8 +99,22 @@ const Suspects = ({ regions, verb }: { regions: string[]; verb: string }) => (
   </p>
 );
 
-export const ExperimentCard = ({ card, lab }: Props) => {
+export const ExperimentCard = ({ card, lab }: Props) =>
+  card.reusesWorld ? <ReuseWorldCard card={card} lab={lab} /> : <DeployWorldCard card={card} lab={lab} />;
+
+// Deploys a world (keyed by the card's id) and mounts its surface on green.
+// sharesWorld marks that world as reusable by a later card.
+const DeployWorldCard = ({ card, lab }: Props) => {
+  const worldId = card.id;
   const regionIds = useMemo(() => regionsBeforeCard(lab, card.id), [lab, card.id]);
+
+  const world = useLabStore(s => s.worlds[worldId]);
+  const startDeploy = useLabStore(s => s.startDeploy);
+  const setDeployProgress = useLabStore(s => s.setDeployProgress);
+  const finishDeploy = useLabStore(s => s.finishDeploy);
+  const failDeploy = useLabStore(s => s.failDeploy);
+  const markRevealed = useLabStore(s => s.markRevealed);
+  const appendConsoleEntry = useLabStore(s => s.appendConsoleEntry);
 
   // Deploying needs the learner's contract to exist first: every region this
   // card checks must have a fill (a learner submit, or a skip's canonical).
@@ -64,48 +126,29 @@ export const ExperimentCard = ({ card, lab }: Props) => {
     return regionIds.filter(region => !(region in fills));
   }, [labProgress, regionIds]);
 
-  // null = not deployed yet; ok:false = the learner's assembly didn't compile
-  const [boot, setBoot] = useState<ExperimentBoot | null>(null);
-  const [progress, setProgress] = useState<RunProgress | null>(null);
-  // unexpected failure (deploy script, worker death) — distinct from compile errors
-  const [crash, setCrash] = useState<string | null>(null);
-  // keys the author component across deploys so its state restarts with the world
-  const [epoch, setEpoch] = useState(0);
-  // the console's activity log — deploy receipt aside, the reads/writes the
-  // surface makes. Cleared on every deploy so a fresh world starts a fresh log.
-  const [log, setLog] = useState<ConsoleEntry[]>([]);
+  const boot = world?.boot ?? null;
+  const progress = world?.progress ?? null;
+  const crash = world?.crash ?? null;
+  const log = world?.log ?? [];
+  const epoch = world?.epoch ?? 0;
+  const revealed = world?.revealed ?? false;
   const busy = progress !== null;
-  const mounted = useRef(true);
 
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
+  // Runs a deploy, writing each phase to the store.
   const launch = async (booter: () => Promise<ExperimentBoot>) => {
-    setCrash(null);
-    setBoot(null);
-    setLog([]);
-    setProgress({ step: "compiling" });
+    startDeploy(worldId);
     try {
-      const result = await booter();
-      if (!mounted.current) return;
-      setBoot(result);
-      if (result.ok) setEpoch(e => e + 1);
+      finishDeploy(worldId, await booter());
     } catch (e) {
-      if (mounted.current) setCrash((e as Error).message);
-    } finally {
-      if (mounted.current) setProgress(null);
+      failDeploy(worldId, (e as Error).message);
     }
   };
 
   const deploy = () =>
     launch(() =>
-      bootExperimentWorld(regionIds, (done, total) => {
-        if (mounted.current) setProgress({ step: "testing", total, results: done });
-      }),
+      bootExperimentWorld(regionIds, (done, total) =>
+        setDeployProgress(worldId, { step: "testing", total, results: done }),
+      ),
     );
 
   const Surface = card.component;
@@ -113,52 +156,11 @@ export const ExperimentCard = ({ card, lab }: Props) => {
   const open = boot?.ok && (boot.reference || boot.passed) ? boot : null;
   const failedRegions = redChecks ? [...new Set(redChecks.checks.filter(c => !c.passed).map(c => c.region))] : [];
 
-  // The world the surface gets, with read/write wrapped to log every call into
-  // the console. Recreated per deploy (open changes identity), so each world
-  // starts a clean log; the harness stays pure for the ci validator, which has
-  // no console — the instrumentation lives here, on the UI side.
-  const loggedWorld = useMemo<World | null>(() => {
-    if (!open) return null;
-    const bootedWorld = open.world;
-    const contractNameOf = (contract: ContractHandle) =>
-      Object.keys(bootedWorld.contracts).find(name => bootedWorld.contracts[name].address === contract.address) ??
-      "contract";
-    const appendEntry = (entry: ConsoleEntry) => setLog(previousEntries => [...previousEntries, entry]);
-    return {
-      ...bootedWorld,
-      read: async (contract, functionName, args) => {
-        try {
-          const result = await bootedWorld.read(contract, functionName, args);
-          appendEntry({ kind: "read", contract: contractNameOf(contract), fn: functionName, args: args ?? [], result });
-          return result;
-        } catch (error) {
-          appendEntry({
-            kind: "read",
-            contract: contractNameOf(contract),
-            fn: functionName,
-            args: args ?? [],
-            error: (error as Error).message,
-          });
-          throw error;
-        }
-      },
-      write: async (contract, functionName, options) => {
-        const result = await bootedWorld.write(contract, functionName, options);
-        const firstError = result.errors?.[0];
-        appendEntry({
-          kind: "write",
-          contract: contractNameOf(contract),
-          fn: functionName,
-          args: options?.args ?? [],
-          from: options?.from,
-          value: options?.value,
-          ok: !firstError,
-          error: firstError ? (firstError.message ?? firstError.name) : undefined,
-        });
-        return result;
-      },
-    };
-  }, [open]);
+  // The world handed to the surface, with its reads and writes logged to the console.
+  const loggedWorld = useMemo<World | null>(
+    () => (open ? makeLoggedWorld(open.world, entry => appendConsoleEntry(worldId, entry)) : null),
+    [open, worldId, appendConsoleEntry],
+  );
 
   return (
     <CardFrame card={card}>
@@ -170,8 +172,8 @@ export const ExperimentCard = ({ card, lab }: Props) => {
         </div>
       )}
 
-      {missing.length > 0 ? (
-        // fill-gate: nothing of the learner's to ship yet
+      {missing.length > 0 && boot === null ? (
+        // fill-gate: nothing of the learner's to ship yet (and not already deployed)
         <div className="flex flex-col gap-3">
           <div className="rounded-box border border-base-300 bg-base-200/60 px-4 py-3">
             <p className="text-sm text-base-content/80 m-0">
@@ -278,9 +280,7 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           </div>
         </div>
       ) : open ? (
-        // green door (or the labelled reference world): the surface gets the
-        // stage. the checks that gated it here stay silent — they ran to keep
-        // a broken contract off the surface, not to be read.
+        // green: the surface gets the stage (or the labelled reference world)
         <div className="flex flex-col gap-3">
           {open.reference && (
             <p className="text-xs text-base-content/50 m-0">running the reference solution, not your code</p>
@@ -310,6 +310,78 @@ export const ExperimentCard = ({ card, lab }: Props) => {
           crash={crash}
           interactions={log}
           epoch={epoch}
+          revealed={revealed}
+          onRevealed={() => markRevealed(worldId)}
+          defaultOpen={card.console === "open"}
+        />
+      )}
+    </CardFrame>
+  );
+};
+
+// Mounts its surface on a world an earlier card deployed (named by
+// card.reusesWorld), never deploying its own. If that world isn't deployed yet,
+// it links back to the card that deploys it.
+const ReuseWorldCard = ({ card, lab }: Props) => {
+  const worldId = card.reusesWorld as string;
+  const world = useLabStore(s => s.worlds[worldId]);
+  const appendConsoleEntry = useLabStore(s => s.appendConsoleEntry);
+  const markRevealed = useLabStore(s => s.markRevealed);
+  const goTo = useLabStore(s => s.goTo);
+  const owner = useMemo(() => findSharer(lab, worldId), [lab, worldId]);
+
+  const boot = world?.boot ?? null;
+  // the deployed world, if it reached a mountable (green or reference) state
+  const open = boot?.ok && (boot.passed || boot.reference) ? boot : null;
+  const loggedWorld = useMemo<World | null>(
+    () => (open ? makeLoggedWorld(open.world, entry => appendConsoleEntry(worldId, entry)) : null),
+    [open, worldId, appendConsoleEntry],
+  );
+
+  const Surface = card.component;
+
+  return (
+    <CardFrame card={card}>
+      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.scenario}</Markdown>
+
+      {!open ? (
+        // the owner hasn't shipped a live contract yet — point back, never self-deploy
+        <div className="flex flex-col gap-3">
+          <div className="rounded-box border border-base-300 bg-base-200/60 px-4 py-3">
+            <p className="text-sm text-base-content/80 m-0">
+              No live contract yet — deploy it on{" "}
+              <span className="font-medium">{owner ? owner.card.title : "the deploy card"}</span> first, then come back
+              here to use it.
+            </p>
+          </div>
+          {owner && (
+            <button
+              className="btn btn-primary btn-sm gap-2 self-start"
+              onClick={() => goTo(owner.chapterIndex, owner.cardIndex)}
+            >
+              <RocketLaunchIcon className="w-4 h-4" />
+              Go deploy it
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {open.reference && (
+            <p className="text-xs text-base-content/50 m-0">reading the reference solution, not your code</p>
+          )}
+          {Surface && loggedWorld && <Surface key={world?.epoch ?? 0} world={loggedWorld} />}
+        </div>
+      )}
+
+      {card.console && (
+        <Console
+          progress={world?.progress ?? null}
+          boot={world?.boot ?? null}
+          crash={world?.crash ?? null}
+          interactions={world?.log ?? []}
+          epoch={world?.epoch ?? 0}
+          revealed={world?.revealed ?? false}
+          onRevealed={() => markRevealed(worldId)}
           defaultOpen={card.console === "open"}
         />
       )}
