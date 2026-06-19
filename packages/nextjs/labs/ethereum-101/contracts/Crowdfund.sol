@@ -7,6 +7,7 @@ contract Crowdfund {
   event Funded(address indexed contributor, uint256 amount);
   event Refunded(address indexed contributor, uint256 amount);
 
+  // <focus id="state">
   // <region id="goal" scope="member">
   uint256 public constant GOAL = 10 ether;
   // </region>
@@ -14,12 +15,14 @@ contract Crowdfund {
   // <region id="contributions" scope="member">
   mapping(address => uint256) public contributions;
   // </region>
+  // </focus>
 
   constructor(uint256 duration) {
     creator = msg.sender;
     deadline = block.timestamp + duration;
   }
 
+  // <focus id="fund">
   function fund() public payable {
     require(block.timestamp < deadline, "funding closed");
     require(msg.value > 0, "send some ETH");
@@ -28,6 +31,7 @@ contract Crowdfund {
     emit Funded(msg.sender, msg.value);
     // </region>
   }
+  // </focus>
 
   function refund() public {
     // <region id="refund">
