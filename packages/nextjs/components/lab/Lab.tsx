@@ -198,15 +198,15 @@ export const Lab = ({ lab }: Props) => {
 
             <div
               id="lab-code-sheet"
-              className={`lab-code-host fixed inset-x-0 bottom-0 z-50 flex h-[85vh] max-h-[85vh] flex-col overflow-hidden rounded-t-[18px] border-t border-lab-code-panel-border bg-lab-code-panel-surface shadow-[0_-16px_48px_-16px_rgb(0_0_0/0.4)] transition-transform duration-[280ms] min-[900px]:static min-[900px]:h-auto min-[900px]:max-h-none min-[900px]:overflow-visible min-[900px]:rounded-none min-[900px]:border-0 min-[900px]:bg-transparent min-[900px]:shadow-none ${
+              className={`lab-code-host fixed inset-x-0 bottom-0 z-50 flex h-[85vh] max-h-[85vh] flex-col overflow-hidden rounded-t-[18px] border-t border-dark-border bg-dark-surface shadow-[0_-16px_48px_-16px_rgb(0_0_0/0.4)] transition-transform duration-[280ms] min-[900px]:static min-[900px]:h-auto min-[900px]:max-h-none min-[900px]:overflow-visible min-[900px]:rounded-none min-[900px]:border-0 min-[900px]:bg-transparent min-[900px]:shadow-none ${
                 codeSheetOpen ? "max-[899px]:translate-y-0" : "max-[899px]:translate-y-full"
               }`}
               role="dialog"
               aria-label="Contract code"
               aria-modal={codeSheetOpen || undefined}
             >
-              <div className="relative flex shrink-0 items-center justify-center border-b border-lab-code-panel-border bg-lab-code-panel-head px-3 py-2.5 min-[900px]:hidden">
-                <span className="h-1 w-[38px] rounded-full bg-lab-code-panel-faint" aria-hidden />
+              <div className="relative flex shrink-0 items-center justify-center border-b border-dark-border bg-dark-bg px-3 py-2.5 min-[900px]:hidden">
+                <span className="h-1 w-[38px] rounded-full bg-dark-text-faint" aria-hidden />
                 <button
                   type="button"
                   className="absolute top-1/2 right-2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[10px] text-lab-muted hover:bg-lab-inset hover:text-lab-text"

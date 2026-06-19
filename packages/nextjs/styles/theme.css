@@ -51,8 +51,9 @@
      one representative per near-duplicate cluster (the divergent landing/lab
      dark hexes collapse onto these). Always defined, like the raw palette above;
      the [data-theme="dark"] blocks in landing.css / lab.css alias them. */
-  --color-dark-bg: #14111c; /* page canvas + deepest insets */
-  --color-dark-surface: #1f1a2c; /* cards, bands, bubbles, code-panel surface */
+  --color-dark-bg: #14111c; /* page canvas */
+  --color-dark-subtle: #1b1528; /* section bands + insets */
+  --color-dark-surface: #1f1a2c; /* cards, bubbles, code-panel surface */
   --color-dark-elevated: #2a2340; /* dividers, raised bubbles, tracks */
   --color-dark-border: #2f2848;
   --color-dark-border-strong: #3a3158;

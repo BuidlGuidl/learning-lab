@@ -17,7 +17,6 @@
   --color-lab-faint: var(--color-fog);
   --color-lab-violet: var(--color-ethereum-violet);
   --color-lab-iris: var(--color-deep-iris);
-  --color-lab-magenta: var(--color-hot-magenta);
   --color-lab-mint: var(--color-mint);
   --color-lab-tint: var(--color-lab-canvas);
   --color-lab-gutter: #bdaee4;
@@ -28,14 +27,6 @@
   /* Lab code panel — always dark in both themes, so it reads from the shared
      dark palette and has no [data-theme="dark"] override. The stub washes are
      intentionally transparent (their base isn't a brand token) and stay as rgb. */
-  --color-lab-code-panel-surface: var(--color-dark-surface);
-  --color-lab-code-panel-head: var(--color-dark-bg);
-  --color-lab-code-panel-code: var(--color-dark-bg);
-  --color-lab-code-panel-border: var(--color-dark-border);
-  --color-lab-code-panel-text: var(--color-dark-text);
-  --color-lab-code-panel-muted: var(--color-dark-text-muted);
-  --color-lab-code-panel-faint: var(--color-dark-text-faint);
-  --color-lab-code-panel-accent: var(--color-violet-bright);
   --color-lab-code-panel-tint: color-mix(in srgb, var(--color-violet-bright) 20%, transparent);
   --color-lab-code-panel-stub: rgb(200 179 248 / 0.78);
   --color-lab-code-panel-stub-border: rgb(123 97 191 / 0.72);
@@ -231,7 +222,7 @@
     z-index: 10;
     width: var(--lab-build-panel-width);
     flex: none;
-    border-left: 1px solid var(--color-lab-code-panel-border);
+    border-left: 1px solid var(--color-dark-border);
     box-shadow: var(--shadow-lab);
   }
 
@@ -254,7 +245,7 @@
 .lab-build-code {
   flex: 1;
   overflow: auto;
-  background: var(--color-lab-code-panel-code);
+  background: var(--color-dark-bg);
   cursor: default;
   font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
   font-size: 12.5px;
@@ -276,7 +267,7 @@
   min-height: 20px;
   padding: 0 12px 0 0;
   border-left: 3px solid transparent;
-  color: var(--color-lab-code-panel-text);
+  color: var(--color-dark-text);
   white-space: pre;
   transition:
     background-color 160ms ease,
@@ -288,7 +279,7 @@
 }
 
 .lab-build-line--focus {
-  border-left-color: var(--color-lab-code-panel-accent);
+  border-left-color: var(--color-violet-bright);
   background: var(--color-lab-code-panel-tint);
 }
 
@@ -306,7 +297,7 @@
 [data-theme="dark"] .lab-header {
   --color-lab-canvas: var(--color-dark-bg);
   --color-lab-surface: var(--color-dark-surface);
-  --color-lab-inset: var(--color-dark-bg);
+  --color-lab-inset: var(--color-dark-subtle);
   --color-lab-border: var(--color-dark-border);
   --color-lab-border-strong: var(--color-dark-border-strong);
   --color-lab-track: var(--color-dark-elevated);
@@ -315,7 +306,6 @@
   --color-lab-faint: var(--color-dark-text-faint);
   --color-lab-violet: var(--color-violet-bright);
   --color-lab-iris: var(--color-violet-bright-strong);
-  --color-lab-magenta: var(--color-magenta-bright);
   --color-lab-mint: var(--color-mint-bright);
   --color-lab-tint: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
   --color-lab-gutter: var(--color-dark-gutter);
@@ -324,7 +314,11 @@
 
 [data-theme="dark"] .lab__content {
   background:
-    radial-gradient(80% 54% at 50% -18%, color-mix(in srgb, var(--color-violet-bright) 14%, transparent), transparent 70%),
+    radial-gradient(
+      80% 54% at 50% -18%,
+      color-mix(in srgb, var(--color-violet-bright) 14%, transparent),
+      transparent 70%
+    ),
     var(--color-lab-canvas);
 }
 

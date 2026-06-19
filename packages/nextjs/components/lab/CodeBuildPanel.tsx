@@ -252,10 +252,10 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
 
   return (
     <aside
-      className="lab-build-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-lab-code-panel-surface text-lab-code-panel-text"
+      className="lab-build-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-dark-surface text-dark-text"
       aria-label={`Building ${shownFile}`}
     >
-      <div className="shrink-0 border-b border-lab-code-panel-border bg-lab-code-panel-head px-[18px] pt-4 pb-3.5">
+      <div className="shrink-0 border-b border-dark-border bg-dark-bg px-[18px] pt-4 pb-3.5">
         {files.length > 1 ? (
           <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
             {files.map(f => (
@@ -265,8 +265,8 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
                 onClick={() => setPickedFile(f)}
                 className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border-0 bg-transparent px-2.5 py-1.5 font-mono text-xs leading-none transition-colors ${
                   f === shownFile
-                    ? "bg-lab-code-panel-tint text-lab-code-panel-accent"
-                    : "text-lab-code-panel-muted hover:text-lab-code-panel-text"
+                    ? "bg-lab-code-panel-tint text-violet-bright"
+                    : "text-dark-text-muted hover:text-dark-text"
                 }`}
               >
                 <CodeBracketIcon className="h-3.5 w-3.5" />
@@ -276,11 +276,11 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3">
-            <span className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm text-lab-code-panel-text">
-              <CodeBracketIcon className="h-4 w-4 shrink-0 text-lab-code-panel-accent" />
+            <span className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm text-dark-text">
+              <CodeBracketIcon className="h-4 w-4 shrink-0 text-violet-bright" />
               <span className="overflow-hidden text-ellipsis">{shownFile}</span>
               {fileRegions.length > 0 && (
-                <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-lab-code-panel-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-lab-code-panel-text">
+                <span className="inline-flex shrink-0 items-center gap-[3px] rounded-full border border-dark-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-dark-text">
                   <strong className="font-normal">{writtenCount}</strong>
                   <span className="max-[520px]:hidden"> of {fileRegions.length} tasks</span>
                   <span className="hidden max-[520px]:inline">/{fileRegions.length}</span>
@@ -292,23 +292,21 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
         {focus.label && hasFocus ? (
           <button
             type="button"
-            className="mt-3 inline-flex max-w-full cursor-pointer items-center gap-[7px] border-0 bg-transparent p-0 text-left font-mono text-xs leading-normal text-lab-code-panel-muted hover:text-lab-code-panel-text"
+            className="mt-3 inline-flex max-w-full cursor-pointer items-center gap-[7px] border-0 bg-transparent p-0 text-left font-mono text-xs leading-normal text-dark-text-muted hover:text-dark-text"
             onClick={() => setShowFocus(value => !value)}
             title={focusOn ? "Show the whole contract" : "Focus the current task"}
           >
             <span
-              className={`h-[7px] w-[7px] shrink-0 rounded-full ${
-                focusOn ? "bg-lab-code-panel-accent" : "bg-lab-code-panel-faint"
-              }`}
+              className={`h-[7px] w-[7px] shrink-0 rounded-full ${focusOn ? "bg-violet-bright" : "bg-dark-text-faint"}`}
               aria-hidden
             />
             {focusOn ? "on this card" : "focus this card"} ·{" "}
-            <strong className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-lab-code-panel-accent">
+            <strong className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-violet-bright">
               {focus.label}
             </strong>
           </button>
         ) : (
-          <p className="mt-3 mb-0 text-xs leading-normal text-lab-code-panel-muted">
+          <p className="mt-3 mb-0 text-xs leading-normal text-dark-text-muted">
             The contract updates as you finish each task. Lavender labels mark the parts you still write.
           </p>
         )}
@@ -329,7 +327,7 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
                   isFocusFirst ? "lab-build-line--focus-first" : ""
                 } ${isFocusLast ? "lab-build-line--focus-last" : ""}`}
               >
-                <span className="w-9 flex-none pr-2.5 text-right text-lab-code-panel-faint select-none">
+                <span className="w-9 flex-none pr-2.5 text-right text-dark-text-faint select-none">
                   {String(index + 1).padStart(2, " ")}
                 </span>
                 {line.ghost ? (

@@ -174,7 +174,7 @@ const MarketingButton = ({ href, children, variant = "primary", size = "md", ico
       className={cn(
         "inline-flex cursor-pointer items-center justify-center gap-2 rounded-buttons text-base leading-none no-underline transition-colors whitespace-nowrap max-sm:w-full max-sm:px-[18px]",
         variant === "primary" &&
-          "border border-lp-btn-bg bg-lp-btn-bg px-6 py-[13px] font-bold text-lp-on-accent hover:border-lp-btn-bg-hover hover:bg-lp-btn-bg-hover",
+          "border border-lp-btn-bg bg-lp-btn-bg px-6 py-[13px] font-bold text-pure-white hover:border-lp-btn-bg-hover hover:bg-lp-btn-bg-hover",
         variant === "ghost" &&
           "border border-lp-ghost-border bg-transparent px-5 py-3 text-lp-text-primary hover:border-lp-ghost-border-hover",
         size === "lg" && "px-7 py-[15px] text-[17px]",
@@ -214,7 +214,7 @@ const FEATURE_TINT_BG: Record<FeatureCardProps["tint"], string> = {
 };
 
 const FeatureCard = ({ tint, icon: Icon, title, body }: FeatureCardProps) => (
-  <article className={cn("flex flex-col gap-3.5 rounded-cards p-7 text-lp-feat-text", FEATURE_TINT_BG[tint])}>
+  <article className={cn("flex flex-col gap-3.5 rounded-cards p-7 text-lp-text-primary", FEATURE_TINT_BG[tint])}>
     <div className={lpIconTile}>
       <Icon className="h-6 w-6" />
     </div>
@@ -264,7 +264,7 @@ const ModuleCard = ({
           "relative flex h-[200px] items-center justify-center overflow-hidden",
           artFill ? "p-0 [&_img]:h-full [&_img]:w-full [&_img]:max-h-none [&_img]:object-cover" : "p-6",
           !artFill && "[&_img]:h-auto [&_img]:max-h-40 [&_img]:w-auto [&_img]:object-contain",
-          artTint === "lavender" ? "bg-lp-module-art-lavender" : "bg-lp-module-art-mint",
+          artTint === "lavender" ? "bg-lavender" : "bg-pastel-mint",
         )}
       >
         {artFill ? (
@@ -285,7 +285,7 @@ const ModuleCard = ({
               key={item}
               className={cn(
                 "rounded-tags px-2.5 py-1 text-xs font-bold",
-                mintMetaIndex === index ? "bg-lp-pill-mint-bg text-lp-pill-mint-fg" : "bg-lp-pill-bg text-lp-pill-fg",
+                mintMetaIndex === index ? "bg-lp-pill-mint-bg text-lp-positive" : "bg-lp-pill-bg text-lp-pill-fg",
               )}
             >
               {item}
@@ -338,21 +338,21 @@ const Brand = () => (
 
 const LabShot = () => (
   <div
-    className="overflow-hidden rounded-cards border border-lp-shot-border bg-lp-surface shadow-labshot"
+    className="overflow-hidden rounded-cards border border-lp-border bg-lp-surface shadow-labshot"
     aria-label="Learning Lab product preview"
   >
-    <div className="flex items-center gap-2 border-b border-lp-shot-border bg-lp-shot-bar px-3.5 py-[11px]">
+    <div className="flex items-center gap-2 border-b border-lp-border bg-lp-band px-3.5 py-[11px]">
       <span className="flex shrink-0 gap-1.5" aria-hidden>
         <i className="h-[11px] w-[11px] rounded-full bg-lp-shot-dots" />
         <i className="h-[11px] w-[11px] rounded-full bg-lp-shot-dots" />
         <i className="h-[11px] w-[11px] rounded-full bg-lp-shot-dots" />
       </span>
-      <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-lp-shot-border bg-lp-shot-url-bg px-3 py-1 font-mono text-xs text-lp-text-secondary">
+      <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-lp-border bg-lp-shot-url-bg px-3 py-1 font-mono text-xs text-lp-text-secondary">
         Learning Lab · ethereum-101 / your-first-contract
       </span>
     </div>
     <div className="grid min-h-80 grid-cols-[0.85fr_1.15fr] max-[900px]:grid-cols-1">
-      <div className="flex flex-col gap-3 border-r border-lp-shot-divider bg-lp-shot-concept px-6 py-[26px] max-[900px]:border-r-0 max-[900px]:border-b">
+      <div className="flex flex-col gap-3 border-r border-lp-shot-divider bg-lp-surface px-6 py-[26px] max-[900px]:border-r-0 max-[900px]:border-b">
         <span className="inline-flex items-center self-start gap-1.5 rounded-[7px] bg-lp-eyebrow-bg px-[9px] py-1 text-[11px] font-bold uppercase text-lp-accent">
           <LightBulbIcon className="h-3 w-3" />
           Concept
@@ -366,11 +366,11 @@ const LabShot = () => (
           Run it and watch the EVM commit your change.
         </p>
         <div className="mt-auto flex items-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 rounded-buttons bg-lp-btn-bg px-4 py-[9px] text-[13px] font-bold text-lp-on-accent">
+          <span className="inline-flex items-center gap-1.5 rounded-buttons bg-lp-btn-bg px-4 py-[9px] text-[13px] font-bold text-pure-white">
             <PlayIcon className="h-[13px] w-[13px]" />
             Run
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-lp-trust-check">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-lp-positive">
             <CheckCircleIcon className="h-3.5 w-3.5" />1 / 1 passing
           </span>
         </div>
@@ -464,14 +464,14 @@ const SocraticMock = () => (
       </span>
       <b className="text-[15px] font-bold text-lp-text-primary">AI Tutor</b>
     </div>
-    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-buttons bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-buttons bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-dark-border-strong">
       Your <code>withdraw()</code> reverts. Before I help, what do you expect <code>balances[msg.sender]</code> to hold
       at this point?
     </div>
-    <div className="lp-bubble self-end max-w-[88%] rounded-[14px] rounded-br-buttons border border-lp-bubble-you-border bg-lp-bubble-you px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full">
+    <div className="lp-bubble self-end max-w-[88%] rounded-[14px] rounded-br-buttons border border-lp-bubble-you-border bg-lp-surface px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full">
       The full amount they contributed?
     </div>
-    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-buttons bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-[#463d6b]">
+    <div className="lp-bubble max-w-[88%] rounded-[14px] rounded-bl-buttons bg-lp-bubble-tutor px-[15px] py-3 text-[14.5px] leading-[1.55] text-lp-text-primary max-sm:max-w-full dark:border dark:border-dark-border-strong">
       Right. So if you send the ETH first and zero it out after, what could a malicious contract do in between?
     </div>
     <div className="mt-0.5 flex items-center gap-[7px] border-t border-dashed border-lp-border pt-3 text-[12.5px] text-lp-text-secondary">
@@ -523,7 +523,7 @@ const Home: NextPage = () => {
                 key={item}
                 className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-bold text-lp-text-secondary"
               >
-                <CheckIcon className="h-[15px] w-[15px] text-lp-trust-check" />
+                <CheckIcon className="h-[15px] w-[15px] text-lp-positive" />
                 {item}
               </span>
             ))}

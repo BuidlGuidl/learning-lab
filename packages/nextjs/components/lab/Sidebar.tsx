@@ -69,7 +69,7 @@ export const Sidebar = ({ lab, onNavigate, onClose }: Props) => {
                 <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-3 py-2.5 text-lab-muted hover:bg-lab-inset hover:text-lab-text [&::-webkit-details-marker]:hidden">
                   <span
                     className={`grid h-6 w-6 flex-none place-items-center rounded-full font-mono text-xs ${
-                      open ? "bg-lab-violet text-white dark:text-[#14111c]" : "bg-lab-inset text-lab-muted"
+                      open ? "bg-lab-violet text-pure-white dark:text-dark-bg" : "bg-lab-inset text-lab-muted"
                     }`}
                   >
                     {chapterIndex + 1}
