@@ -21,19 +21,20 @@ export type ConceptCard = CardBase & {
 
 // Code reveal. Renders a file from the lab's segments with the learner's
 // region fills threaded in (unfilled regions show a placeholder). Read-only.
-//
-// Anchor slicing: fromAnchor and toAnchor trim the rendered file to an
-// excerpt. fromAnchor — the first line whose text case-insensitively
-// includes the substring starts the excerpt (inclusive). toAnchor — the
-// first line after that which includes its substring ends it (exclusive).
-// Blank edges are trimmed, softLines are re-offset, and a non-matching
-// anchor falls back to the whole file (never throws).
 export type CodeCard = CardBase & {
   type: "code";
   label: "CODE";
   file: string;
-  fromAnchor?: string;
-  toAnchor?: string;
+  // focus lights named spans (the spotlight effect): each id resolves to a
+  // `// <focus id="x"> … // </focus>` span in the source, and the card lights
+  // the union — so focus: ["state", "fund"] dims everything except those two.
+  // The markers live with the code, so the focus can't drift the way a line
+  // number or substring anchor would, and they're always stripped from display.
+  focus?: string[];
+  // reveal renders every region as its finished canonical source instead of the
+  // learner's progress view — for read-before-you-write cards that show real,
+  // complete code (pairs with focus to light the part that matters).
+  reveal?: boolean;
   note?: string;
 };
 
