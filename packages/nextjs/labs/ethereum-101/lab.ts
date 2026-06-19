@@ -67,7 +67,7 @@ export const lab = defineLab({
           id: "the-deal",
           label: "CONCEPT",
           title: "The deal",
-          body: "Here's what we're building: a **crowdfunding contract**. Contributors send ETH and the contract holds onto it, with the rules set up front. If the goal is reached, the creator gets the money. If it isn't, everyone can pull their refund.No company in the middle, no one to trust. The contract itself is an escrow agent and enforces the deal",
+          body: "Here's what we're building: a **crowdfunding contract**. Contributors send ETH and the contract holds onto it, with the rules set up front. If the goal is reached, the creator gets the money. If it isn't, everyone can pull their refund. No company in the middle, no one to trust. The contract itself is an escrow agent and enforces the deal",
         },
         {
           type: "code",
