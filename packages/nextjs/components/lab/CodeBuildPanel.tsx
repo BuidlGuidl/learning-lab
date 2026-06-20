@@ -38,6 +38,8 @@ function renderLines(segments: Segment[], fills: Record<string, string>): Render
 }
 
 // Count net braces on a line, ignoring those inside // comments and "string" literals.
+// Block comments (/* */) and the naive endsWith("{") opener scan below aren't handled —
+// this only drives the cosmetic focus highlight, not grading, so it stays lightweight.
 function netBraces(line: string): number {
   let count = 0;
   let inString = false;
@@ -226,22 +228,31 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
     >
       <div className="shrink-0 border-b border-dark-border bg-dark-bg px-[18px] pt-4 pb-3.5">
         {files.length > 1 ? (
-          <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
-            {files.map(f => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setPickedFile(f)}
-                className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border-0 bg-transparent px-2.5 py-1.5 font-mono text-xs leading-none transition-colors ${
-                  f === shownFile
-                    ? "bg-lab-code-panel-tint text-violet-bright"
-                    : "text-dark-text-muted hover:text-dark-text"
-                }`}
-              >
-                <CodeBracketIcon className="h-3.5 w-3.5" />
-                {f}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+              {files.map(f => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setPickedFile(f)}
+                  className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border-0 bg-transparent px-2.5 py-1.5 font-mono text-xs leading-none transition-colors ${
+                    f === shownFile
+                      ? "bg-lab-code-panel-tint text-violet-bright"
+                      : "text-dark-text-muted hover:text-dark-text"
+                  }`}
+                >
+                  <CodeBracketIcon className="h-3.5 w-3.5" />
+                  {f}
+                </button>
+              ))}
+            </div>
+            {fileRegions.length > 0 && (
+              <span className="ml-auto inline-flex shrink-0 items-center gap-[3px] rounded-full border border-dark-border bg-lab-code-panel-tint px-2 py-1 font-mono text-[11px] leading-none text-dark-text">
+                <strong className="font-normal">{writtenCount}</strong>
+                <span className="max-[520px]:hidden"> of {fileRegions.length} tasks</span>
+                <span className="hidden max-[520px]:inline">/{fileRegions.length}</span>
+              </span>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3">

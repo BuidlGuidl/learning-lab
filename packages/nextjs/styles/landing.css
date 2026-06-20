@@ -15,7 +15,6 @@
   --color-lp-text-tertiary: var(--color-fog);
   --color-lp-border: var(--color-ash-gray);
   --color-lp-accent: var(--color-ethereum-violet);
-  --color-lp-accent-press: var(--color-deep-iris);
   --color-lp-eyebrow-bg: var(--color-lavender);
   --color-lp-eyebrow-on-lav: var(--color-pure-white);
   --color-lp-btn-bg: var(--color-ethereum-violet);
@@ -31,8 +30,6 @@
   --color-lp-pill-fg: var(--color-ethereum-violet);
   --color-lp-pill-mint-bg: var(--color-pastel-mint);
   --color-lp-positive: var(--color-mint);
-  --color-lp-mode-fg: var(--color-hot-magenta);
-  --color-lp-mode-bg: var(--color-pastel-pink);
   --color-lp-bubble-tutor: var(--color-lavender);
   --color-lp-bubble-you-border: var(--color-ash-gray);
   --color-lp-bubble-code-bg: color-mix(in srgb, var(--color-ethereum-violet) 10%, transparent);
@@ -69,7 +66,6 @@
   --color-lp-text-tertiary: var(--color-dark-text-faint);
   --color-lp-border: var(--color-dark-border);
   --color-lp-accent: var(--color-violet-bright);
-  --color-lp-accent-press: var(--color-violet-bright-strong);
   --color-lp-eyebrow-bg: color-mix(in srgb, var(--color-violet-bright) 14%, transparent);
   --color-lp-eyebrow-on-lav: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
   --color-lp-btn-bg: var(--color-violet-fill);
@@ -85,8 +81,6 @@
   --color-lp-pill-fg: var(--color-violet-bright-strong);
   --color-lp-pill-mint-bg: color-mix(in srgb, var(--color-mint-bright) 16%, transparent);
   --color-lp-positive: var(--color-mint-bright);
-  --color-lp-mode-fg: var(--color-magenta-bright);
-  --color-lp-mode-bg: color-mix(in srgb, var(--color-hot-magenta) 16%, transparent);
   --color-lp-bubble-tutor: var(--color-dark-elevated);
   --color-lp-bubble-you-border: var(--color-dark-border-strong);
   --color-lp-bubble-code-bg: color-mix(in srgb, var(--color-violet-bright) 18%, transparent);
