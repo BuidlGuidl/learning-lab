@@ -275,7 +275,7 @@
 }
 
 .lab-build-code--focus .lab-build-line:not(.lab-build-line--focus) {
-  opacity: 0.34;
+  opacity: var(--focus-dim-opacity);
 }
 
 .lab-build-line--focus {
@@ -475,7 +475,7 @@
     filter 300ms ease;
 }
 .code-focus .line:not(.is-focus) {
-  opacity: 0.3;
+  opacity: var(--focus-dim-opacity);
   filter: blur(0.7px);
 }
 .code-focus .line.is-focus {

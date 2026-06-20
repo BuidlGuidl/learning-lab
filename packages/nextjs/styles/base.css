@@ -37,6 +37,8 @@
 :root,
 [data-theme] {
   background: var(--color-base-200);
+  /* How far non-focus lines fade under either spotlight (build panel + inline). */
+  --focus-dim-opacity: 0.3;
 }
 
 .btn {

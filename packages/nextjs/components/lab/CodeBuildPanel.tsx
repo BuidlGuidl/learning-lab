@@ -3,10 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ThemedToken } from "shiki";
 import { CodeBracketIcon } from "@heroicons/react/24/outline";
-import { getHighlighter } from "~~/components/code/highlighter";
-import { indentBlock } from "~~/lib/lab/assemble";
-import { FOCUS_CLOSE_RE, FOCUS_OPEN_RE } from "~~/lib/lab/focus";
+import { decodeFontStyle, getHighlighter } from "~~/components/code/highlighter";
 import type { Segment } from "~~/lib/lab/regions";
+import { renderProgram } from "~~/lib/lab/render";
 import type { Card, Lab } from "~~/lib/lab/types";
 import { fillsOf, useLabStore } from "~~/services/store/lab-store";
 
@@ -26,36 +25,16 @@ type BuildFocus = {
 
 const placeholderFor = (id: string) => `${id.replace(/-/g, " ")} · your task`;
 
+// The panel's view of renderProgram: filled/text lines pass through, unfilled
+// regions become a ghost line the JSX swaps for a badge. Marker-stripping and
+// focus-span tracking already happened in renderProgram (lib/lab/render.ts).
 function renderLines(segments: Segment[], fills: Record<string, string>): RenderedLine[] {
-  const lines: RenderedLine[] = [];
-
-  for (const seg of segments) {
-    if (seg.kind === "text") {
-      for (const text of seg.text.split("\n")) {
-        const trimmed = text.trim();
-        // Focus markers steer the inline spotlight only; never show them in the panel.
-        if (FOCUS_OPEN_RE.test(trimmed) || FOCUS_CLOSE_RE.test(trimmed)) continue;
-        lines.push({ text, regionId: null, ghost: false, indent: "" });
-      }
-      continue;
-    }
-
-    const fill = fills[seg.id];
-    if (fill !== undefined) {
-      for (const text of indentBlock(fill, seg.indent).split("\n")) {
-        lines.push({ text, regionId: seg.id, ghost: false, indent: seg.indent });
-      }
-    } else {
-      lines.push({
-        text: `${seg.indent}// ${placeholderFor(seg.id)}`,
-        regionId: seg.id,
-        ghost: true,
-        indent: seg.indent,
-      });
-    }
-  }
-
-  return lines;
+  return renderProgram(segments, fills).map(line => ({
+    text: line.placeholder ? `${line.indent}// ${placeholderFor(line.regionId as string)}` : line.text,
+    regionId: line.regionId,
+    ghost: line.placeholder,
+    indent: line.indent,
+  }));
 }
 
 // Count net braces on a line, ignoring those inside // comments and "string" literals.
@@ -112,15 +91,14 @@ function scrollWithin(container: HTMLElement, el: HTMLElement) {
   container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
 }
 
-// Mirror of shikiFontStyleToCss (highlighter.ts) — same bit positions, React CSSProperties output.
-// Keep both in sync if Shiki adds new flags.
+// React CSSProperties form of the shared font-style decode (highlighter.ts).
 function fontStyleOf(fontStyle?: number): React.CSSProperties {
-  if (!fontStyle || fontStyle < 0) return {};
-  const style: React.CSSProperties = {};
-  if (fontStyle & 1) style.fontStyle = "italic";
-  if (fontStyle & 2) style.fontWeight = 700;
-  if (fontStyle & 4) style.textDecoration = "underline";
-  return style;
+  const { italic, bold, underline } = decodeFontStyle(fontStyle);
+  return {
+    fontStyle: italic ? "italic" : undefined,
+    fontWeight: bold ? 700 : undefined,
+    textDecoration: underline ? "underline" : undefined,
+  };
 }
 
 function focusForCard(card: Card | undefined, lab: Lab): BuildFocus {
