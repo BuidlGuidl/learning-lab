@@ -273,7 +273,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Use it like an app",
           scenario:
-            "This is what your contract looks like from the outside: an app. Fund it from three browser accounts and watch the goal bar and the public ledger move. Every click signs a real transaction into the `fund()` you wrote, and the console logs each one.",
+            "This is your contract from the outside: an app. Pay into the pool from three browser accounts, then fast-forward the chain past the deadline and watch the deal settle itself. If the campaign fell short, every contributor pulls their own ETH back; if the goal was hit, the creator claims the lot. Nobody signs off on any of it, only the code.",
           component: UseIt,
           reusesWorld: "ship-final",
           console: "closed",
