@@ -185,6 +185,17 @@
   line-height: 0.82;
 }
 
+/* Indent lists past the drop-cap float so bullets align consistently. */
+.lab-card--dropcap .lab-card__body > div > ul,
+.lab-card--dropcap .lab-card__body > div > ol {
+  margin-left: 4.5rem;
+}
+
+/* Deliberate violet markers, matching the card's accent. */
+.lab-card__body li::marker {
+  color: var(--color-lab-violet);
+}
+
 .lab-card :not(pre) > code {
   border-radius: 6px;
   background: var(--color-lab-tint);
