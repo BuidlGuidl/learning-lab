@@ -75,7 +75,31 @@ export const lab = defineLab({
           id: "the-deal",
           label: "CONCEPT",
           title: "The deal",
-          body: "Here's what we're building: a **crowdfunding contract**. Contributors send ETH and the contract holds onto it, with the rules set up front. If the goal is reached, the creator gets the money. If it isn't, everyone can pull their refund. No company in the middle, no one to trust. The contract itself is an escrow agent and enforces the deal.",
+          body: "We're going to build a simple **crowdfunding contract**. It will hold ETH, and follow three rules:\n\n- Contributors can send ETH into the contract.\n- If the crowdfunding campaign reaches its goal, the creator can claim the ETH.\n- If it doesn't, contributors can get their money back.\n\nThe important idea: the ETH is not held by Kickstarter or a bank. It is held by the contract, and only the contract's code decides when and who can move it.",
+        },
+        {
+          type: "concept",
+          id: "solidity-in-miniature",
+          label: "CONCEPT",
+          title: "Solidity, in miniature",
+          body: "Before we read the real thing, here's Solidity in the small. If you've written code before, it will feel familiar: a contract is a lot like a class. It has **state**, the variables it remembers between calls, and **functions**, what people call to read or change that state.\n\nHere's a whole contract. It keeps a separate count for each address:\n\n```solidity\ncontract Counter {\n  mapping(address => uint256) public count;\n\n  function increment() public {\n    count[msg.sender] += 1;\n  }\n}\n```\n\n`count` is the **state**: it lives on-chain and survives between transactions. A `mapping` is just a lookup table, give it an address and get back that address's number. `increment()` is a **function** anyone can call, and `msg.sender` is whoever sent the transaction. You'll meet every one of these again in the real contract, this is just the shape.",
+        },
+        {
+          type: "question",
+          id: "read-the-counter",
+          label: "QUESTION",
+          title: "Read the counter",
+          question:
+            "In the `Counter` above, `msg.sender` is the address that called the function. So when someone calls `increment()`, what does `count[msg.sender] += 1` do?",
+          rubricConcepts: [
+            "it looks up the caller's own current number in `count`",
+            "adds one to it",
+            "and stores the result back, so each address keeps its own independent count",
+          ],
+          hints: [
+            "Read it right to left: `count[msg.sender]` is this caller's own slot. What does `+= 1` do to it?",
+            "Different callers have a different `msg.sender`, so whose count goes up when you call `increment()`?",
+          ],
         },
         {
           type: "code",
@@ -85,14 +109,14 @@ export const lab = defineLab({
           file: "Crowdfund.sol",
           focus: ["fund"],
           reveal: true,
-          note: "This is real **Solidity**, you don't need to read all of it yet. It's just a Kickstarter. The part in focus is `fund()`: it takes the ETH someone sends and records their share in the `contributions` ledger. Hover to see everything else.",
+          note: "This is real **Solidity**. We're only showing the parts you need right now: the variables at the top and `fund()`, the function contributors use to send ETH into the contract.\n\nWhen someone calls `fund()`, their ETH goes into the contract itself. Later, other functions will decide if the creator can claim it or if contributors can get refunds.\n\nWe're only showing the important lines for now. Use the **peek code** button or press `c` to inspect the full contract in the side panel.",
         },
         {
           type: "question",
           id: "where-does-the-eth-sit",
           label: "QUESTION",
-          title: "Where does the ETH sit?",
-          question: "After someone calls `fund()`, where does their ETH actually sit, and who can move it?",
+          title: "Who holds the ETH?",
+          question: "After someone calls `fund()`, who holds their ETH, and who can move it?",
           rubricConcepts: [
             "the ETH lives in the contract, not a wallet or a company server",
             "no person or company is in charge of it",
@@ -107,7 +131,7 @@ export const lab = defineLab({
           title: "Declare the goal",
           region: "goal",
           prompt:
-            "> Hit **peek code** or press `c` any time to see the whole file, your lines filled in and the faded gaps still to come.\n\nEvery campaign needs a target. Declare a constant named `GOAL` set to `10 ether`. The shape is `type visibility constant NAME = value;`: use `uint256`, mark it `public`, and `constant` because the goal never changes after deployment. Solidity understands `ether` as a unit, so `10 ether` means exactly what it says.",
+            "Every campaign needs a target. Add a constant named `GOAL` and set it to `10 ether`.\n\nUse this shape:\n\n`type visibility constant NAME = value;`\n\nFor this one, use:\n- type: `uint256`\n- visibility: `public`\n- name: `GOAL`\n- value: `10 ether`\n\nSolidity understands `ether` as a unit, so `10 ether` means exactly what it says.",
           placeholder: "uint256 public constant FEE = 2 ether;",
           hints: [
             "Follow the placeholder's shape; only the name and value change.",
@@ -121,7 +145,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Deploy it",
           scenario:
-            "One click. Your contract, with your `GOAL` line in it, compiles to bytecode and ships to a fresh EVM right here in this browser tab. Watch the console: it's a real transaction, it costs gas, and the contract lands at an address you can see.",
+            "Now make it real. When you press Deploy, your Solidity code is compiled and sent to a fresh Ethereum-like machine running inside this browser tab. That machine is called an **Ethereum Virtual Machine**, or **EVM**.\n\nDeployment is a real transaction. It costs gas, creates a contract address, and lets you read `GOAL` back from the live contract.",
           sharesWorld: true,
           console: "open",
         },
