@@ -18,6 +18,7 @@
   --color-lab-violet: var(--color-ethereum-violet);
   --color-lab-iris: var(--color-deep-iris);
   --color-lab-mint: var(--color-mint);
+  --color-lab-error: var(--color-magenta-deep);
   --color-lab-tint: var(--color-lab-canvas);
   --color-lab-gutter: #bdaee4;
   --shadow-lab:
@@ -309,6 +310,7 @@
   --color-lab-violet: var(--color-violet-bright);
   --color-lab-iris: var(--color-violet-bright-strong);
   --color-lab-mint: var(--color-mint-bright);
+  --color-lab-error: var(--color-magenta-bright);
   --color-lab-tint: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
   --color-lab-gutter: var(--color-dark-gutter);
   --shadow-lab: 0 10px 34px -16px rgb(0 0 0 / 0.7);
