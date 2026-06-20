@@ -458,6 +458,41 @@
   user-select: none;
 }
 
+/* ── Focus: dim the room, light the named spans (the "spotlight" effect) ───
+   A read-only code card shows the whole contract but lights one or more named
+   `<focus>` spans: every other line softens (.line without .is-focus), so a
+   beginner's eye lands where it should without losing the surrounding context.
+   Hovering the block brings the house lights up — the full contract returns.
+
+   Pure opacity + blur, no colored chrome: the code panel is always dark and
+   its syntax palette already owns blue/amber/red, so a tinted rule would read
+   as a token or a warning. Sharpness alone says "focus". Lines are inline
+   Shiki spans, so opacity/filter are also the only properties that style them
+   cleanly (a full-width rule would need display:block and break pre newlines). */
+.code-focus .line {
+  transition:
+    opacity 300ms ease,
+    filter 300ms ease;
+}
+.code-focus .line:not(.is-focus) {
+  opacity: 0.3;
+  filter: blur(0.7px);
+}
+.code-focus .line.is-focus {
+  opacity: 1;
+  filter: none;
+}
+/* hover anywhere on the block → every line snaps back, full contract readable */
+.code-focus:hover .line:not(.is-focus) {
+  opacity: 1;
+  filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .code-focus .line {
+    transition: none;
+  }
+}
+
 /* CodeInput (code-exercise editor): overlay textarea + its rounded panel.
    The overlay paints the textarea text transparent, so we restore the placeholder
    and move the focus ring off the square textarea onto the rounded wrapper. */

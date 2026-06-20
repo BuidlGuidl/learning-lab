@@ -20,8 +20,10 @@ export type CompileFn = (sources: Record<string, string>) => Promise<Compiled>;
 export type ContractHandle = {
   address: Address;
   abi: Abi;
-  // populated by deployContract; undefined for handles created elsewhere
-  deployment?: { gasUsed?: bigint; txHash?: `0x${string}` };
+  // populated by deployContract; undefined for handles created elsewhere.
+  // bytecode is the deploy tx payload: creation bytecode plus the encoded
+  // constructor args — the exact bytes that shipped to the chain.
+  deployment?: { gasUsed?: bigint; txHash?: `0x${string}`; bytecode?: `0x${string}` };
 };
 
 export type CallResult = {
@@ -110,8 +112,11 @@ export async function bootWorld(compiled: Compiled, deploy: DeployFn): Promise<W
     if (!def)
       throw new Error(`deploy: no compiled contract named "${name}" (have: ${Object.keys(compiled).join(", ")})`);
     const encodeDeploy = encodeDeployData as unknown as (p: Record<string, unknown>) => `0x${string}`;
+    // the literal deploy payload — creation bytecode + encoded constructor args.
+    // captured so the console can show the learner the actual bytes that ship.
+    const deployData = encodeDeploy({ abi: def.abi, bytecode: def.bytecode, args });
     const result = await tevmCall({
-      data: encodeDeploy({ abi: def.abi, bytecode: def.bytecode, args }),
+      data: deployData,
       from: opts.from ?? accounts[0],
       addToBlockchain: true,
       throwOnFail: false,
@@ -121,7 +126,7 @@ export async function bootWorld(compiled: Compiled, deploy: DeployFn): Promise<W
     return {
       address: result.createdAddress as Address,
       abi: def.abi,
-      deployment: { gasUsed, txHash: result.txHash },
+      deployment: { gasUsed, txHash: result.txHash, bytecode: deployData },
     };
   };
 

@@ -19,8 +19,6 @@ type RenderedLine = {
 type BuildFocus = {
   file?: string;
   regionId?: string;
-  fromAnchor?: string;
-  toAnchor?: string;
   wholeBlock?: boolean;
   label?: string;
 };
@@ -131,12 +129,10 @@ function focusForCard(card: Card | undefined, lab: Lab): BuildFocus {
     };
   }
   if (card.type === "code") {
-    return {
-      file: card.file,
-      fromAnchor: card.fromAnchor,
-      toAnchor: card.toAnchor,
-      label: card.title,
-    };
+    // The spotlight for read-only code cards is rendered inline by CodeCard
+    // (named <focus> spans + the .code-focus effect). The build panel just
+    // switches the rail to the card's file; it doesn't re-light the span.
+    return { file: card.file, label: card.title };
   }
   return {};
 }
@@ -195,17 +191,6 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
             for (let i = block[0]; i <= block[1]; i++) set.add(i);
           }
         }
-      }
-    } else if (focus.fromAnchor) {
-      const from = textLines.findIndex(line => line.toLowerCase().includes(focus.fromAnchor!.toLowerCase()));
-      if (from !== -1) {
-        let to = from;
-        if (focus.toAnchor) {
-          const needle = focus.toAnchor.toLowerCase();
-          const found = textLines.findIndex((line, index) => index >= from && line.toLowerCase().includes(needle));
-          if (found !== -1) to = found;
-        }
-        for (let i = from; i <= to; i++) set.add(i);
       }
     }
 
