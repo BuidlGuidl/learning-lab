@@ -35,7 +35,7 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.question}</Markdown>
+      <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.question}</Markdown>
       <textarea
         className="textarea textarea-bordered text-sm w-full leading-relaxed"
         rows={5}
@@ -44,7 +44,7 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
         onChange={e => setInput(e.target.value)}
         disabled={isLoading}
       />
-      <div className="card-actions justify-end mt-3">
+      <div className="card-actions justify-end mt-4">
         <button
           className="btn btn-primary"
           onClick={() => grade(input)}

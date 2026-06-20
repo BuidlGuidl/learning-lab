@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getHighlighter } from "./highlighter";
+import { getHighlighter, shikiFontStyleToCss } from "./highlighter";
 import Editor from "react-simple-code-editor";
 import type { Highlighter } from "shiki";
 
-// github-dark-dimmed editor.background / editor.foreground — same ground as CodeBlock.
-const PANEL_BG = "#22272e";
-const PANEL_FG = "#adbac7";
+const PANEL_FG = "var(--color-dark-text-muted)";
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -21,10 +19,7 @@ const toHtml = (highlighter: Highlighter, code: string) =>
     .map(line =>
       line
         .map(tok => {
-          const styles = [tok.color ? `color:${tok.color}` : ""];
-          const fontStyle = tok.fontStyle ?? 0;
-          if (fontStyle & 1) styles.push("font-style:italic");
-          if (fontStyle & 2) styles.push("font-weight:bold");
+          const styles = [tok.color ? `color:${tok.color}` : "", ...shikiFontStyleToCss(tok.fontStyle)];
           return `<span style="${styles.filter(Boolean).join(";")}">${escapeHtml(tok.content)}</span>`;
         })
         .join(""),
@@ -57,8 +52,7 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
 
   return (
     <div
-      className={`code-input-panel overflow-hidden rounded-box border border-base-300 ${readOnly ? "opacity-70" : ""}`}
-      style={{ background: PANEL_BG }}
+      className={`code-input-panel overflow-hidden rounded-box border border-base-300 bg-dark-surface ${readOnly ? "opacity-70" : ""}`}
     >
       <Editor
         value={value}

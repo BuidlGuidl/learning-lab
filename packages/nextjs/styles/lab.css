@@ -1,0 +1,523 @@
+/* Lab surfaces: header, content, DaisyUI overrides, build panel, code peek/editor. */
+
+/*
+  Light values live here so Tailwind generates the utilities (bg-lab-surface,
+  text-lab-text…); each is overridden under [data-theme="dark"] .lab below.
+  Colors mirror the raw palette in theme.css (referenced, not re-hexed).
+*/
+@theme {
+  --color-lab-canvas: var(--color-lavender);
+  --color-lab-surface: var(--color-pure-white);
+  --color-lab-inset: var(--color-surface-subtle);
+  --color-lab-border: var(--color-border-violet);
+  --color-lab-border-strong: var(--color-border-violet);
+  --color-lab-track: var(--color-border-violet);
+  --color-lab-text: var(--color-onyx);
+  --color-lab-muted: var(--color-graphite);
+  --color-lab-faint: var(--color-fog);
+  --color-lab-violet: var(--color-ethereum-violet);
+  --color-lab-iris: var(--color-deep-iris);
+  --color-lab-mint: var(--color-mint);
+  --color-lab-error: var(--color-magenta-deep);
+  --color-lab-tint: var(--color-lab-canvas);
+  --color-lab-gutter: #bdaee4;
+  --shadow-lab:
+    0 2px 12px 1px rgb(65 18 140 / 0.02), 0 12px 16px -3px rgb(65 18 140 / 0.02),
+    0 24px 32px -6px rgb(65 18 140 / 0.02), 0 32px 40px -12px rgb(152 27 27 / 0.04);
+
+  /* Lab code panel — always dark in both themes, so it reads from the shared
+     dark palette and has no [data-theme="dark"] override. The stub washes are
+     intentionally transparent (their base isn't a brand token) and stay as rgb. */
+  --color-lab-code-panel-tint: color-mix(in srgb, var(--color-violet-bright) 20%, transparent);
+  --color-lab-code-panel-stub: rgb(200 179 248 / 0.78);
+  --color-lab-code-panel-stub-border: rgb(123 97 191 / 0.72);
+  --color-lab-code-panel-stub-text: #1a102c;
+}
+
+.lab,
+.lab-header {
+  /* Layout tokens stay local; colors/shadows live in @theme (--color-lab-*). */
+  --lab-header-height: 52px;
+  --lab-build-panel-width: clamp(420px, 32vw, 520px);
+  color: var(--color-lab-text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.lab-header {
+  height: var(--lab-header-height);
+  background: var(--color-lab-surface);
+  border-bottom: 1px solid var(--color-lab-border);
+  box-shadow: none;
+}
+
+.lab-header a {
+  color: var(--color-lab-text);
+}
+
+.lab {
+  background: var(--color-lab-canvas);
+}
+
+.lab__content {
+  min-height: 100%;
+  padding: 32px clamp(16px, 4vw, 64px);
+  background:
+    radial-gradient(80% 54% at 50% -18%, color-mix(in srgb, var(--color-lilac) 18%, transparent), transparent 70%),
+    var(--color-lab-canvas);
+}
+
+.lab__content--with-code {
+  /* room for the sticky mobile code trigger; the desktop side-rail gutter is added at >=1024px */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+.lab .btn {
+  min-height: 0;
+  border-radius: 4px;
+  border-color: var(--color-lab-border);
+  cursor: pointer;
+  box-shadow: none;
+  font-weight: 700;
+  text-transform: lowercase;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.lab .btn:hover {
+  transform: translateY(-1px);
+}
+
+.lab .btn:active {
+  transform: translateY(0);
+}
+
+.lab .btn-primary,
+.lab .btn-accent {
+  border-color: var(--color-lab-violet);
+  background: var(--color-lab-violet);
+  color: var(--color-pure-white);
+}
+
+.lab .btn-primary:hover,
+.lab .btn-accent:hover {
+  border-color: var(--color-lab-iris);
+  background: var(--color-lab-iris);
+}
+
+.lab .btn-ghost {
+  color: var(--color-lab-muted);
+}
+
+.lab .btn-ghost:hover {
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-text);
+}
+
+.lab .btn:disabled {
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-faint);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.lab .textarea {
+  border-radius: 8px;
+  border-color: var(--color-lab-border-strong);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-text);
+}
+
+.lab .textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--color-ethereum-violet) 18%, transparent);
+  outline-offset: 2px;
+  border-color: var(--color-lab-violet);
+}
+
+.lab .kbd {
+  min-height: 0;
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-muted);
+}
+
+.lab .badge {
+  border-radius: 8px;
+  border-color: var(--color-lab-border);
+  background: var(--color-lab-inset);
+  color: var(--color-lab-violet);
+}
+
+.lab .badge-success {
+  background: var(--color-pastel-mint);
+  color: var(--color-lab-mint);
+}
+
+.lab .badge-error {
+  background: var(--color-pastel-pink);
+  color: var(--color-magenta-deep);
+}
+
+.lab .badge-warning {
+  background: var(--color-pastel-peach);
+  color: var(--color-peach-deep);
+}
+
+/* The card body prose is rendered by <Markdown>, which wraps it in a <div>;
+   the drop cap targets that wrapper's first paragraph. */
+.lab-card--dropcap .lab-card__body > div > p:first-of-type::first-letter {
+  float: left;
+  padding: 6px 12px 0 0;
+  color: var(--color-lab-violet);
+  font-size: 58px;
+  font-weight: 900;
+  line-height: 0.82;
+}
+
+.lab-card :not(pre) > code {
+  border-radius: 6px;
+  background: var(--color-lab-tint);
+  color: var(--color-lab-violet);
+  padding: 2px 6px;
+}
+
+.lab-card .alert,
+.lab-card .rounded-box,
+.lab-card details {
+  border-color: var(--color-lab-border);
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--color-surface-subtle) 72%, transparent);
+}
+
+.lab .shiki,
+.lab .shiki pre {
+  background: var(--color-lab-inset) !important;
+}
+
+.lab .code-numbered .line::before {
+  color: var(--color-lab-gutter);
+}
+
+@media (min-width: 900px) {
+  .lab__content--with-code {
+    padding-right: calc(var(--lab-build-panel-width) + 32px);
+    padding-bottom: 32px;
+  }
+
+  .lab-build-panel {
+    position: fixed;
+    top: var(--lab-header-height);
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    width: var(--lab-build-panel-width);
+    flex: none;
+    border-left: 1px solid var(--color-dark-border);
+    box-shadow: var(--shadow-lab);
+  }
+
+  .lab-code-host {
+    position: static;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    /* Deliberately no transform/translate reset: the slide is applied only below 900px
+       (see Lab.tsx), so the desktop host stays free of a containing block and the fixed
+       .lab-build-panel pins to the viewport rail. Setting transform AND translate here
+       backfires — Lightning merges them into transform: translate3d(0,0,0), which traps it. */
+  }
+}
+
+.lab-build-code {
+  flex: 1;
+  /* Long lines wrap (see .lab-build-line) instead of scrolling sideways; only the
+     natural vertical scroll for a long contract is left. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--color-dark-bg);
+  cursor: default;
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.62;
+}
+
+.lab-build-code pre {
+  margin: 0;
+  padding: 14px 0;
+}
+
+.lab-build-line {
+  display: flex;
+  align-items: flex-start;
+  min-height: 20px;
+  padding: 0 12px 0 0;
+  border-left: 3px solid transparent;
+  color: var(--color-dark-text);
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.lab-build-code--focus .lab-build-line:not(.lab-build-line--focus) {
+  opacity: var(--focus-dim-opacity);
+}
+
+/* Hover the panel to peek the whole contract — mirrors the inline spotlight
+   (.code-focus); moving away returns to the focused view. No click toggle, so
+   there's no "stuck off" state. The header dot button stays as the persistent
+   toggle (and the touch fallback, since hover doesn't exist on touch). */
+.lab-build-code--focus:hover .lab-build-line:not(.lab-build-line--focus) {
+  opacity: 1;
+}
+
+.lab-build-line--focus {
+  border-left-color: var(--color-violet-bright);
+  background: var(--color-lab-code-panel-tint);
+}
+
+.lab-build-line--focus-first {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.lab-build-line--focus-last {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+[data-theme="dark"] .lab,
+[data-theme="dark"] .lab-header {
+  --color-lab-canvas: var(--color-dark-bg);
+  --color-lab-surface: var(--color-dark-surface);
+  --color-lab-inset: var(--color-dark-subtle);
+  --color-lab-border: var(--color-dark-border);
+  --color-lab-border-strong: var(--color-dark-border-strong);
+  --color-lab-track: var(--color-dark-elevated);
+  --color-lab-text: var(--color-dark-text);
+  --color-lab-muted: var(--color-dark-text-muted);
+  --color-lab-faint: var(--color-dark-text-faint);
+  --color-lab-violet: var(--color-violet-bright);
+  --color-lab-iris: var(--color-violet-bright-strong);
+  --color-lab-mint: var(--color-mint-bright);
+  --color-lab-error: var(--color-magenta-bright);
+  --color-lab-tint: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
+  --color-lab-gutter: var(--color-dark-gutter);
+  --shadow-lab: 0 10px 34px -16px rgb(0 0 0 / 0.7);
+}
+
+[data-theme="dark"] .lab__content {
+  background:
+    radial-gradient(
+      80% 54% at 50% -18%,
+      color-mix(in srgb, var(--color-violet-bright) 14%, transparent),
+      transparent 70%
+    ),
+    var(--color-lab-canvas);
+}
+
+[data-theme="dark"] .lab .btn-primary,
+[data-theme="dark"] .lab .btn-accent,
+[data-theme="dark"] .lab .btn-primary:hover,
+[data-theme="dark"] .lab .btn-accent:hover {
+  color: var(--color-dark-bg);
+}
+
+[data-theme="dark"] .lab .btn:disabled,
+[data-theme="dark"] .lab .btn.btn-disabled {
+  border-color: var(--color-lab-border-strong);
+  background: color-mix(in srgb, var(--color-violet-bright) 10%, transparent);
+  color: var(--color-lab-muted);
+  cursor: pointer;
+  opacity: 1;
+}
+
+[data-theme="dark"] .lab .btn-primary:disabled,
+[data-theme="dark"] .lab .btn-accent:disabled {
+  border-color: color-mix(in srgb, var(--color-violet-bright) 28%, transparent);
+  background: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
+  color: var(--color-lab-muted);
+}
+
+[data-theme="dark"] .lab .btn-ghost:disabled {
+  border-color: var(--color-lab-border);
+  background: transparent;
+  color: var(--color-lab-muted);
+}
+
+[data-theme="dark"] .lab .btn:disabled svg,
+[data-theme="dark"] .lab .btn.btn-disabled svg {
+  color: var(--color-lab-muted);
+}
+
+[data-theme="dark"] .lab-header .theme-switch {
+  color: var(--color-lab-iris);
+}
+
+.lab-header .theme-switch__toggle,
+.lab-header .theme-switch__icon {
+  cursor: pointer;
+}
+
+.lab-header .theme-switch__toggle {
+  border-color: var(--color-lab-border-strong);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.lab-header .theme-switch__toggle:hover {
+  border-color: var(--color-lab-violet);
+  background-color: var(--color-lab-tint);
+}
+
+.lab-header .theme-switch__icon {
+  color: var(--color-lab-muted);
+  transition: color 160ms ease;
+}
+
+.lab-header .theme-switch__icon:hover {
+  color: var(--color-lab-violet);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__toggle {
+  border-color: var(--color-lab-border-strong);
+  background-color: var(--color-lab-track);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__toggle:checked {
+  border-color: color-mix(in srgb, var(--color-violet-bright) 60%, transparent);
+  background-color: color-mix(in srgb, var(--color-violet-bright) 28%, transparent);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__toggle:hover {
+  border-color: var(--color-lab-violet);
+  background-color: color-mix(in srgb, var(--color-violet-bright) 36%, transparent);
+}
+
+[data-theme="dark"] .lab-header .theme-switch__icon {
+  color: var(--color-lab-iris);
+}
+
+[data-theme="dark"] .lab .badge-success {
+  background: color-mix(in srgb, var(--color-mint-bright) 15%, transparent);
+  color: var(--color-mint-bright);
+}
+
+[data-theme="dark"] .lab .badge-error {
+  background: color-mix(in srgb, var(--color-magenta-bright) 15%, transparent);
+  color: var(--color-magenta-bright);
+}
+
+[data-theme="dark"] .lab .badge-warning {
+  background: color-mix(in srgb, var(--color-peach-bright) 15%, transparent);
+  color: var(--color-peach-bright);
+}
+
+[data-theme="dark"] .lab .lab-card .alert,
+[data-theme="dark"] .lab .lab-card .rounded-box,
+[data-theme="dark"] .lab .lab-card details {
+  background-color: color-mix(in srgb, var(--color-pure-white) 3%, transparent);
+}
+
+@media (max-width: 767px) {
+  .lab__content {
+    padding: 20px 16px 28px;
+  }
+}
+
+/*
+  Line numbers for the code peek. shiki wraps every line in <span class="line">;
+  a CSS counter (shiki's own documented approach) prepends the number as
+  ::before content, so it's unselectable and never lands in a copy of the code.
+  Scoped to .code-numbered so inline lesson code blocks stay gutter-free.
+*/
+.code-numbered code {
+  counter-reset: step;
+  counter-increment: step 0;
+}
+
+.code-numbered .line {
+  line-height: 1.7;
+}
+
+.code-numbered .line::before {
+  content: counter(step);
+  counter-increment: step;
+  display: inline-block;
+  width: 1.75rem;
+  margin-right: 1.5rem;
+  text-align: right;
+  color: var(--color-editor-line-number);
+  user-select: none;
+}
+
+/* ── Focus: dim the room, light the named spans (the "spotlight" effect) ───
+   A read-only code card shows the whole contract but lights one or more named
+   `<focus>` spans: every other line softens (.line without .is-focus), so a
+   beginner's eye lands where it should without losing the surrounding context.
+   Hovering the block brings the house lights up — the full contract returns.
+
+   Pure opacity + blur, no colored chrome: the code panel is always dark and
+   its syntax palette already owns blue/amber/red, so a tinted rule would read
+   as a token or a warning. Sharpness alone says "focus". Lines are inline
+   Shiki spans, so opacity/filter are also the only properties that style them
+   cleanly (a full-width rule would need display:block and break pre newlines). */
+.code-focus .line {
+  transition:
+    opacity 300ms ease,
+    filter 300ms ease;
+}
+.code-focus .line:not(.is-focus) {
+  opacity: var(--focus-dim-opacity);
+  filter: blur(0.7px);
+}
+.code-focus .line.is-focus {
+  opacity: 1;
+  filter: none;
+}
+/* hover anywhere on the block → every line snaps back, full contract readable */
+.code-focus:hover .line:not(.is-focus) {
+  opacity: 1;
+  filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .code-focus .line {
+    transition: none;
+  }
+}
+
+/* CodeInput (code-exercise editor): overlay textarea + its rounded panel.
+   The overlay paints the textarea text transparent, so we restore the placeholder
+   and move the focus ring off the square textarea onto the rounded wrapper. */
+
+.code-slot-textarea::placeholder {
+  -webkit-text-fill-color: var(--color-editor-placeholder);
+  color: var(--color-editor-placeholder);
+  opacity: 1;
+}
+
+.code-slot-textarea:focus {
+  outline: none;
+}
+
+/* TODO:(github-dark-dimmed accent) is hardcoded — revisit if the panel
+   theme changes. DaisyUI `primary` reads near-black on this dark panel. */
+.code-input-panel:focus-within {
+  border-color: var(--color-editor-focus);
+  box-shadow: 0 0 0 1px var(--color-editor-focus);
+}
