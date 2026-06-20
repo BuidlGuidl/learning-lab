@@ -133,8 +133,8 @@ const curriculumModules: ModuleCardProps[] = [
     title: "Tokenization",
     body: (
       <>
-        Learn how Ethereum can track who owns a unique item. Create an ERC-721 token, send it to another account, and
-        control who else is allowed to move it.
+        A token gives any item a digital passport: proof of ownership you carry in your wallet and apps can read. Create
+        your own ERC-721 token, mint it, send it to another account, and control who else can move it.
       </>
     ),
     action: "Coming soon",
