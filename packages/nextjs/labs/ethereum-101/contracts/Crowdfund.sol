@@ -20,6 +20,7 @@ contract Crowdfund {
     deadline = block.timestamp + duration;
   }
 
+  // <focus id="fund">
   function fund() public payable {
     require(block.timestamp < deadline, "funding closed");
     require(msg.value > 0, "send some ETH");
@@ -28,6 +29,7 @@ contract Crowdfund {
     emit Funded(msg.sender, msg.value);
     // </region>
   }
+  // </focus>
 
   function refund() public {
     // <region id="refund">

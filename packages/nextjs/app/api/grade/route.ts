@@ -27,19 +27,22 @@ export async function POST(req: Request) {
   if (!entry) return new Response(`unknown lab: ${body.labId}`, { status: 404 });
   const { lab } = await entry.load();
 
-  // card + its 1-based position across the lab, for the "card N" framing.
+  // card + where it sits in the platform's own coordinates: chapter N, card M within it,
+  // so the prompt locates the learner the same way the UI numbers things.
   let card: (typeof lab.chapters)[number]["cards"][number] | undefined;
-  let cardNumberInLab = 0;
-  let n = 0;
-  for (const chapter of lab.chapters) {
-    for (const c of chapter.cards) {
-      n++;
+  let chapterNumber = 0;
+  let cardInChapter = 0;
+  let chapterTitle = "";
+  lab.chapters.forEach((chapter, ci) => {
+    chapter.cards.forEach((c, ki) => {
       if (c.id === body.cardId) {
         card = c;
-        cardNumberInLab = n;
+        chapterNumber = ci + 1;
+        cardInChapter = ki + 1;
+        chapterTitle = chapter.title;
       }
-    }
-  }
+    });
+  });
   if (!card) return new Response(`unknown card: ${body.cardId}`, { status: 404 });
   if (card.type !== "code-exercise" && card.type !== "question") {
     return new Response(`card ${body.cardId} is not gradable`, { status: 400 });
@@ -50,7 +53,9 @@ export async function POST(req: Request) {
   const { system, prompt } = buildGradingPrompt({
     lab,
     card,
-    cardNumberInLab,
+    chapterNumber,
+    cardInChapter,
+    chapterTitle,
     attempt,
     answer: body.answer,
     history,

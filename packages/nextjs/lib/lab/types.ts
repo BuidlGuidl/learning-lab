@@ -21,19 +21,20 @@ export type ConceptCard = CardBase & {
 
 // Code reveal. Renders a file from the lab's segments with the learner's
 // region fills threaded in (unfilled regions show a placeholder). Read-only.
-//
-// Anchor slicing: fromAnchor and toAnchor trim the rendered file to an
-// excerpt. fromAnchor — the first line whose text case-insensitively
-// includes the substring starts the excerpt (inclusive). toAnchor — the
-// first line after that which includes its substring ends it (exclusive).
-// Blank edges are trimmed, softLines are re-offset, and a non-matching
-// anchor falls back to the whole file (never throws).
 export type CodeCard = CardBase & {
   type: "code";
   label: "CODE";
   file: string;
-  fromAnchor?: string;
-  toAnchor?: string;
+  // focus lights named spans (the spotlight effect): each id resolves to a
+  // `// <focus id="x"> … // </focus>` span in the source, and the card lights
+  // the union — so focus: ["state", "fund"] dims everything except those two.
+  // The markers live with the code, so the focus can't drift the way a line
+  // number or substring anchor would, and they're always stripped from display.
+  focus?: string[];
+  // reveal renders every region as its finished canonical source instead of the
+  // learner's progress view — for read-before-you-write cards that show real,
+  // complete code (pairs with focus to light the part that matters).
+  reveal?: boolean;
   note?: string;
 };
 
@@ -60,7 +61,8 @@ export type QuestionCard = CardBase & {
   label: "QUESTION";
   question: string;
   rubricConcepts: string[];
-  hint?: string;
+  // Optional scaffolding, revealed one rung at a time like a code exercise's ladder.
+  hints?: string[];
 };
 
 // Hands-on exploration, the whole deploy beat included. The world only
@@ -86,6 +88,13 @@ export type ExperimentCard = CardBase & {
   // expanded (a deploy card, where the log is the point); "closed" folds it
   // by default (a surface card, where the experience leads).
   console?: "open" | "closed";
+  // Share one deployed world across cards. A card sets sharesWorld: true to opt
+  // its world (keyed by its own id) into reuse; a later card sets reusesWorld to
+  // that card's id to mount its component on the same world instead of deploying
+  // its own. sharesWorld doesn't change where the world is stored — it declares
+  // intent at the deploy site and is what reusesWorld is validated against.
+  sharesWorld?: boolean;
+  reusesWorld?: string;
 };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was

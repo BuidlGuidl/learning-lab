@@ -73,7 +73,7 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
     <div className="mt-4 rounded-box border border-base-300 bg-base-200/40 p-4">
       {waiting ? (
         <div className="flex items-center gap-2">
-          <span className="loading loading-dots loading-sm text-primary" />
+          <span className="loading loading-dots loading-sm text-lab-violet" />
           <span className="text-sm text-base-content/60">grading…</span>
         </div>
       ) : (

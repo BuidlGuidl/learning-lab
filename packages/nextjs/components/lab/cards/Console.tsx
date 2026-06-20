@@ -11,7 +11,8 @@ import type { ExperimentBoot } from "~~/lib/lab/learner-world";
 import type { RunProgress } from "~~/lib/lab/run";
 
 type Tone = "muted" | "info" | "ok" | "error";
-type Line = { tone: Tone; text: string; indent?: boolean };
+// a bytecode line carries its full hex so the row can unfurl the actual payload
+type Line = { tone: Tone; text: string; indent?: boolean; bytecode?: string };
 
 // One logged interaction: a read or a write the learner ran against the live
 // contract. The card wraps world.read/write to append these.
@@ -33,8 +34,10 @@ type Props = {
   boot: ExperimentBoot | null; // the settled deploy result; null before the first deploy
   crash: string | null; // an unexpected failure (worker death, deploy script throw)
   interactions: ConsoleEntry[]; // reads/writes since the current deploy
-  defaultOpen?: boolean; // start expanded (deploy beat) vs folded (a surface's log)
+  defaultOpen?: boolean; // start expanded (a deploy card) vs folded (a surface's log)
   epoch?: number; // bumps on each successful deploy — replays the receipt reveal
+  revealed?: boolean; // receipt already animated once — render it static, don't re-type
+  onRevealed?: () => void; // fired when the receipt finishes typing, to persist `revealed`
 };
 
 const REVEAL_MS = 120; // per-line delay for the typewriter reveal
@@ -42,8 +45,8 @@ const REVEAL_MS = 120; // per-line delay for the typewriter reveal
 const toneClass: Record<Tone, string> = {
   muted: "text-base-content/45",
   info: "text-base-content/80",
-  ok: "text-success",
-  error: "text-error",
+  ok: "text-lab-mint",
+  error: "text-lab-error",
 };
 
 const formatValue = (value: unknown): string =>
@@ -56,6 +59,10 @@ const formatValue = (value: unknown): string =>
         : JSON.stringify(value, (_key, nested) => (typeof nested === "bigint" ? nested.toString() : nested));
 
 const formatArgs = (args: unknown[]) => args.map(formatValue).join(", ");
+
+// Head + tail of the deploy payload — enough to show the 0x60806040 Solidity
+// prologue without dumping kilobytes of hex into the receipt line.
+const bytecodePreview = (code: string) => `${code.slice(0, 10)}…${code.slice(-4)}`;
 
 // The deploy lifecycle, top of the log. A failed compile is kept to one line —
 // the card's failure UI shows the actual solc errors, no need to repeat them.
@@ -93,6 +100,15 @@ function deployLines(progress: RunProgress | null, boot: ExperimentBoot | null, 
       if (handle.deployment?.txHash) {
         lines.push({ tone: "muted", text: `tx        ${short(handle.deployment.txHash)}`, indent: true });
       }
+      if (handle.deployment?.bytecode) {
+        const code = handle.deployment.bytecode;
+        const byteCount = (code.length - 2) / 2;
+        lines.push({
+          tone: "muted",
+          text: `bytecode  ${bytecodePreview(code)} · ${byteCount.toLocaleString()} bytes`,
+          bytecode: code,
+        });
+      }
     }
     return lines;
   }
@@ -124,7 +140,16 @@ const status = (progress: RunProgress | null, boot: ExperimentBoot | null, crash
   return { label: "idle", cls: "text-base-content/40" };
 };
 
-export const Console = ({ progress, boot, crash, interactions, defaultOpen = false, epoch = 0 }: Props) => {
+export const Console = ({
+  progress,
+  boot,
+  crash,
+  interactions,
+  defaultOpen = false,
+  epoch = 0,
+  revealed = false,
+  onRevealed,
+}: Props) => {
   const lines = [...deployLines(progress, boot, crash), ...interactionLines(interactions)];
   const consoleStatus = status(progress, boot, crash);
   const live = progress !== null;
@@ -136,12 +161,22 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
   // the page.
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
-  // Typewriter reveal: lines appear one at a time, a block cursor on the line
-  // being written. The receipt replays on each deploy (epoch resets the count
-  // to 0), then each new interaction line types itself in as it lands. Live
-  // phases show at once — they change too fast to reveal cleanly.
-  const [shown, setShown] = useState(0);
-  useEffect(() => setShown(0), [epoch]);
+  // Typewriter reveal: lines appear one at a time. A fresh deploy (epoch change)
+  // replays the receipt from the top; an already-revealed world mounts straight
+  // to its end, so navigating back shows it static. New interaction lines still
+  // type in as they land; live phases appear at once.
+  const [shown, setShown] = useState(() => (revealed ? lines.length : 0));
+
+  // A fresh deploy flips revealed to false (in the store); re-run the reveal
+  // from the top. A remount of an already-revealed world keeps shown at its end.
+  useEffect(() => {
+    if (!revealed) setShown(0);
+  }, [revealed]);
+
+  // which bytecode rows the learner has unfurled; collapse them when a new
+  // deploy replays the receipt from the top.
+  const [openBytecode, setOpenBytecode] = useState<Set<number>>(() => new Set());
+  useEffect(() => setOpenBytecode(new Set()), [epoch]);
   useEffect(() => {
     if (live) {
       setShown(lines.length);
@@ -153,6 +188,11 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
   }, [live, shown, lines.length]);
   const visible = Math.min(shown, lines.length);
   const typing = !live && visible < lines.length;
+
+  // Once the receipt finishes typing, persist it so a later mount renders it static.
+  useEffect(() => {
+    if (!live && !revealed && lines.length > 0 && visible >= lines.length) onRevealed?.();
+  }, [live, revealed, visible, lines.length, onRevealed]);
 
   // keep the write-head in view as lines reveal/append inside the capped body
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -181,15 +221,53 @@ export const Console = ({ progress, boot, crash, interactions, defaultOpen = fal
       </summary>
 
       <div ref={bodyRef} className="max-h-80 overflow-y-auto px-4 py-3 font-mono text-xs leading-relaxed">
-        {lines.slice(0, visible).map((line, index) => (
-          <div
-            key={index}
-            className={`whitespace-pre-wrap break-all ${line.indent ? "pl-4" : ""} ${toneClass[line.tone]}`}
-          >
-            {line.text}
-            {typing && index === visible - 1 && <span className="ml-0.5 animate-pulse">▋</span>}
-          </div>
-        ))}
+        {lines.slice(0, visible).map((line, index) => {
+          const cursor = typing && index === visible - 1 ? <span className="ml-0.5 animate-pulse">▋</span> : null;
+
+          // the bytecode row: a chevron sits in the indent gutter (caret + gap
+          // ≈ pl-4, so "bytecode" aligns under "gas used"/"tx"), and clicking
+          // unfurls the full payload in a success-tinted dump below.
+          if (line.bytecode) {
+            const open = openBytecode.has(index);
+            return (
+              <div key={index}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenBytecode(prev => {
+                      const next = new Set(prev);
+                      if (next.has(index)) next.delete(index);
+                      else next.add(index);
+                      return next;
+                    })
+                  }
+                  className={`flex w-full items-center gap-1 text-left transition-colors hover:text-base-content/75 ${toneClass[line.tone]}`}
+                >
+                  <ChevronRightIcon
+                    className={`h-3 w-3 shrink-0 text-base-content/40 transition-transform ${open ? "rotate-90" : ""}`}
+                  />
+                  <span className="whitespace-pre-wrap break-all">{line.text}</span>
+                  {cursor}
+                </button>
+                {open && (
+                  <pre className="ml-4 mt-1.5 max-h-44 overflow-y-auto whitespace-pre-wrap break-all rounded-sm bg-base-300/50 py-2 pl-3 pr-2 text-[11px] leading-relaxed text-base-content/45">
+                    {line.bytecode}
+                  </pre>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={index}
+              className={`whitespace-pre-wrap break-all ${line.indent ? "pl-4" : ""} ${toneClass[line.tone]}`}
+            >
+              {line.text}
+              {cursor}
+            </div>
+          );
+        })}
       </div>
     </details>
   );

@@ -78,7 +78,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
     <CardFrame card={card}>
       <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.prompt}</Markdown>
       <CodeInput value={input} onChange={setInput} placeholder={card.placeholder} readOnly={running || isLoading} />
-      <div className="card-actions justify-end mt-3">
+      <div className="card-actions justify-end mt-4">
         <button
           className="btn btn-primary"
           onClick={handleSubmit}
