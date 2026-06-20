@@ -164,7 +164,7 @@ const DeployWorldCard = ({ card, lab }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.scenario}</Markdown>
+      <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.scenario}</Markdown>
 
       {crash && (
         <div className="alert alert-error text-sm mb-3">

@@ -9,7 +9,7 @@ type Props = {
 export const ConceptCard = ({ card }: Props) => {
   return (
     <CardFrame card={card}>
-      <Markdown className="text-base-content/90 leading-relaxed">{card.body}</Markdown>
+      <Markdown className="text-lg leading-[1.62] text-lab-text">{card.body}</Markdown>
     </CardFrame>
   );
 };

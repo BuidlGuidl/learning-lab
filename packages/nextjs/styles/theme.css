@@ -1,0 +1,148 @@
+/*
+  Shared design primitives: the dark variant, the raw color palette + radii, and
+  the DaisyUI themes. Surface-specific tokens (lp-*, lab-*) live in @theme blocks
+  inside landing.css / lab.css — Tailwind merges every @theme across the bundle.
+  Imported first so the raw palette exists before anything references it.
+*/
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
+  --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  /* Ethereum.org palette — the single source of raw
+     colors. Semantic + dark-mode tokens elsewhere reference these; registering
+     them in @theme also exposes utilities like `bg-lavender`. */
+  --color-lavender: #ece0ff;
+  --color-pure-white: #ffffff;
+  --color-ash-gray: #cfcfcf;
+  --color-onyx: #121212;
+  --color-graphite: #616161;
+  --color-fog: #8c8c8c;
+  --color-ethereum-violet: #6c24e0;
+  --color-deep-iris: #41128c;
+  --color-hot-magenta: #f60e9d;
+  --color-mint: #0f9972;
+  --color-lilac: #9357f4;
+  --color-pastel-lavender: #ece0ff;
+  --color-pastel-mint: #d6f5ea;
+  --color-pastel-peach: #ffe7d6;
+  --color-pastel-pink: #ffe0f0;
+
+  /* Light violet tints (merge near-duplicate band/inset + border values). */
+  --color-surface-subtle: #f7f3ff; /* merges light-violet-band #f5f0ff + lab inset #faf7ff */
+  --color-border-violet: #ddd4f0; /* merges lab border #e2d8f5 + border-strong #dcd2f0 + track #dccff7 */
+
+  /* Deep accent text used by light badges (kept distinct). */
+  --color-magenta-deep: #b41469;
+  --color-peach-deep: #9b4a13;
+  --color-code-bg: #1c1430;
+  --color-code-keyword: #c4a6ff;
+  --color-code-type: #8f9bff;
+  --color-code-string: #54d6a8;
+  --color-code-number: #ff7ccb;
+  --color-code-comment: #7a7196;
+  --color-code-function: #e0d3ff;
+  --color-code-punctuation: #b6adcf;
+  --color-code-plain: #e7e1f5;
+
+  /* Canonical dark palette — one shared ramp for landing + lab. Each value is
+     one representative per near-duplicate cluster (the divergent landing/lab
+     dark hexes collapse onto these). Always defined, like the raw palette above;
+     the [data-theme="dark"] blocks in landing.css / lab.css alias them. */
+  --color-dark-bg: #14111c; /* page canvas */
+  --color-dark-subtle: #1b1528; /* section bands + insets */
+  --color-dark-surface: #1f1a2c; /* cards, bubbles, code-panel surface */
+  --color-dark-elevated: #2a2340; /* dividers, raised bubbles, tracks */
+  --color-dark-border: #2f2848;
+  --color-dark-border-strong: #3a3158;
+  --color-dark-text: #f2eefb;
+  --color-dark-text-muted: #b3aac9;
+  --color-dark-text-faint: #857c9e;
+  --color-dark-gutter: #564a7a; /* code line-number gutter on dark */
+  /* Dark violet ramp (unifies landing + lab) */
+  --color-violet-bright: #a87dff; /* accent text / icons / links on dark */
+  --color-violet-bright-strong: #c4a6ff; /* hover / pressed accent on dark */
+  --color-violet-fill: #7c3aed; /* filled-button background on dark */
+  --color-violet-fill-strong: #8b5cf6; /* filled-button hover on dark */
+  /* Dark accent text */
+  --color-mint-bright: #54d6a8;
+  --color-magenta-bright: #ff7ccb;
+  --color-peach-bright: #f0a868;
+  /* Dark feature-card tints — 4 distinct hues, kept separate */
+  --color-dark-feat-lavender: #241d38;
+  --color-dark-feat-mint: #15271f;
+  --color-dark-feat-peach: #2b2017;
+  --color-dark-feat-pink: #2a1826;
+
+  /* Editor one-offs (github-dark-dimmed accents; intentional, TODO-flagged). */
+  --color-editor-focus: #539bf5;
+  --color-editor-placeholder: #768390;
+  --color-editor-line-number: #545d68;
+
+  /* Radii (shared by the landing page + lab) */
+  --radius-buttons: 4px;
+  --radius-tags: 8px;
+  --radius-cards: 16px;
+  --radius-icon-tile: 12px;
+  --radius-pills: 9999px;
+}
+
+@plugin "daisyui" {
+  themes:
+    light,
+    dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+
+  --color-primary: #93bbfb;
+  --color-primary-content: #212638;
+  --color-secondary: #dae8ff;
+  --color-secondary-content: #212638;
+  --color-accent: #93bbfb;
+  --color-accent-content: #212638;
+  --color-neutral: #212638;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #ffffff;
+  --color-base-200: #f4f8ff;
+  --color-base-300: #dae8ff;
+  --color-base-content: #212638;
+  --color-info: #93bbfb;
+  --color-success: #34eeb6;
+  --color-warning: #ffcf72;
+  --color-error: #ff8863;
+
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+  --tt-tailw: 6px;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+
+  --color-primary: #212638;
+  --color-primary-content: #f9fbff;
+  --color-secondary: #323f61;
+  --color-secondary-content: #f9fbff;
+  --color-accent: #4969a6;
+  --color-accent-content: #f9fbff;
+  --color-neutral: #f9fbff;
+  --color-neutral-content: #385183;
+  --color-base-100: #385183;
+  --color-base-200: #2a3655;
+  --color-base-300: #212638;
+  --color-base-content: #f9fbff;
+  --color-info: #385183;
+  --color-success: #34eeb6;
+  --color-warning: #ffcf72;
+  --color-error: #ff8863;
+
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+
+  --tt-tailw: 6px;
+  --tt-bg: var(--color-primary);
+}
