@@ -5,6 +5,7 @@ import type { ThemedToken } from "shiki";
 import { CodeBracketIcon } from "@heroicons/react/24/outline";
 import { getHighlighter } from "~~/components/code/highlighter";
 import { indentBlock } from "~~/lib/lab/assemble";
+import { FOCUS_CLOSE_RE, FOCUS_OPEN_RE } from "~~/lib/lab/focus";
 import type { Segment } from "~~/lib/lab/regions";
 import type { Card, Lab } from "~~/lib/lab/types";
 import { fillsOf, useLabStore } from "~~/services/store/lab-store";
@@ -30,7 +31,12 @@ function renderLines(segments: Segment[], fills: Record<string, string>): Render
 
   for (const seg of segments) {
     if (seg.kind === "text") {
-      for (const text of seg.text.split("\n")) lines.push({ text, regionId: null, ghost: false, indent: "" });
+      for (const text of seg.text.split("\n")) {
+        const trimmed = text.trim();
+        // Focus markers steer the inline spotlight only; never show them in the panel.
+        if (FOCUS_OPEN_RE.test(trimmed) || FOCUS_CLOSE_RE.test(trimmed)) continue;
+        lines.push({ text, regionId: null, ghost: false, indent: "" });
+      }
       continue;
     }
 
