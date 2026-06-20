@@ -216,11 +216,6 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
 
   if (!shownFile || renderedLines.length === 0) return null;
 
-  const onCodeClick = (event: React.MouseEvent) => {
-    if (!focusOn) return;
-    if (!(event.target as HTMLElement).closest(".lab-build-line--focus")) setShowFocus(false);
-  };
-
   return (
     <aside
       className="lab-build-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-dark-surface text-dark-text"
@@ -292,7 +287,7 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
         )}
       </div>
 
-      <div ref={codeRef} className={`lab-build-code ${focusOn ? "lab-build-code--focus" : ""}`} onClick={onCodeClick}>
+      <div ref={codeRef} className={`lab-build-code ${focusOn ? "lab-build-code--focus" : ""}`}>
         <pre>
           {renderedLines.map((line, index) => {
             const isFocus = focusOn && focusLines.has(index);

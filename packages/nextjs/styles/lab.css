@@ -256,10 +256,6 @@
   line-height: 1.62;
 }
 
-.lab-build-code--focus {
-  cursor: pointer;
-}
-
 .lab-build-code pre {
   margin: 0;
   padding: 14px 0;
@@ -279,6 +275,14 @@
 
 .lab-build-code--focus .lab-build-line:not(.lab-build-line--focus) {
   opacity: var(--focus-dim-opacity);
+}
+
+/* Hover the panel to peek the whole contract — mirrors the inline spotlight
+   (.code-focus); moving away returns to the focused view. No click toggle, so
+   there's no "stuck off" state. The header dot button stays as the persistent
+   toggle (and the touch fallback, since hover doesn't exist on touch). */
+.lab-build-code--focus:hover .lab-build-line:not(.lab-build-line--focus) {
+  opacity: 1;
 }
 
 .lab-build-line--focus {
