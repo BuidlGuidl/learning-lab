@@ -3,14 +3,7 @@ import { IBM_Plex_Mono, Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import type { NextPage } from "next";
-import {
-  AcademicCapIcon,
-  ArrowRightIcon,
-  BoltIcon,
-  CheckIcon,
-  CpuChipIcon,
-  LightBulbIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { HeroShowcase } from "~~/app/_components/HeroShowcase";
 import { SwitchTheme } from "~~/components/SwitchTheme";
 
@@ -29,40 +22,30 @@ const ibmPlexMono = IBM_Plex_Mono({
 const MARKETING_ROUTES = {
   home: "/",
   labs: "#labs",
-  howItWorks: "#how-it-works",
   ethereum101: "/labs/ethereum-101",
   tokenization: "/labs/tokenization",
 };
 
 const PRODUCT_COPY = {
-  navLinks: [
-    { label: "How it works", href: MARKETING_ROUTES.howItWorks },
-    { label: "Labs", href: MARKETING_ROUTES.labs },
-  ],
   hero: {
     title: (
       <>
         Learn Ethereum.
         <br />
-        Concepts first,
-        <br />
-        code when you&apos;re ready
+        by doing.
       </>
     ),
     lead: (
       <>
-        Guided labs take you from the basics to deploying your own contract: first the concepts in plain language, then
-        real code you write and run in your browser, with an AI tutor asking the questions that make it click.
+        Interactive, browser-based labs to learn Ethereum, the EVM, and Solidity by doing. You build real contracts,
+        compile, deploy, and wire them with an UI.
       </>
     ),
-    trust: ["No experience needed", "Concepts, not just code", "Runs in your browser"],
-  },
-  capabilities: {
-    title: "More than a coding course.",
+    trust: ["No experience needed", "Runs in your browser"],
   },
   curriculum: {
     eyebrow: "Curriculum",
-    title: "Explore our labs, with more on the way.",
+    title: "Explore our labs",
   },
 };
 
@@ -75,35 +58,6 @@ const lpH2 = `${lpHeading} text-[clamp(32px,3.6vw,46px)] leading-[1.06]`;
 const lpLead = "max-w-[56ch] m-0 text-[19px] leading-[1.6] text-lp-text-secondary";
 const lpEyebrow =
   "inline-flex items-center self-start gap-[7px] rounded-tags bg-lp-eyebrow-bg px-3 py-1.5 text-sm font-bold uppercase text-lp-accent";
-const lpIconTile = "flex h-12 w-12 items-center justify-center rounded-icon-tile bg-lp-icon-tile text-lp-accent";
-
-const featureCards: FeatureCardProps[] = [
-  {
-    tint: "lavender",
-    icon: LightBulbIcon,
-    title: "Concepts, not just code",
-    body: "Many cards are pure explanation, with visuals: the world computer, gas, reentrancy. You build the mental model before you write any Solidity.",
-  },
-  {
-    tint: "pink",
-    icon: AcademicCapIcon,
-    title: "Start from zero",
-    body: "Lessons hand-picked and ordered from first principles up. No crypto background required, nothing to install. Beginner-friendly by design.",
-  },
-  {
-    tint: "mint",
-    icon: CpuChipIcon,
-    title: "Real code, real EVM",
-    body: "When it's time to build, you write actual Solidity and run it against a live EVM: no testnet, no faucet, no setup.",
-  },
-  {
-    tint: "peach",
-    icon: BoltIcon,
-    title: "Deploy and use it",
-    body: "One click deploys your contract to the in-browser chain. Then read it back, call it, and try to break it. The same flow real builders use.",
-  },
-];
-
 const curriculumModules: ModuleCardProps[] = [
   {
     href: MARKETING_ROUTES.ethereum101,
@@ -180,30 +134,6 @@ const Eyebrow = ({ icon: Icon, children }: { icon?: ComponentType<IconProps>; ch
 type IconProps = {
   className?: string;
 };
-
-type FeatureCardProps = {
-  tint: "lavender" | "mint" | "peach" | "pink";
-  icon: ComponentType<IconProps>;
-  title: string;
-  body: string;
-};
-
-const FEATURE_TINT_BG: Record<FeatureCardProps["tint"], string> = {
-  lavender: "bg-lp-feat-lavender",
-  mint: "bg-lp-feat-mint",
-  peach: "bg-lp-feat-peach",
-  pink: "bg-lp-feat-pink",
-};
-
-const FeatureCard = ({ tint, icon: Icon, title, body }: FeatureCardProps) => (
-  <article className={cn("flex flex-col gap-3.5 rounded-cards p-7 text-lp-text-primary", FEATURE_TINT_BG[tint])}>
-    <div className={lpIconTile}>
-      <Icon className="h-6 w-6" />
-    </div>
-    <h3 className="m-0 text-xl font-bold leading-[1.2]">{title}</h3>
-    <p className="m-0 text-[15px] leading-[1.55]">{body}</p>
-  </article>
-);
 
 type ModuleCardProps = {
   href: string;
@@ -326,17 +256,6 @@ const Home: NextPage = () => {
         aria-label="Main navigation"
       >
         <Brand />
-        <div className="flex gap-6 max-[900px]:hidden">
-          {PRODUCT_COPY.navLinks.map(link => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="text-base font-bold leading-none text-lp-text-primary transition-colors hover:text-lp-accent"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
         <SwitchTheme className="ml-auto site-theme-switch" />
       </nav>
 
@@ -345,8 +264,14 @@ const Home: NextPage = () => {
           <h1 className={`${lpHeading} text-[clamp(40px,4.4vw,58px)] leading-[1.02]`}>{PRODUCT_COPY.hero.title}</h1>
           <p className={lpLead}>{PRODUCT_COPY.hero.lead}</p>
           <div className="mt-1 flex flex-wrap gap-3 max-sm:flex-col">
-            <MarketingButton href={MARKETING_ROUTES.ethereum101} size="lg" icon>
-              Start Ethereum 101
+            <MarketingButton href={MARKETING_ROUTES.ethereum101} size="lg">
+              <span className="flex flex-col items-start gap-1">
+                <span className="text-[13px] font-bold leading-none text-pure-white/70">Start the lab</span>
+                <span className="flex items-center gap-2 text-xl font-black leading-none tracking-tight">
+                  Ethereum 101
+                  <ArrowRightIcon className="h-5 w-5" />
+                </span>
+              </span>
             </MarketingButton>
           </div>
           <div className="mt-2.5 flex flex-wrap gap-4">
@@ -363,19 +288,6 @@ const Home: NextPage = () => {
         </div>
         <HeroShowcase />
       </header>
-
-      <section className={`${lpSection} bg-lp-band`} id="how-it-works">
-        <div className="mx-auto w-full max-w-[1320px] px-5 sm:px-8 min-[1100px]:px-12">
-          <div className="mb-8 flex max-w-none flex-col items-center gap-3.5 text-center min-[641px]:mb-12">
-            <h2 className={lpH2}>{PRODUCT_COPY.capabilities.title}</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-5 min-[640px]:grid-cols-2 min-[901px]:grid-cols-4">
-            {featureCards.map(card => (
-              <FeatureCard key={card.title} {...card} />
-            ))}
-          </div>
-        </div>
-      </section>
 
       <section className={`${lpSection} bg-lp-band-lav`} id="labs">
         <div className={lpWrap}>

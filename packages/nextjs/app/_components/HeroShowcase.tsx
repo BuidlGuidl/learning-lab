@@ -10,18 +10,15 @@ import { useEffect, useRef, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
 import {
   ChatBubbleLeftRightIcon,
-  CheckCircleIcon,
   CodeBracketIcon,
   LightBulbIcon,
-  PencilSquareIcon,
-  PlayIcon,
   RocketLaunchIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 const cn = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
 
-const DWELL = 7000; // ms each card holds before advancing
+const DWELL = 4000; // ms each card holds before advancing
 
 const ConceptEx = () => (
   <div className="flex h-full items-center justify-center">
@@ -96,30 +93,6 @@ const CodeEx = () => (
         <span>{line}</span>
       </div>
     ))}
-  </div>
-);
-
-const ExerciseEx = () => (
-  <div className="flex h-full flex-col gap-2.5">
-    <p className="m-0 text-[12.5px] leading-snug text-lp-text-secondary">
-      Declare a <span className="lp-inline-mono">public constant</span> <span className="lp-inline-mono">GOAL</span> set
-      to <span className="lp-inline-mono">10 ether</span>.
-    </p>
-    <div className="rounded-[10px] bg-code-bg px-3.5 py-3 font-mono text-[12px] leading-none text-code-plain">
-      <span className="lc-t">uint256</span> <span className="lc-k">public</span> <span className="lc-k">constant</span>{" "}
-      GOAL <span className="lc-p">=</span> <span className="lc-n">10 ether</span>
-      <span className="lc-p">;</span>
-      <span className="ml-0.5 inline-block h-[13px] w-[2px] animate-pulse bg-lp-accent align-middle" />
-    </div>
-    <div className="mt-auto flex items-center gap-2.5">
-      <span className="inline-flex items-center gap-1.5 rounded-buttons bg-lp-btn-bg px-3 py-1.5 text-[12px] font-bold text-pure-white">
-        <PlayIcon className="h-3 w-3" />
-        Run
-      </span>
-      <span className="inline-flex items-center gap-1 text-[11.5px] font-bold text-lp-positive">
-        <CheckCircleIcon className="h-3.5 w-3.5" />1 / 1 passing
-      </span>
-    </div>
   </div>
 );
 
@@ -239,17 +212,27 @@ const SLIDES: Slide[] = [
     icon: SparklesIcon,
     slug: "socratic-tutor",
     title: "A question, not the answer",
-    body: "Stuck on any card? The Socratic tutor asks the one question that gets you unstuck.",
+    body: "An AI tutor with all the context.",
     example: TutorEx,
+  },
+  {
+    key: "question",
+    label: "Question",
+    short: "Questions",
+    icon: ChatBubbleLeftRightIcon,
+    slug: "where-does-eth-sit",
+    title: "Prove you get it",
+    body: "Answering questions is the best way to learn. The AI tutor asks the questions that make it click.",
+    example: QuestionEx,
   },
   {
     key: "concept",
     label: "Concept",
-    short: "Concept",
+    short: "Concepts",
     icon: LightBulbIcon,
     slug: "the-world-computer",
-    title: "Understand it first",
-    body: "Plain-language ideas with visuals (the world computer, gas, reentrancy) before any code.",
+    title: "Learn the fundamentals",
+    body: "Plain-language ideas with visuals to build your mental model.",
     example: ConceptEx,
   },
   {
@@ -258,38 +241,18 @@ const SLIDES: Slide[] = [
     short: "Code",
     icon: CodeBracketIcon,
     slug: "read-the-contract",
-    title: "Read real Solidity",
-    body: "The whole contract in one place. The faded lines are the ones you'll fill in yourself.",
+    title: "Code with Solidity",
+    body: "You'll write real Solidity that solves the problem you're learning about.",
     example: CodeEx,
-  },
-  {
-    key: "exercise",
-    label: "Code Exercise",
-    short: "Exercise",
-    icon: PencilSquareIcon,
-    slug: "declare-the-goal",
-    title: "Write it yourself",
-    body: "One line at a time, checked against a live EVM the moment you run it.",
-    example: ExerciseEx,
-  },
-  {
-    key: "question",
-    label: "Question",
-    short: "Question",
-    icon: ChatBubbleLeftRightIcon,
-    slug: "where-does-eth-sit",
-    title: "Prove you get it",
-    body: "Short prompts that test the idea, not the syntax, in your own words.",
-    example: QuestionEx,
   },
   {
     key: "experiment",
     label: "Experiment",
-    short: "Experiment",
+    short: "Experiments",
     icon: RocketLaunchIcon,
     slug: "deploy-it",
     title: "Deploy and use it",
-    body: "One click compiles and deploys your contract to an in-browser chain. Then inspect the transaction, address, and gas used.",
+    body: "Compile and deploy your contract.",
     example: ExperimentEx,
   },
 ];
