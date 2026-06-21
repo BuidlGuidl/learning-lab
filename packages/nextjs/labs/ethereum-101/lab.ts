@@ -72,17 +72,10 @@ export const lab = defineLab({
       cards: [
         {
           type: "concept",
-          id: "the-deal",
-          label: "CONCEPT",
-          title: "The deal",
-          body: "We're going to build a simple **crowdfunding contract**. It will hold ETH, and follow three rules:\n\n- Contributors can send ETH into the contract.\n- If the crowdfunding campaign reaches its goal, the creator can claim the ETH.\n- If it doesn't, contributors can get their money back.\n\nThe important idea: the ETH is not held by Kickstarter or a bank. It is held by the contract, and only the contract's code decides when and who can move it.",
-        },
-        {
-          type: "concept",
           id: "solidity-in-miniature",
           label: "CONCEPT",
-          title: "Solidity, in miniature",
-          body: "Before we read the real thing, here's Solidity in the small. If you've written code before, it will feel familiar: a contract is a lot like a class. It has **state**, the variables it remembers between calls, and **functions**, what people call to read or change that state.\n\nHere's a whole contract. It keeps a separate count for each address:\n\n```solidity\ncontract Counter {\n  mapping(address => uint256) public count;\n\n  function increment() public {\n    count[msg.sender] += 1;\n  }\n}\n```\n\n`count` is the **state**: it lives on-chain and survives between transactions. A `mapping` is just a lookup table, give it an address and get back that address's number. `increment()` is a **function** anyone can call, and `msg.sender` is whoever sent the transaction. You'll meet every one of these again in the real contract, this is just the shape.",
+          title: "Contracts are just code",
+          body: "A smart contract is just code, written in a language called **Solidity**. If you have written code before, it will feel familiar. A contract works a lot like a class. It has **state**, the data it remembers between calls, and **functions**, the code that reads or changes it.\n\nHere is a complete contract that keeps a separate count for every address:\n\n```solidity\ncontract Counter {\n  mapping(address => uint256) public count;\n\n  function increment() public {\n    count[msg.sender] += 1;\n  }\n}\n```\n\n`count` is the state, it lives on-chain and survives between transactions. `increment()` is a function anyone can call, and `msg.sender` is whoever sent the transaction. These few pieces are most of what you need to read a real contract.",
         },
         {
           type: "question",
@@ -90,7 +83,7 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "Read the counter",
           question:
-            "In the `Counter` above, `msg.sender` is the address that called the function. So when someone calls `increment()`, what does `count[msg.sender] += 1` do?",
+            "In the `Counter` contract, calling `increment()` runs a single line:\n\n```solidity\ncount[msg.sender] += 1;\n```\n\n`msg.sender` is the address that called the function. So what does this line do?",
           rubricConcepts: [
             "it looks up the caller's own current number in `count`",
             "adds one to it",
@@ -100,6 +93,13 @@ export const lab = defineLab({
             "Read it right to left: `count[msg.sender]` is this caller's own slot. What does `+= 1` do to it?",
             "Different callers have a different `msg.sender`, so whose count goes up when you call `increment()`?",
           ],
+        },
+        {
+          type: "concept",
+          id: "the-deal",
+          label: "CONCEPT",
+          title: "What we're building",
+          body: "Now that you can read a little Solidity, here is what we are going to build with it: a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nThe interesting part is that no company is running this behind the scenes. The contract follows these rules on its own. Over the next few cards you will read this contract, then fill in the missing pieces yourself.",
         },
         {
           type: "code",
