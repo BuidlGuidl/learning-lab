@@ -6,9 +6,9 @@ import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
-  title: "Learn Ethereum, concepts to code | Learning Lab",
+  title: "Learn Ethereum by doing | Ethereum Learning Lab",
   description:
-    "Beginner-friendly, guided Ethereum labs. Go from the core ideas to deploying your own smart contract: concepts, Socratic questions, and real code, no setup required.",
+    "Interactive, browser-based labs to learn Ethereum, the EVM, and Solidity by doing. Go from the core ideas to deploying your own smart contract.",
 });
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
