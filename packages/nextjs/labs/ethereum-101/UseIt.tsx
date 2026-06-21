@@ -108,39 +108,45 @@ const explainRevert = (raw: string | null) => {
   return null;
 };
 
-// The top-of-stage banner, one branch per state the deal can be in.
-type Phase = { tone: string; icon: Icon; label: string; note: string };
+// The top-of-stage banner, one branch per state the deal can be in. `accent`
+// is a lab text-colour for the icon + label: mint for the good outcomes, the
+// lab's soft peach for the short one (not daisyUI's hot alert orange), violet
+// while it's still live.
+const MINT = "text-lab-mint";
+const PEACH = "text-peach-deep dark:text-peach-bright";
+const VIOLET = "text-lab-violet";
+type Phase = { accent: string; icon: Icon; label: string; note: string };
 const phaseFor = (claimed: boolean, closed: boolean, goalMet: boolean): Phase => {
   if (claimed)
     return {
-      tone: "success",
+      accent: MINT,
       icon: CheckBadgeIcon,
       label: "Settled",
       note: "the creator swept the pool. Code released the funds — no escrow agent had to sign off.",
     };
   if (closed && goalMet)
     return {
-      tone: "success",
+      accent: MINT,
       icon: TrophyIcon,
       label: "Deadline passed · goal hit",
       note: "the deal flips: refunds are off, the creator can claim the whole pool.",
     };
   if (closed)
     return {
-      tone: "warning",
+      accent: PEACH,
       icon: LockClosedIcon,
       label: "Deadline passed · came up short",
       note: "no claim for anyone. Every contributor can pull their own ETH back out.",
     };
   if (goalMet)
     return {
-      tone: "success",
+      accent: MINT,
       icon: CheckBadgeIcon,
       label: "Goal reached",
       note: "the target's hit — advance the clock past the deadline so the creator can claim.",
     };
   return {
-    tone: "info",
+    accent: VIOLET,
     icon: BuildingLibraryIcon,
     label: "Funding open",
     note: "contributors can still pay in, and the deadline has time left on it.",
@@ -325,10 +331,11 @@ export const UseIt = ({ world }: Props) => {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className={`alert alert-${phase.tone} items-start text-sm`}>
-        <phase.icon className="w-5 h-5 shrink-0" />
+      <div className="rounded-box border flex items-start gap-3 px-4 py-3 text-sm">
+        <phase.icon className={`w-5 h-5 shrink-0 ${phase.accent}`} />
         <div>
-          <span className="font-semibold">{phase.label}.</span> <span className="opacity-90">{phase.note}</span>
+          <span className={`font-semibold ${phase.accent}`}>{phase.label}.</span>{" "}
+          <span className="text-base-content/70">{phase.note}</span>
         </div>
       </div>
 
