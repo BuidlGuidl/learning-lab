@@ -1,6 +1,6 @@
 # Ethereum Learning Lab
 
-Interactive, browser-based labs that teach Ethereum, the EVM, and Solidity by doing. You build real contracts, compile, deploy, and wired them with an UI. All in the browser, with an AI tutor that grades your answers and coaches you the Socratic way.
+Interactive, browser-based labs that teach Ethereum, the EVM, and Solidity by doing. You build real contracts, compile, deploy, and wire them with an UI. All in the browser, with an AI tutor that grades your answers and coaches you the Socratic way.
 
 The first lab, **Ethereum 101**, takes you from "what is Ethereum" to writing, deploying, and using your own crowdfunding contract.
 
