@@ -185,10 +185,14 @@
   line-height: 0.82;
 }
 
-/* Indent lists past the drop-cap float so bullets align consistently. */
+/* flow-root makes the list clear the drop-cap float only when it sits beside it:
+   wide indent on line 2, tight indent (padding-left) once below the cap. Using
+   padding keeps the bullet markers inside the box so they clear the cap too. */
 .lab-card--dropcap .lab-card__body > div > ul,
 .lab-card--dropcap .lab-card__body > div > ol {
-  margin-left: 4.5rem;
+  display: flow-root;
+  margin-left: 0;
+  padding-left: 1.5rem;
 }
 
 /* Deliberate violet markers, matching the card's accent. */

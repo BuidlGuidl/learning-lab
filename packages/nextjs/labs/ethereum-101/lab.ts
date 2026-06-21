@@ -72,10 +72,10 @@ export const lab = defineLab({
       cards: [
         {
           type: "concept",
-          id: "solidity-in-miniature",
+          id: "contracts-are-just-code",
           label: "CONCEPT",
           title: "Contracts are just code",
-          body: "A smart contract is just code, written in a language called **Solidity**. If you have written code before, it will feel familiar. A contract works a lot like a class. It has **state**, the data it remembers between calls, and **functions**, the code that reads or changes it.\n\nHere is a complete contract that keeps a separate count for every address:\n\n```solidity\ncontract Counter {\n  mapping(address => uint256) public count;\n\n  function increment() public {\n    count[msg.sender] += 1;\n  }\n}\n```\n\n`count` is the state, it lives on-chain and survives between transactions. `increment()` is a function anyone can call, and `msg.sender` is whoever sent the transaction. These few pieces are most of what you need to read a real contract.",
+          body: "Smart contracts are just code, written in a language called **Solidity**. If you have written code before, it will feel familiar. A contract works a lot like a class. It has **state**, the data it remembers between calls, and **functions**, the code that reads or changes it.\n\nHere is a complete contract that keeps a separate count for every address:\n\n```solidity\ncontract Counter {\n  mapping(address => uint256) public count;\n\n  function increment() public {\n    count[msg.sender] += 1;\n  }\n}\n```\n\n`count` is the state, it lives on-chain and survives between transactions. `increment()` is a function anyone can call, and `msg.sender` is whoever sent the transaction. These few pieces are most of what you need to read a real contract.",
         },
         {
           type: "question",
@@ -96,7 +96,7 @@ export const lab = defineLab({
         },
         {
           type: "concept",
-          id: "the-deal",
+          id: "what-were-building",
           label: "CONCEPT",
           title: "What we're building",
           body: "Now that you can read a little Solidity, here is what we are going to build with it: a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nThe interesting part is that no company is running this behind the scenes. The contract follows these rules on its own. Over the next few cards you will read this contract, then fill in the missing pieces yourself.",
@@ -109,7 +109,7 @@ export const lab = defineLab({
           file: "Crowdfund.sol",
           focus: ["fund"],
           reveal: true,
-          note: "This is real **Solidity**. We're only showing the parts you need right now: the variables at the top and `fund()`, the function contributors use to send ETH into the contract.\n\nWhen someone calls `fund()`, their ETH goes into the contract itself. Later, other functions will decide if the creator can claim it or if contributors can get refunds.\n\nWe're only showing the important lines for now. Use the **peek code** button or press `c` to inspect the full contract in the side panel.",
+          note: "This is the real contract, written in the same Solidity you just read in miniature. We're only showing the parts you need right now: the variables at the top and `fund()`, the function contributors use to send ETH into the contract.\n\nWhen someone calls `fund()`, their ETH goes into the contract itself. Later, other functions will decide if the creator can claim it or if contributors can get refunds.\n\nWe're only showing the important lines for now. Use the **peek code** button or press `c` to inspect the full contract in the side panel.",
         },
         {
           type: "question",
@@ -155,7 +155,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "What just happened",
           scenario:
-            "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
+            "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on the EVM in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
           reusesWorld: "deploy-goal",
           component: ReadGoal,
           console: "open",
@@ -171,7 +171,7 @@ export const lab = defineLab({
           id: "eth-is-native",
           label: "CONCEPT",
           title: "Contracts have balance too",
-          body: "Money isn't an add-on in Ethereum. Contracts have **balances**, just like accounts do. Inside a function, `msg.sender` is whoever called it and `msg.value` is how much ETH they sent along. A function only accepts ETH if it's marked `payable`. `fund()` is built from exactly those three.",
+          body: "Money isn't an add-on in Ethereum. Contracts have **balances**, just like accounts do. You already know `msg.sender`, who called a function. Two more pieces complete the picture: `msg.value`, how much ETH came with the call, and `payable`, the keyword a function needs before it will accept ETH at all. `fund()` is built from exactly those three.",
         },
         {
           type: "code-exercise",
@@ -180,7 +180,7 @@ export const lab = defineLab({
           title: "The ledger",
           region: "contributions",
           prompt:
-            "The contract needs to remember who sent what, so we want a **ledger**: one row per contributor, an address on the left and the amount they sent on the right. That's exactly what a `mapping(address => uint256)` is. Declare one named `contributions`, marked `public`. Any address that hasn't contributed just reads zero.",
+            "The contract needs to remember who sent what, so we want a **ledger**: their address and the amount they sent, one row per contributor. That's the same `mapping(address => uint256)` from the `Counter`, now keyed by contributor instead of counting calls. Declare one named `contributions`, marked `public`. Any address that hasn't contributed just reads zero.",
           placeholder: "mapping(address => uint256) public scores;",
           hints: [
             "Read the type as key then value: the `address` is who contributed, the `uint256` is how much they sent.",
