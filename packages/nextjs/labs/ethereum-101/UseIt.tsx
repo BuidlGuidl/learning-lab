@@ -37,25 +37,11 @@ import {
 import type { Address as Account, World } from "~~/lib/lab/harness";
 
 type Props = { world: World };
-type Icon = ComponentType<{ className?: string }>;
 
 const ONE_DAY_S = 24n * 60n * 60n;
 // how much chain time one "advance" click mines forward — ~4 clicks crosses a
 // 7-day window, enough to feel the clock move without dragging it out.
 const STEP_S = 2n * ONE_DAY_S;
-
-const eth = (wei: bigint) => formatEther(wei);
-// rounded for display — trims the gas-precision tail off wallet balances
-const ethShort = (wei: bigint) => Number(formatEther(wei)).toLocaleString("en-US", { maximumFractionDigits: 4 });
-// parse the typed contribution; blank or junk reads as 0, which disables funding
-const toWei = (input: string) => {
-  try {
-    return input.trim() ? parseEther(input.trim()) : 0n;
-  } catch {
-    return 0n;
-  }
-};
-const ringStyle = (value: number) => ({ "--value": value, "--size": "7rem", "--thickness": "0.6rem" }) as CSSProperties;
 
 // A reverted write comes back as viem's verbose RevertError dump. Pull the
 // human reason out of it and pair it with the exact require() line that fired —
@@ -122,7 +108,7 @@ const explainRevert = (raw: string | null) => {
 const MINT = "text-lab-mint";
 const PEACH = "text-peach-deep dark:text-peach-bright";
 const VIOLET = "text-lab-violet";
-type Phase = { accent: string; icon: Icon; label: string; note: string };
+type Phase = { accent: string; icon: ComponentType<{ className?: string }>; label: string; note: string };
 const phaseFor = (claimed: boolean, closed: boolean, goalMet: boolean): Phase => {
   if (claimed)
     return {
@@ -173,7 +159,7 @@ const ActionButton = ({
 }: {
   busy: string | null;
   tag: string;
-  icon: Icon;
+  icon: ComponentType<{ className?: string }>;
   onClick: () => void;
   className?: string;
   disabled?: boolean;
@@ -185,7 +171,13 @@ const ActionButton = ({
   </button>
 );
 
-const SectionLabel = ({ icon: Icon, children }: { icon: Icon; children: ReactNode }) => (
+const SectionLabel = ({
+  icon: Icon,
+  children,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  children: ReactNode;
+}) => (
   <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-base-content/50">
     <Icon className="w-4 h-4" />
     {children}
@@ -241,22 +233,21 @@ export const UseIt = ({ world }: Props) => {
   // what each funder pays in, keyed by address and typed on their own row.
   // Default 2 keeps three funders short of the 10 ETH goal (so refunds light
   // up); push a row higher and the goal gets hit instead (so the claim does).
-  const [amounts, setAmounts] = useState<Record<string, string>>({});
+  const [amounts, setAmounts] = useState<Record<Account, string>>({});
   const amountOf = (a: Account) => amounts[a] ?? "2";
   const setAmountFor = (a: Account, value: string) => setAmounts(prev => ({ ...prev, [a]: value }));
 
   const refresh = useCallback(async () => {
     const roster = [creator, ...funders];
-    const [goalV, deadlineV, block, poolBal] = await Promise.all([
+    // every read is independent, so fire them in one batch instead of waterfalling
+    const [goalV, deadlineV, block, poolBal, balances, contributions] = await Promise.all([
       world.read(crowdfund, "GOAL") as Promise<bigint>,
       world.read(crowdfund, "deadline") as Promise<bigint>,
       world.client.getBlock(),
       world.client.getBalance({ address: crowdfund.address }),
+      Promise.all(roster.map(a => world.client.getBalance({ address: a }))),
+      Promise.all(funders.map(a => world.read(crowdfund, "contributions", [a]) as Promise<bigint>)),
     ]);
-    const balances = await Promise.all(roster.map(a => world.client.getBalance({ address: a })));
-    const contributions = await Promise.all(
-      funders.map(a => world.read(crowdfund, "contributions", [a]) as Promise<bigint>),
-    );
     setGoal(goalV);
     setDeadline(deadlineV);
     setNow(block.timestamp);
@@ -291,7 +282,7 @@ export const UseIt = ({ world }: Props) => {
   };
 
   const fund = (from: Account) =>
-    run(`fund:${from}`, () => world.write(crowdfund, "fund", { from, value: toWei(amountOf(from)) }));
+    run(`fund:${from}`, () => world.write(crowdfund, "fund", { from, value: parseEther(amountOf(from)) }));
   const refund = (from: Account) =>
     run(`refund:${from}`, async () => {
       const result = await world.write(crowdfund, "refund", { from });
@@ -363,15 +354,19 @@ export const UseIt = ({ world }: Props) => {
           {/* radial-progress only paints the filled arc, so a faint full ring
               sits underneath as the empty vessel — reads as a tank even at zero. */}
           <div className="relative grid place-items-center">
-            <div className="radial-progress text-lab-track" style={ringStyle(100)} aria-hidden />
+            <div
+              className="radial-progress text-lab-track"
+              style={{ "--value": 100, "--size": "7rem", "--thickness": "0.6rem" } as CSSProperties}
+              aria-hidden
+            />
             <div
               className={`radial-progress absolute inset-0 m-auto ${goalMet ? "text-lab-mint" : "text-lab-violet"} ${busy?.startsWith("fund") ? "animate-pulse-fast" : ""}`}
-              style={ringStyle(pct)}
+              style={{ "--value": pct, "--size": "7rem", "--thickness": "0.6rem" } as CSSProperties}
               role="progressbar"
             >
               <div className="flex flex-col items-center leading-none">
-                <span className="text-xl font-mono tabular-nums text-lab-text">{eth(pool)}</span>
-                <span className="mt-1 text-xs text-base-content/50">/ {eth(goal)} ETH</span>
+                <span className="text-xl font-mono tabular-nums text-lab-text">{formatEther(pool)}</span>
+                <span className="mt-1 text-xs text-base-content/50">/ {formatEther(goal)} ETH</span>
               </div>
             </div>
           </div>
@@ -432,11 +427,11 @@ export const UseIt = ({ world }: Props) => {
             </span>
           }
           address={creator}
-          detail={`wallet ${ethShort(wallets[creator] ?? 0n)} ETH`}
+          detail={`wallet ${Number(formatEther(wallets[creator] ?? 0n)).toLocaleString("en-US", { maximumFractionDigits: 4 })} ETH`}
           action={
             closed && goalMet && !claimed ? (
               <ActionButton busy={busy} tag="claim" icon={TrophyIcon} onClick={claim} className="btn-primary">
-                Claim {eth(pool)} ETH
+                Claim {formatEther(pool)} ETH
               </ActionButton>
             ) : (
               <span className="text-xs font-mono text-base-content/40">
@@ -448,6 +443,8 @@ export const UseIt = ({ world }: Props) => {
 
         {funders.map((addr, i) => {
           const contribution = ledger[addr] ?? 0n;
+          // wallet keeps a gas tail, so round it; the pool figures are exact
+          const wallet = Number(formatEther(wallets[addr] ?? 0n)).toLocaleString("en-US", { maximumFractionDigits: 4 });
           return (
             <AccountRow
               key={addr}
@@ -455,8 +452,8 @@ export const UseIt = ({ world }: Props) => {
               address={addr}
               detail={
                 contribution > 0n
-                  ? `in pool ${eth(contribution)} ETH · wallet ${ethShort(wallets[addr] ?? 0n)} ETH`
-                  : `wallet ${ethShort(wallets[addr] ?? 0n)} ETH`
+                  ? `in pool ${formatEther(contribution)} ETH · wallet ${wallet} ETH`
+                  : `wallet ${wallet} ETH`
               }
               action={
                 !closed ? (
@@ -479,7 +476,7 @@ export const UseIt = ({ world }: Props) => {
                       icon={ArrowDownIcon}
                       onClick={() => fund(addr)}
                       className="btn-outline"
-                      disabled={toWei(amountOf(addr)) <= 0n}
+                      disabled={!(Number(amountOf(addr)) > 0)}
                     >
                       send
                     </ActionButton>
@@ -495,7 +492,7 @@ export const UseIt = ({ world }: Props) => {
                     onClick={() => refund(addr)}
                     className="btn-outline"
                   >
-                    Refund {eth(contribution)} ETH
+                    Refund {formatEther(contribution)} ETH
                   </ActionButton>
                 ) : (
                   <span className="text-xs font-mono text-base-content/40">
