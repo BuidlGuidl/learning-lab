@@ -45,8 +45,8 @@ const REVEAL_MS = 120; // per-line delay for the typewriter reveal
 const toneClass: Record<Tone, string> = {
   muted: "text-base-content/45",
   info: "text-base-content/80",
-  ok: "text-success",
-  error: "text-error",
+  ok: "text-lab-mint",
+  error: "text-lab-error",
 };
 
 const formatValue = (value: unknown): string =>

@@ -11,16 +11,32 @@ import type { Lab as LabType } from "~~/lib/lab/types";
 // the client — the registry's per-lab chunking is preserved.
 export const LabLoader = ({ id }: { id: string }) => {
   const [lab, setLab] = useState<LabType | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    registry[id]?.load().then(({ lab }) => {
-      if (!cancelled) setLab(lab);
-    });
+    registry[id]
+      ?.load()
+      .then(({ lab }) => {
+        if (!cancelled) setLab(lab);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
+      });
     return () => {
       cancelled = true;
     };
   }, [id]);
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="alert alert-error max-w-md">
+          <span>Failed to load lab: {error.message}</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!lab) {
     return (
