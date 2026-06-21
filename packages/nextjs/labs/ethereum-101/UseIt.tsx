@@ -187,7 +187,7 @@ const AccountRow = ({
   detail: ReactNode;
   action: ReactNode;
 }) => (
-  <div className="rounded-box bg-base-200 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+  <div className="rounded-box px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
     <div className="flex items-center gap-3 min-w-0">
       {badge}
       <div className="flex flex-col gap-0.5 min-w-0">
@@ -298,8 +298,8 @@ export const UseIt = ({ world }: Props) => {
 
   if (goal === null || deadline === null || now === null) {
     return (
-      <div className="rounded-box bg-base-200 px-5 py-8 flex justify-center">
-        <span className="loading loading-dots loading-md" />
+      <div className="rounded-box px-5 py-8 flex justify-center">
+        <span className="loading loading-dots loading-md text-lab-violet" />
       </div>
     );
   }
@@ -331,20 +331,20 @@ export const UseIt = ({ world }: Props) => {
 
       {/* the pool — the hero. ETH piles up in the contract itself, addressable
           by anyone, controlled by no one. */}
-      <div className="rounded-box bg-base-200 px-5 py-6 flex flex-col items-center gap-4">
+      <div className="rounded-box px-5 py-6 flex flex-col items-center gap-4">
         <SectionLabel icon={BuildingLibraryIcon}>the escrow pool</SectionLabel>
         {/* radial-progress only paints the filled arc, so a faint full ring
             sits underneath as the empty vessel — the gauge reads as a tank
             even at zero. */}
         <div className="relative grid place-items-center">
-          <div className="radial-progress text-base-300" style={ringStyle(100)} aria-hidden />
+          <div className="radial-progress text-lab-track" style={ringStyle(100)} aria-hidden />
           <div
-            className={`radial-progress absolute inset-0 m-auto ${goalMet ? "text-success" : "text-primary"} ${busy?.startsWith("fund") ? "animate-pulse-fast" : ""}`}
+            className={`radial-progress absolute inset-0 m-auto ${goalMet ? "text-lab-mint" : "text-lab-violet"} ${busy?.startsWith("fund") ? "animate-pulse-fast" : ""}`}
             style={ringStyle(pct)}
             role="progressbar"
           >
             <div className="flex flex-col items-center leading-none">
-              <span className="text-2xl font-mono tabular-nums text-base-content">{eth(pool)}</span>
+              <span className="text-2xl font-mono tabular-nums text-lab-text">{eth(pool)}</span>
               <span className="text-xs text-base-content/50 mt-1">/ {eth(goal)} ETH</span>
             </div>
           </div>
@@ -358,10 +358,10 @@ export const UseIt = ({ world }: Props) => {
       {/* the chain clock — mining is the only way time moves, so the student
           cranks it forward block by block and watches the deadline approach.
           The block number and date are read straight off the chain. */}
-      <div className="rounded-box bg-base-200 px-5 py-4 flex flex-col gap-3">
+      <div className="rounded-box px-5 py-4 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <SectionLabel icon={ClockIcon}>the chain clock</SectionLabel>
-          <span className={`badge badge-sm ${closed ? "badge-warning" : "badge-success"} badge-outline font-mono`}>
+          <span className={`badge badge-sm ${closed ? "badge-warning" : "badge-success"} font-mono`}>
             {closed ? "deadline passed" : `deadline in ${daysLeft}d`}
           </span>
         </div>
@@ -409,7 +409,7 @@ export const UseIt = ({ world }: Props) => {
 
         <AccountRow
           badge={
-            <span className="badge badge-primary badge-sm gap-1 font-mono shrink-0">
+            <span className="badge badge-sm gap-1 font-mono shrink-0">
               <KeyIcon className="w-3 h-3" />
               creator
             </span>
@@ -418,7 +418,7 @@ export const UseIt = ({ world }: Props) => {
           detail={`wallet ${eth(wallets[creator] ?? 0n)} ETH`}
           action={
             closed && goalMet && !claimed ? (
-              <ActionButton busy={busy} tag="claim" icon={TrophyIcon} onClick={claim} className="btn-success">
+              <ActionButton busy={busy} tag="claim" icon={TrophyIcon} onClick={claim} className="btn-primary">
                 Claim {eth(pool)} ETH
               </ActionButton>
             ) : (
@@ -457,7 +457,7 @@ export const UseIt = ({ world }: Props) => {
                     tag={`refund:${addr}`}
                     icon={ArrowUturnLeftIcon}
                     onClick={() => refund(addr)}
-                    className="btn-error btn-outline"
+                    className="btn-outline"
                   >
                     Refund {eth(contribution)} ETH
                   </ActionButton>
@@ -480,21 +480,17 @@ export const UseIt = ({ world }: Props) => {
           job. Name the rule, show the exact require() that fired, and frame it
           as the deal overruling the button. */}
       {revert ? (
-        <div className="rounded-box border border-primary/30 bg-primary/5 px-4 py-3 flex gap-3">
-          <ShieldCheckIcon className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+        <div className="rounded-box border px-4 py-3 flex gap-3">
+          <ShieldCheckIcon className="w-5 h-5 text-lab-violet shrink-0 mt-0.5" />
           <div className="flex flex-col gap-1.5 min-w-0">
             <p className="m-0 text-sm font-semibold">The contract enforced the rule, not the button.</p>
             <p className="m-0 text-sm text-base-content/80">{revert.lesson}</p>
-            {revert.line && (
-              <code className="block rounded bg-base-300/60 px-2 py-1 font-mono text-xs text-error/80 break-all">
-                {revert.line}
-              </code>
-            )}
+            {revert.line && <code className="block break-all font-mono text-xs">{revert.line}</code>}
             <p className="m-0 font-mono text-xs text-base-content/40">reverted with “{revert.reason}”</p>
           </div>
         </div>
       ) : (
-        error && <span className="text-xs text-error font-mono break-all">{error}</span>
+        error && <span className="text-xs text-lab-error font-mono break-all">{error}</span>
       )}
     </div>
   );
