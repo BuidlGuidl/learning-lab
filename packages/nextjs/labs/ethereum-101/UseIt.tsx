@@ -20,7 +20,7 @@ import {
 } from "react";
 import { FUNDING_WINDOW_S } from "./deploy";
 import { Address } from "@scaffold-ui/components";
-import { formatEther } from "viem";
+import { formatEther, parseEther } from "viem";
 import {
   ArrowDownIcon,
   ArrowUturnLeftIcon,
@@ -39,7 +39,6 @@ import type { Address as Account, World } from "~~/lib/lab/harness";
 type Props = { world: World };
 type Icon = ComponentType<{ className?: string }>;
 
-const FUND_AMOUNT = 2n * 10n ** 18n;
 const ONE_DAY_S = 24n * 60n * 60n;
 // how much chain time one "advance" click mines forward — ~4 clicks crosses a
 // 7-day window, enough to feel the clock move without dragging it out.
@@ -48,7 +47,15 @@ const STEP_S = 2n * ONE_DAY_S;
 const eth = (wei: bigint) => formatEther(wei);
 // rounded for display — trims the gas-precision tail off wallet balances
 const ethShort = (wei: bigint) => Number(formatEther(wei)).toLocaleString("en-US", { maximumFractionDigits: 4 });
-const ringStyle = (value: number) => ({ "--value": value, "--size": "9rem", "--thickness": "0.7rem" }) as CSSProperties;
+// parse the typed contribution; blank or junk reads as 0, which disables funding
+const toWei = (input: string) => {
+  try {
+    return input.trim() ? parseEther(input.trim()) : 0n;
+  } catch {
+    return 0n;
+  }
+};
+const ringStyle = (value: number) => ({ "--value": value, "--size": "7rem", "--thickness": "0.6rem" }) as CSSProperties;
 
 // A reverted write comes back as viem's verbose RevertError dump. Pull the
 // human reason out of it and pair it with the exact require() line that fired —
@@ -161,6 +168,7 @@ const ActionButton = ({
   icon: Icon,
   onClick,
   className,
+  disabled,
   children,
 }: {
   busy: string | null;
@@ -168,9 +176,10 @@ const ActionButton = ({
   icon: Icon;
   onClick: () => void;
   className?: string;
+  disabled?: boolean;
   children: ReactNode;
 }) => (
-  <button className={`btn btn-sm gap-2 ${className ?? ""}`} onClick={onClick} disabled={busy !== null}>
+  <button className={`btn btn-sm gap-2 ${className ?? ""}`} onClick={onClick} disabled={busy !== null || disabled}>
     {busy === tag ? <span className="loading loading-spinner loading-xs" /> : <Icon className="w-4 h-4" />}
     {children}
   </button>
@@ -229,6 +238,12 @@ export const UseIt = ({ world }: Props) => {
   const [refunded, setRefunded] = useState<Set<Account>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // what each funder pays in, keyed by address and typed on their own row.
+  // Default 2 keeps three funders short of the 10 ETH goal (so refunds light
+  // up); push a row higher and the goal gets hit instead (so the claim does).
+  const [amounts, setAmounts] = useState<Record<string, string>>({});
+  const amountOf = (a: Account) => amounts[a] ?? "2";
+  const setAmountFor = (a: Account, value: string) => setAmounts(prev => ({ ...prev, [a]: value }));
 
   const refresh = useCallback(async () => {
     const roster = [creator, ...funders];
@@ -276,7 +291,7 @@ export const UseIt = ({ world }: Props) => {
   };
 
   const fund = (from: Account) =>
-    run(`fund:${from}`, () => world.write(crowdfund, "fund", { from, value: FUND_AMOUNT }));
+    run(`fund:${from}`, () => world.write(crowdfund, "fund", { from, value: toWei(amountOf(from)) }));
   const refund = (from: Account) =>
     run(`refund:${from}`, async () => {
       const result = await world.write(crowdfund, "refund", { from });
@@ -330,7 +345,7 @@ export const UseIt = ({ world }: Props) => {
   });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <div className="rounded-box border flex items-start gap-3 px-4 py-3 text-sm">
         <phase.icon className={`w-5 h-5 shrink-0 ${phase.accent}`} />
         <div>
@@ -339,72 +354,69 @@ export const UseIt = ({ world }: Props) => {
         </div>
       </div>
 
-      {/* the pool — the hero. ETH piles up in the contract itself, addressable
-          by anyone, controlled by no one. */}
-      <div className="rounded-box px-5 py-6 flex flex-col items-center gap-4">
-        <SectionLabel icon={BuildingLibraryIcon}>the escrow pool</SectionLabel>
-        {/* radial-progress only paints the filled arc, so a faint full ring
-            sits underneath as the empty vessel — the gauge reads as a tank
-            even at zero. */}
-        <div className="relative grid place-items-center">
-          <div className="radial-progress text-lab-track" style={ringStyle(100)} aria-hidden />
-          <div
-            className={`radial-progress absolute inset-0 m-auto ${goalMet ? "text-lab-mint" : "text-lab-violet"} ${busy?.startsWith("fund") ? "animate-pulse-fast" : ""}`}
-            style={ringStyle(pct)}
-            role="progressbar"
-          >
-            <div className="flex flex-col items-center leading-none">
-              <span className="text-2xl font-mono tabular-nums text-lab-text">{eth(pool)}</span>
-              <span className="text-xs text-base-content/50 mt-1">/ {eth(goal)} ETH</span>
+      {/* the pool and the clock, side by side. The pool is the vessel ETH piles
+          into — addressable by anyone, controlled by no one — kept small now;
+          the deadline is the live thing the student cranks forward by mining. */}
+      <div className="rounded-box grid gap-5 px-5 py-5 sm:grid-cols-2">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <SectionLabel icon={BuildingLibraryIcon}>the escrow pool</SectionLabel>
+          {/* radial-progress only paints the filled arc, so a faint full ring
+              sits underneath as the empty vessel — reads as a tank even at zero. */}
+          <div className="relative grid place-items-center">
+            <div className="radial-progress text-lab-track" style={ringStyle(100)} aria-hidden />
+            <div
+              className={`radial-progress absolute inset-0 m-auto ${goalMet ? "text-lab-mint" : "text-lab-violet"} ${busy?.startsWith("fund") ? "animate-pulse-fast" : ""}`}
+              style={ringStyle(pct)}
+              role="progressbar"
+            >
+              <div className="flex flex-col items-center leading-none">
+                <span className="text-xl font-mono tabular-nums text-lab-text">{eth(pool)}</span>
+                <span className="mt-1 text-xs text-base-content/50">/ {eth(goal)} ETH</span>
+              </div>
             </div>
           </div>
-        </div>
-        <Address address={crowdfund.address} disableAddressLink size="sm" />
-      </div>
-
-      {/* the chain clock — mining is the only way time moves, so the student
-          cranks it forward block by block and watches the deadline approach.
-          The block number and date are read straight off the chain. */}
-      <div className="rounded-box px-5 py-4 flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <SectionLabel icon={ClockIcon}>the chain clock</SectionLabel>
-          <span className={`badge badge-sm ${closed ? "badge-warning" : "badge-success"} font-mono`}>
-            {closed ? "deadline passed" : `deadline in ${daysLeft}d`}
-          </span>
+          <Address address={crowdfund.address} disableAddressLink size="xs" />
         </div>
 
-        {/* real on-chain values — both climb every time blocks get mined */}
-        <div className="flex items-center gap-8 font-mono">
-          <div className="flex flex-col leading-tight">
-            <span className="text-xs uppercase tracking-wider text-base-content/40">block</span>
-            <span className="text-lg tabular-nums">#{blockNumber?.toString() ?? "…"}</span>
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-xs uppercase tracking-wider text-base-content/40">block.timestamp</span>
-            <span className="text-lg tabular-nums">{chainDate}</span>
-          </div>
-        </div>
-
-        <progress
-          className={`progress ${closed ? "progress-warning" : "progress-success"} w-full`}
-          value={timePct}
-          max={100}
-        />
-
-        {!closed && (
-          <div className="flex items-center gap-3 flex-wrap">
-            <ActionButton busy={busy} tag="clock" icon={ForwardIcon} onClick={step} className="btn-outline">
-              Mine ~2 days of blocks
-            </ActionButton>
-            <button
-              className="btn btn-ghost btn-xs text-base-content/50"
-              onClick={skipToDeadline}
-              disabled={busy !== null}
+        {/* the deadline, read straight off block.timestamp. The countdown is the
+            headline; the bar and block read fill in the detail underneath. */}
+        <div className="flex flex-col gap-2 sm:border-l sm:border-lab-border-strong sm:pl-5">
+          <SectionLabel icon={ClockIcon}>the deadline</SectionLabel>
+          <div className="flex items-baseline gap-2">
+            <span
+              className={`font-mono text-4xl tabular-nums leading-none ${closed ? "text-peach-deep dark:text-peach-bright" : "text-lab-text"}`}
             >
-              skip to the deadline
-            </button>
+              {closed ? "passed" : daysLeft}
+            </span>
+            {!closed && <span className="text-sm text-base-content/50">day{daysLeft === 1 ? "" : "s"} left</span>}
           </div>
-        )}
+          {/* time elapsed across the window — a plain bar, since daisyUI's
+              progress tints fall outside the lab palette */}
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-lab-track">
+            <div
+              className={`h-full ${closed ? "bg-peach-deep dark:bg-peach-bright" : "bg-lab-violet"}`}
+              style={{ width: `${timePct}%` }}
+            />
+          </div>
+          <div className="flex items-center gap-4 font-mono text-xs text-base-content/50">
+            <span>block #{blockNumber?.toString() ?? "…"}</span>
+            <span>{chainDate}</span>
+          </div>
+          {!closed && (
+            <div className="mt-1 flex items-center gap-2 flex-wrap">
+              <ActionButton busy={busy} tag="clock" icon={ForwardIcon} onClick={step} className="btn-outline">
+                Mine ~2 days
+              </ActionButton>
+              <button
+                className="btn btn-ghost btn-xs text-base-content/50"
+                onClick={skipToDeadline}
+                disabled={busy !== null}
+              >
+                skip to deadline
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* the accounts — the actors. Each row is a real address with a real
@@ -448,15 +460,30 @@ export const UseIt = ({ world }: Props) => {
               }
               action={
                 !closed ? (
-                  <ActionButton
-                    busy={busy}
-                    tag={`fund:${addr}`}
-                    icon={ArrowDownIcon}
-                    onClick={() => fund(addr)}
-                    className="btn-outline"
-                  >
-                    Fund 2 ETH
-                  </ActionButton>
+                  // each funder picks their own contribution and sends it in —
+                  // pile a couple past 3.4 ETH each and the pool clears the goal.
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={amountOf(addr)}
+                      onChange={e => setAmountFor(addr, e.target.value)}
+                      aria-label="amount in ETH"
+                      className="w-16 rounded-box border border-lab-border-strong bg-lab-inset px-2 py-1 font-mono text-sm tabular-nums text-lab-text focus:border-lab-violet focus:outline-none"
+                    />
+                    <span className="font-mono text-xs text-base-content/40">ETH</span>
+                    <ActionButton
+                      busy={busy}
+                      tag={`fund:${addr}`}
+                      icon={ArrowDownIcon}
+                      onClick={() => fund(addr)}
+                      className="btn-outline"
+                      disabled={toWei(amountOf(addr)) <= 0n}
+                    >
+                      send
+                    </ActionButton>
+                  </div>
                 ) : contribution > 0n ? (
                   // Shown after the deadline whether or not it can succeed — if the
                   // goal was hit (or the pool's been claimed) the contract reverts
