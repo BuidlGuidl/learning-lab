@@ -32,6 +32,7 @@ import {
   LockClosedIcon,
   ShieldCheckIcon,
   TrophyIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import type { Address as Account, World } from "~~/lib/lab/harness";
 
@@ -45,6 +46,8 @@ const ONE_DAY_S = 24n * 60n * 60n;
 const STEP_S = 2n * ONE_DAY_S;
 
 const eth = (wei: bigint) => formatEther(wei);
+// rounded for display — trims the gas-precision tail off wallet balances
+const ethShort = (wei: bigint) => Number(formatEther(wei)).toLocaleString("en-US", { maximumFractionDigits: 4 });
 const ringStyle = (value: number) => ({ "--value": value, "--size": "9rem", "--thickness": "0.7rem" }) as CSSProperties;
 
 // A reverted write comes back as viem's verbose RevertError dump. Pull the
@@ -350,9 +353,6 @@ export const UseIt = ({ world }: Props) => {
           </div>
         </div>
         <Address address={crowdfund.address} disableAddressLink size="sm" />
-        <p className="text-xs text-base-content/60 text-center max-w-xs m-0">
-          That address holds the ETH directly. Not a wallet, not a company — the contract is the escrow.
-        </p>
       </div>
 
       {/* the chain clock — mining is the only way time moves, so the student
@@ -403,9 +403,7 @@ export const UseIt = ({ world }: Props) => {
       {/* the accounts — the actors. Each row is a real address with a real
           balance, and the action it's allowed depends on the phase above. */}
       <div className="flex flex-col gap-2.5">
-        <SectionLabel icon={ArrowDownIcon}>
-          accounts · every fund() sends ETH straight into the pool, no middleman
-        </SectionLabel>
+        <SectionLabel icon={UsersIcon}>accounts</SectionLabel>
 
         <AccountRow
           badge={
@@ -415,7 +413,7 @@ export const UseIt = ({ world }: Props) => {
             </span>
           }
           address={creator}
-          detail={`wallet ${eth(wallets[creator] ?? 0n)} ETH`}
+          detail={`wallet ${ethShort(wallets[creator] ?? 0n)} ETH`}
           action={
             closed && goalMet && !claimed ? (
               <ActionButton busy={busy} tag="claim" icon={TrophyIcon} onClick={claim} className="btn-primary">
@@ -436,7 +434,11 @@ export const UseIt = ({ world }: Props) => {
               key={addr}
               badge={<span className="badge badge-ghost badge-sm font-mono shrink-0">#{i + 1}</span>}
               address={addr}
-              detail={`in pool ${eth(contribution)} ETH · wallet ${eth(wallets[addr] ?? 0n)} ETH`}
+              detail={
+                contribution > 0n
+                  ? `in pool ${eth(contribution)} ETH · wallet ${ethShort(wallets[addr] ?? 0n)} ETH`
+                  : `wallet ${ethShort(wallets[addr] ?? 0n)} ETH`
+              }
               action={
                 !closed ? (
                   <ActionButton
@@ -472,10 +474,6 @@ export const UseIt = ({ world }: Props) => {
         })}
       </div>
 
-      <p className="text-sm text-base-content/70 m-0">
-        Nobody in this picture trusts anybody. The pool answers to its own code, the clock is the only referee, and the
-        same rules apply to the creator and the contributors alike.
-      </p>
       {/* a reverted action isn't an error to hide — it's the contract doing its
           job. Name the rule, show the exact require() that fired, and frame it
           as the deal overruling the button. */}
