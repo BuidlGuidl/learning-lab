@@ -116,7 +116,7 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
-      <div className={`lab__content ${hasContracts ? "lab__content--with-code" : ""} overflow-y-auto drawer-content`}>
+      <div className="lab__content overflow-y-auto drawer-content">
         <div className="mx-auto w-[min(100%,760px)]">
           <section className="min-w-0">
             <div className="w-full max-w-3xl mx-auto shrink-0 relative z-[1] flex items-center justify-between gap-3">

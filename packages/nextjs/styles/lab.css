@@ -38,7 +38,11 @@
 .lab-header {
   /* Layout tokens stay local; colors/shadows live in @theme (--color-lab-*). */
   --lab-header-height: 52px;
-  --lab-build-panel-width: clamp(420px, 32vw, 520px);
+  /* Half the viewport, capped — wide now that the code panel overlays rather than reflowing beside the lesson. */
+  --lab-build-panel-width: min(50vw, 42rem);
+  /* Shared open/close motion for the code peek, in one place so the backdrop fade and panel slide
+     stay in lockstep. Snappy ease-out (matches the original code-peek feel). */
+  --lab-code-motion: 200ms ease-out;
   color: var(--color-lab-text);
   font-family:
     Inter,
@@ -204,8 +208,9 @@
   color: var(--color-lab-gutter);
 }
 
-/* Code peek panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet below lg, a side
-   rail at lg+. The lg here must stay in sync with the chapter drawer so the whole view flips at one width. */
+/* Code peek panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet below lg, a right
+   sheet at lg+. Both overlay the lesson over .lab-code-backdrop, so opening never reflows the layout.
+   The lg split must stay in sync with the chapter drawer so the whole view flips at one width. */
 .lab-code-backdrop {
   position: fixed;
   inset: 0;
@@ -213,7 +218,7 @@
   background: rgb(0 0 0 / 0.4);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 280ms ease;
+  transition: opacity var(--lab-code-motion);
 }
 
 .lab--code-open .lab-code-backdrop {
@@ -237,7 +242,7 @@
     background: var(--color-dark-surface);
     box-shadow: 0 -16px 48px -16px rgb(0 0 0 / 0.4);
     transform: translateY(100%);
-    transition: transform 280ms ease;
+    transition: transform var(--lab-code-motion);
   }
 
   .lab--code-open .lab-code-host {
@@ -257,20 +262,10 @@
 }
 
 @media (width >= 64rem) {
-  /* Host stays in flow — a transform here would make it a containing block and trap the fixed panel.
-     The panel itself slides; the lesson reserves its gutter only while open, else reflows full-width. */
-  .lab-code-backdrop,
+  /* A right-side sheet that overlays the lesson (above the shared backdrop), so it never reflows the
+     page — the panel itself slides; the lesson's box is untouched. The grab handle is mobile-only. */
   .lab-code-sheet__handle {
     display: none;
-  }
-
-  .lab__content--with-code {
-    padding-right: 0;
-    transition: padding-right 280ms ease;
-  }
-
-  .lab--code-open .lab__content--with-code {
-    padding-right: calc(var(--lab-build-panel-width) + 32px);
   }
 
   .lab-build-panel {
@@ -278,13 +273,13 @@
     top: var(--lab-header-height);
     right: 0;
     bottom: 0;
-    z-index: 10;
+    z-index: 50;
     width: var(--lab-build-panel-width);
     flex: none;
     border-left: 1px solid var(--color-dark-border);
     box-shadow: var(--shadow-lab);
     transform: translateX(100%);
-    transition: transform 280ms ease;
+    transition: transform var(--lab-code-motion);
   }
 
   .lab--code-open .lab-build-panel {
@@ -546,14 +541,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .code-focus .line {
-    transition: none;
-  }
-
-  /* Code peek opens/closes instantly — no slide or fade — when reduced motion is requested. */
-  .lab-code-backdrop,
-  .lab-code-host,
-  .lab-build-panel,
-  .lab__content--with-code {
     transition: none;
   }
 }
