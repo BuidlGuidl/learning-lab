@@ -73,11 +73,6 @@
     var(--color-lab-canvas);
 }
 
-.lab__content--with-code {
-  /* room for the sticky mobile code trigger; the desktop side-rail gutter is added at >=1024px */
-  padding-bottom: calc(64px + env(safe-area-inset-bottom));
-}
-
 .lab .btn {
   min-height: 0;
   border-radius: 4px;
@@ -209,10 +204,73 @@
   color: var(--color-lab-gutter);
 }
 
-@media (min-width: 900px) {
+/* Code peek panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet below lg, a side
+   rail at lg+. The lg here must stay in sync with the chapter drawer so the whole view flips at one width. */
+.lab-code-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease;
+}
+
+.lab--code-open .lab-code-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (width < 64rem) {
+  .lab-code-host {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    height: 85vh;
+    max-height: 85vh;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid var(--color-dark-border);
+    border-radius: 18px 18px 0 0;
+    background: var(--color-dark-surface);
+    box-shadow: 0 -16px 48px -16px rgb(0 0 0 / 0.4);
+    transform: translateY(100%);
+    transition: transform 280ms ease;
+  }
+
+  .lab--code-open .lab-code-host {
+    transform: translateY(0);
+  }
+
+  .lab-code-sheet__handle {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--color-dark-border);
+    background: var(--color-dark-bg);
+    padding: 10px 12px;
+  }
+}
+
+@media (width >= 64rem) {
+  /* Host stays in flow — a transform here would make it a containing block and trap the fixed panel.
+     The panel itself slides; the lesson reserves its gutter only while open, else reflows full-width. */
+  .lab-code-backdrop,
+  .lab-code-sheet__handle {
+    display: none;
+  }
+
   .lab__content--with-code {
+    padding-right: 0;
+    transition: padding-right 280ms ease;
+  }
+
+  .lab--code-open .lab__content--with-code {
     padding-right: calc(var(--lab-build-panel-width) + 32px);
-    padding-bottom: 32px;
   }
 
   .lab-build-panel {
@@ -225,21 +283,12 @@
     flex: none;
     border-left: 1px solid var(--color-dark-border);
     box-shadow: var(--shadow-lab);
+    transform: translateX(100%);
+    transition: transform 280ms ease;
   }
 
-  .lab-code-host {
-    position: static;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    /* Deliberately no transform/translate reset: the slide is applied only below 900px
-       (see Lab.tsx), so the desktop host stays free of a containing block and the fixed
-       .lab-build-panel pins to the viewport rail. Setting transform AND translate here
-       backfires — Lightning merges them into transform: translate3d(0,0,0), which traps it. */
+  .lab--code-open .lab-build-panel {
+    transform: translateX(0);
   }
 }
 
@@ -497,6 +546,14 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .code-focus .line {
+    transition: none;
+  }
+
+  /* Code peek opens/closes instantly — no slide or fade — when reduced motion is requested. */
+  .lab-code-backdrop,
+  .lab-code-host,
+  .lab-build-panel,
+  .lab__content--with-code {
     transition: none;
   }
 }
