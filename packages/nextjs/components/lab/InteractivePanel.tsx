@@ -1,10 +1,10 @@
 "use client";
 
 // The rail host for a card's interactive widget, opened on demand from the card
-// body (see ConceptCard's button). Mirrors CodeBuildPanel's chrome so it pins to
-// the same desktop side-rail and mobile bottom-sheet via .lab-build-panel. The
-// header carries a desktop close button to dismiss the rail and return the card
-// to its full-width reading column; on mobile the sheet's own handle closes it.
+// body (see ConceptCard's button). Mirrors the code panel's chrome but pins via
+// its own .lab-interactive-panel (so the code peek's toggle never moves it), on
+// the same desktop side-rail / mobile bottom-sheet. The header carries a desktop
+// close button (lg+); below lg the sheet's own drag handle closes it.
 import { CubeTransparentIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { Card } from "~~/lib/lab/types";
 
@@ -17,7 +17,7 @@ type Props = {
 export const InteractivePanel = ({ card, Widget, onClose }: Props) => {
   return (
     <aside
-      className="lab-build-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-dark-surface text-dark-text"
+      className="lab-interactive-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-dark-surface text-dark-text"
       aria-label={card.title}
     >
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-dark-border bg-dark-bg px-[18px] py-4">
@@ -27,7 +27,7 @@ export const InteractivePanel = ({ card, Widget, onClose }: Props) => {
         </span>
         <button
           type="button"
-          className="hidden h-8 w-8 cursor-pointer items-center justify-center rounded-[10px] text-dark-text-muted hover:bg-dark-surface hover:text-dark-text min-[900px]:inline-flex"
+          className="hidden h-8 w-8 cursor-pointer items-center justify-center rounded-[10px] text-dark-text-muted hover:bg-dark-surface hover:text-dark-text lg:inline-flex"
           onClick={onClose}
           aria-label="Close interactive"
         >
