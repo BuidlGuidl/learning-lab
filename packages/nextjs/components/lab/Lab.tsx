@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
 import { Sidebar } from "./Sidebar";
+import { useMediaQuery } from "usehooks-ts";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   Bars3Icon,
   ChevronDoubleLeftIcon,
-  ChevronUpIcon,
   CodeBracketIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -23,8 +23,18 @@ type Props = {
 };
 
 const DRAWER_ID = "lab-drawer";
-const isDesktop = () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches;
 const isGradable = (type: string) => type === "code-exercise" || type === "question";
+
+// True only for elements that consume text, so the `c` peek shortcut still fires over toggles.
+// The daisyUI theme switcher is an <input type="checkbox">, so "any <input>" would wrongly
+// swallow the key — branch on input type instead.
+const isEditable = (el: EventTarget | null) => {
+  if (!(el instanceof HTMLElement)) return false;
+  if (el.tagName === "TEXTAREA" || el.isContentEditable) return true;
+  if (el.tagName !== "INPUT") return false;
+  const type = (el as HTMLInputElement).type;
+  return !["checkbox", "radio", "range", "button", "submit", "reset", "file", "color"].includes(type);
+};
 
 export const Lab = ({ lab }: Props) => {
   const chapterIndex = useLabStore(s => s.chapterIndex);
@@ -35,27 +45,37 @@ export const Lab = ({ lab }: Props) => {
   const prev = useLabStore(s => s.prev);
   const skipCard = useLabStore(s => s.skipCard);
 
-  // Rail stays closed by default so the learner lands focused on the task; the
-  // chapter toggle in the topbar opens it on demand. On desktop it's an in-flow
-  // rail, on mobile an overlay drawer.
+  const isDesktop = useMediaQuery("(min-width: 1024px)"); // Tailwind's lg, matching the code-peek CSS
+
+  // Chapter rail: open on desktop, a closed overlay drawer on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // The code panel is a fixed side rail on desktop; below lg it collapses to a
-  // sticky trigger that opens this bottom sheet.
+  // Code panel: collapsed until peeked (topbar toggle or `c`); its responsive layout lives behind .lab--code-open.
   const [codeSheetOpen, setCodeSheetOpen] = useState(false);
+
   useEffect(() => {
     init(lab);
     // kick off the soljson download (~7MB) now, so the first submit doesn't eat the whole wait
     warmCompiler();
   }, [lab, init]);
 
+  // Mirror the rail to the viewport; re-runs only on crossing lg, so a manual toggle sticks within a breakpoint.
+  useEffect(() => setSidebarOpen(isDesktop), [isDesktop]);
+
+  // `c` toggles the panel, Esc closes it — global, except while a text field has focus (isEditable).
   useEffect(() => {
-    if (!codeSheetOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setCodeSheetOpen(false);
+      if (e.key === "Escape") {
+        setCodeSheetOpen(false);
+        return;
+      }
+      if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey && !isEditable(e.target)) {
+        e.preventDefault();
+        setCodeSheetOpen(open => !open);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [codeSheetOpen]);
+  }, []);
 
   const chapter = lab.chapters[chapterIndex];
   const card = chapter?.cards[cardIndex];
@@ -66,7 +86,6 @@ export const Lab = ({ lab }: Props) => {
   const totalCards = chapter.cards.length;
   const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
   const hasContracts = Object.keys(lab.files).length > 0;
-  const primaryFile = Object.keys(lab.files)[0];
   const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
   const currentLabCard = completedBeforeCurrent + cardIndex + 1;
   const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
@@ -77,16 +96,18 @@ export const Lab = ({ lab }: Props) => {
   // the sidebar's free-jump stay open — the gate is only on the Next button.
   const gated = isGradable(card.type) && !isCardCleared(transcript, card.id);
 
-  // A pick dismisses the overlay on mobile; on desktop the rail stays put.
+  // On mobile the drawer overlays the lesson, so dismiss it after a jump; on desktop the rail stays put.
   const handleNavigate = () => {
-    if (!isDesktop()) setSidebarOpen(false);
+    if (!isDesktop) setSidebarOpen(false);
   };
 
   return (
     // flex-1 + min-h-0 size the drawer to its slot via flexbox (a percentage h-full
     // can't resolve against main's flex-grow height). The drawer-side override below
     // then caps daisyUI's 100vh rail so it fills the slot instead of overflowing.
-    <div className={`lab flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open" : ""}`}>
+    <div
+      className={`lab flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open" : ""} ${codeSheetOpen ? "lab--code-open" : ""}`}
+    >
       <input
         id={DRAWER_ID}
         type="checkbox"
@@ -95,13 +116,13 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
-      <div className={`lab__content ${hasContracts ? "lab__content--with-code" : ""} overflow-y-auto drawer-content`}>
+      <div className="lab__content overflow-y-auto drawer-content">
         <div className="mx-auto w-[min(100%,760px)]">
           <section className="min-w-0">
-            <div className="w-full max-w-3xl mx-auto shrink-0 relative z-[1]">
+            <div className="w-full max-w-3xl mx-auto shrink-0 relative z-[1] flex items-center justify-between gap-3">
               <button
                 onClick={() => setSidebarOpen(o => !o)}
-                className="flex max-w-full cursor-pointer items-center gap-2 text-sm font-medium text-lab-muted transition-colors hover:text-lab-violet"
+                className="flex min-w-0 cursor-pointer items-center gap-2 text-sm font-medium text-lab-muted transition-colors hover:text-lab-violet"
                 aria-label={sidebarOpen ? "Hide chapters" : "Show chapters"}
               >
                 {sidebarOpen ? <ChevronDoubleLeftIcon className="w-4 h-4" /> : <Bars3Icon className="w-4 h-4" />}
@@ -113,6 +134,19 @@ export const Lab = ({ lab }: Props) => {
                   <strong className="font-bold text-lab-muted">{card.title}</strong>
                 </span>
               </button>
+              {hasContracts && (
+                <button
+                  onClick={() => setCodeSheetOpen(o => !o)}
+                  className="flex shrink-0 cursor-pointer items-center gap-2 text-sm font-medium text-lab-muted transition-colors hover:text-lab-violet"
+                  aria-label={codeSheetOpen ? "Hide code" : "Show code"}
+                  aria-expanded={codeSheetOpen}
+                  aria-controls="lab-code-sheet"
+                >
+                  <CodeBracketIcon className="w-4 h-4" />
+                  <span className="max-md:hidden">code</span>
+                  <kbd className="kbd kbd-xs max-md:hidden">c</kbd>
+                </button>
+              )}
             </div>
 
             <div className="relative z-[1] mt-2 flex flex-col w-full max-w-3xl gap-6 mx-auto">
@@ -172,40 +206,13 @@ export const Lab = ({ lab }: Props) => {
         </div>
         {hasContracts && (
           <>
-            {/* Mobile: sticky bar that opens the code as a bottom sheet. Hidden on desktop, where the panel is a fixed side rail. */}
-            <button
-              type="button"
-              className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(56px+env(safe-area-inset-bottom))] items-center gap-2 border-t border-lab-border bg-lab-surface px-4 pb-[env(safe-area-inset-bottom)] font-mono text-[13px] font-semibold text-lab-text shadow-[0_-6px_20px_-10px_rgb(0_0_0/0.25)] min-[900px]:hidden"
-              onClick={() => setCodeSheetOpen(true)}
-              aria-expanded={codeSheetOpen}
-              aria-controls="lab-code-sheet"
-            >
-              <CodeBracketIcon className="w-4 h-4" />
-              <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{primaryFile}</span>
-              <span className="inline-flex items-center gap-1 text-[11px] uppercase text-lab-violet">
-                view code
-                <ChevronUpIcon className="w-4 h-4" />
-              </span>
-            </button>
+            {/* Backdrop dismisses the mobile sheet; hidden on desktop where the panel sits beside the lesson. */}
+            <div className="lab-code-backdrop" onClick={() => setCodeSheetOpen(false)} aria-hidden />
 
-            <div
-              className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-[280ms] min-[900px]:hidden ${
-                codeSheetOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-              }`}
-              onClick={() => setCodeSheetOpen(false)}
-              aria-hidden
-            />
-
-            <div
-              id="lab-code-sheet"
-              className={`lab-code-host fixed inset-x-0 bottom-0 z-50 flex h-[85vh] max-h-[85vh] flex-col overflow-hidden rounded-t-[18px] border-t border-dark-border bg-dark-surface shadow-[0_-16px_48px_-16px_rgb(0_0_0/0.4)] transition-transform duration-[280ms] min-[900px]:static min-[900px]:h-auto min-[900px]:max-h-none min-[900px]:overflow-visible min-[900px]:rounded-none min-[900px]:border-0 min-[900px]:bg-transparent min-[900px]:shadow-none ${
-                codeSheetOpen ? "max-[899px]:translate-y-0" : "max-[899px]:translate-y-full"
-              }`}
-              role="dialog"
-              aria-label="Contract code"
-              aria-modal={codeSheetOpen || undefined}
-            >
-              <div className="relative flex shrink-0 items-center justify-center border-b border-dark-border bg-dark-bg px-3 py-2.5 min-[900px]:hidden">
+            {/* Positioning wrapper only — not a modal (no focus trap), so the inner <aside> owns the landmark. */}
+            <div id="lab-code-sheet" className="lab-code-host">
+              {/* Drag handle + close, mobile only (CSS-hidden on desktop, which closes via the toggle or Esc). */}
+              <div className="lab-code-sheet__handle">
                 <span className="h-1 w-[38px] rounded-full bg-dark-text-faint" aria-hidden />
                 <button
                   type="button"

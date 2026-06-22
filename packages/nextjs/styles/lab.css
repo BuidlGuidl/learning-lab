@@ -38,7 +38,11 @@
 .lab-header {
   /* Layout tokens stay local; colors/shadows live in @theme (--color-lab-*). */
   --lab-header-height: 52px;
-  --lab-build-panel-width: clamp(420px, 32vw, 520px);
+  /* Half the viewport, capped — wide now that the code panel overlays rather than reflowing beside the lesson. */
+  --lab-build-panel-width: min(50vw, 42rem);
+  /* Shared open/close motion for the code peek, in one place so the backdrop fade and panel slide
+     stay in lockstep. Snappy ease-out (matches the original code-peek feel). */
+  --lab-code-motion: 200ms ease-out;
   color: var(--color-lab-text);
   font-family:
     Inter,
@@ -71,11 +75,6 @@
   background:
     radial-gradient(80% 54% at 50% -18%, color-mix(in srgb, var(--color-lilac) 18%, transparent), transparent 70%),
     var(--color-lab-canvas);
-}
-
-.lab__content--with-code {
-  /* room for the sticky mobile code trigger; the desktop side-rail gutter is added at >=1024px */
-  padding-bottom: calc(64px + env(safe-area-inset-bottom));
 }
 
 .lab .btn {
@@ -209,10 +208,64 @@
   color: var(--color-lab-gutter);
 }
 
-@media (min-width: 900px) {
-  .lab__content--with-code {
-    padding-right: calc(var(--lab-build-panel-width) + 32px);
-    padding-bottom: 32px;
+/* Code peek panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet below lg, a right
+   sheet at lg+. Both overlay the lesson over .lab-code-backdrop, so opening never reflows the layout.
+   The lg split must stay in sync with the chapter drawer so the whole view flips at one width. */
+.lab-code-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lab-code-motion);
+}
+
+.lab--code-open .lab-code-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (width < 64rem) {
+  .lab-code-host {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    height: 85vh;
+    max-height: 85vh;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid var(--color-dark-border);
+    border-radius: 18px 18px 0 0;
+    background: var(--color-dark-surface);
+    box-shadow: 0 -16px 48px -16px rgb(0 0 0 / 0.4);
+    transform: translateY(100%);
+    transition: transform var(--lab-code-motion);
+  }
+
+  .lab--code-open .lab-code-host {
+    transform: translateY(0);
+  }
+
+  .lab-code-sheet__handle {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--color-dark-border);
+    background: var(--color-dark-bg);
+    padding: 10px 12px;
+  }
+}
+
+@media (width >= 64rem) {
+  /* A right-side sheet that overlays the lesson (above the shared backdrop), so it never reflows the
+     page — the panel itself slides; the lesson's box is untouched. The grab handle is mobile-only. */
+  .lab-code-sheet__handle {
+    display: none;
   }
 
   .lab-build-panel {
@@ -220,26 +273,17 @@
     top: var(--lab-header-height);
     right: 0;
     bottom: 0;
-    z-index: 10;
+    z-index: 50;
     width: var(--lab-build-panel-width);
     flex: none;
     border-left: 1px solid var(--color-dark-border);
     box-shadow: var(--shadow-lab);
+    transform: translateX(100%);
+    transition: transform var(--lab-code-motion);
   }
 
-  .lab-code-host {
-    position: static;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    /* Deliberately no transform/translate reset: the slide is applied only below 900px
-       (see Lab.tsx), so the desktop host stays free of a containing block and the fixed
-       .lab-build-panel pins to the viewport rail. Setting transform AND translate here
-       backfires — Lightning merges them into transform: translate3d(0,0,0), which traps it. */
+  .lab--code-open .lab-build-panel {
+    transform: translateX(0);
   }
 }
 
