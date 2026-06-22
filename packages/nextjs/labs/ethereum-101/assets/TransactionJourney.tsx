@@ -1,16 +1,19 @@
 "use client";
 
-// A transaction's life, made visible. A horizontal strip carries one action
-// through the four beats the concept card names — and gas rides along the
-// whole way:
-//   • Compose  → your account states an intent; every change is a transaction.
-//   • Sign     → your private key turns it into a unique hash nobody can forge.
-//   • Mempool  → broadcast, it waits in the pool with everyone else's.
-//   • Block    → a node packs it away; it's permanent, and the gas is the fee
-//                that keeps the shared computer from being spammed.
-// Plain DOM (no canvas) so the hash, the pool, and the block read crisply at
-// any rail width; CSS transitions carry the motion.
-import { useEffect, useRef, useState } from "react";
+// A transaction's life, made visible — the three beats the concept card names,
+// with the network's rule-check at the centre and gas riding along:
+//   • Sign      → your wallet signs with your private key; only your key could
+//                 produce this signature, and it can't be forged or altered.
+//   • Broadcast → every node independently checks the rules (is the signature
+//                 yours? do you hold the ETH?). The network enforces; nobody
+//                 waves it through.
+//   • Block     → pass, and it's packed into a block and appended to the chain,
+//                 permanent. Fail, and every node refuses it: an invalid tx
+//                 never reaches a block, so it costs nothing.
+// The student picks how much to send, including more than they hold, so the
+// "you can't spend what you don't have, and no operator can wave it through"
+// moment is theirs to trigger.
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -18,36 +21,32 @@ import {
   FingerPrintIcon,
   LockClosedIcon,
   PaperAirplaneIcon,
-  PencilSquareIcon,
-  QueueListIcon,
+  ShieldCheckIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
-type Phase = "compose" | "signed" | "mempool" | "mined";
+type Phase = "compose" | "signed" | "checking" | "mined" | "rejected";
 
-const PHASE_INDEX: Record<Phase, number> = { compose: 0, signed: 1, mempool: 2, mined: 3 };
 const STAGES = [
-  { label: "Compose", icon: PencilSquareIcon },
   { label: "Sign", icon: FingerPrintIcon },
-  { label: "Mempool", icon: QueueListIcon },
+  { label: "Broadcast", icon: PaperAirplaneIcon },
   { label: "Block", icon: CubeIcon },
 ];
+// which strip station each phase lights
+const PHASE_STAGE: Record<Phase, number> = { compose: 0, signed: 1, checking: 1, mined: 2, rejected: 1 };
 
 const ACCOUNT = "0x71C2…F3a9";
-const DEFAULT_MSG = "set greeting to gm";
-const GAS_UNITS = "21,000";
-const FEE = "0.00021 ETH";
-// other transactions already waiting in the pool — yours lands among them
-const DECOYS = [
-  { hash: "0x9f3a…21bc", gas: "0.00018" },
-  { hash: "0xc107…8e4d", gas: "0.00042" },
-  { hash: "0x2b88…d9a1", gas: "0.00009" },
-];
+const RECIPIENT = "0x4Db8…A07e";
+const BALANCE = 1; // ETH the account holds
+const GAS_FEE = 0.0002; // ETH, the network's fee for the work
+const AMOUNTS = [0.25, 2]; // one you can afford, one you can't — both offered on purpose
+const REJECT = "#ff8a8a"; // soft red for the rejected path
 
 const HEX = "0123456789abcdef";
 const randomHex = (n: number) => "0x" + Array.from({ length: n }, () => HEX[Math.floor(Math.random() * 16)]).join("");
 
 // Deterministic 64-hex "keccak-looking" fingerprint of the input (xorshift) —
-// illustrative, not real signing, but stable for a given message.
+// illustrative, not real signing, but stable for a given input.
 function hashHex(input: string): string {
   let h = (0x811c9dc5 ^ input.length) >>> 0;
   for (let i = 0; i < input.length; i++) h = Math.imul(h ^ input.charCodeAt(i), 0x01000193) >>> 0;
@@ -63,124 +62,144 @@ function hashHex(input: string): string {
   return "0x" + out;
 }
 
-const shortHash = (h: string) => (h.length > 18 ? `${h.slice(0, 10)}…${h.slice(-6)}` : h);
+const fmt = (n: number) => n.toFixed(4);
 
 const captionFor = (phase: Phase, signing: boolean) => {
-  if (signing) return "Hashing and signing with your private key…";
+  if (signing) return "Your wallet is signing it with your private key…";
   switch (phase) {
     case "compose":
-      return "Your account is about to act. Type what you want to do — every change is a transaction, and every transaction costs gas.";
+      return "Your account wants to send ETH to another address. Pick an amount: every change is a transaction, and every transaction costs gas.";
     case "signed":
-      return "Your private key signed it into this unique hash. It proves the request is really yours, and nobody can forge or alter it.";
-    case "mempool":
-      return "Broadcast. Your transaction waits in the mempool with everyone else's until a node picks it up.";
+      return "Signed. Only your private key could produce this signature, and nobody can forge it or change a single detail.";
+    case "checking":
+      return "Broadcast. Every node independently checks the rules before accepting it: is the signature yours, and do you hold the ETH?";
     case "mined":
-      return "A node packed it into a block and the network agreed — it's permanent now. The gas you paid is the fee that keeps the world computer from being spammed.";
+      return "It passed. A node packed it into a block and appended it to the chain, permanent and impossible to undo.";
+    case "rejected":
+      return "Every node refused to carry it: you can't send ETH you don't have, and no one can wave it through. It never reached a block, so it cost you nothing.";
   }
 };
 
 export const TransactionJourney = () => {
-  const [message, setMessage] = useState(DEFAULT_MSG);
+  const [amount, setAmount] = useState(AMOUNTS[0]);
   const [phase, setPhase] = useState<Phase>("compose");
   const [hash, setHash] = useState("");
   const [scramble, setScramble] = useState("");
   const [signing, setSigning] = useState(false);
   const [blockNumber, setBlockNumber] = useState(0);
-  const [minedIn, setMinedIn] = useState(false); // drives the block's drop-in
 
+  const timers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   const scrambleTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const stopScramble = () => {
+  const enough = amount + GAS_FEE <= BALANCE;
+  const stage = PHASE_STAGE[phase];
+
+  const clearTimers = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
     if (scrambleTimer.current) clearInterval(scrambleTimer.current);
     scrambleTimer.current = null;
   };
-  useEffect(() => stopScramble, []);
-
-  // a brief mount animation when the block seals
-  useEffect(() => {
-    if (phase !== "mined") return;
-    setMinedIn(false);
-    const raf = requestAnimationFrame(() => setMinedIn(true));
-    return () => cancelAnimationFrame(raf);
-  }, [phase]);
-
-  const idx = PHASE_INDEX[phase];
+  useEffect(() => clearTimers, []);
 
   const sign = () => {
-    const msg = message.trim();
-    if (!msg || signing) return;
-    setHash(hashHex(`${ACCOUNT}:${msg}:${Date.now()}`));
+    if (signing) return;
+    setHash(hashHex(`${ACCOUNT}->${RECIPIENT}:${amount}:${Date.now()}`));
     setPhase("signed");
     setSigning(true);
     let ticks = 0;
-    stopScramble();
     scrambleTimer.current = setInterval(() => {
       setScramble(randomHex(64));
       if (++ticks > 12) {
-        stopScramble();
+        clearTimers();
         setSigning(false);
       }
     }, 55);
   };
 
-  const broadcast = () => setPhase("mempool");
-  const mine = () => {
-    setBlockNumber(21_000_000 + Math.floor(Math.random() * 900_000));
-    setPhase("mined");
+  // broadcast and let the nodes check — the outcome depends on the amount
+  const broadcast = () => {
+    setPhase("checking");
+    const t = setTimeout(() => {
+      if (enough) {
+        setBlockNumber(21_000_000 + Math.floor(Math.random() * 900_000));
+        setPhase("mined");
+      } else {
+        setPhase("rejected");
+      }
+    }, 1500);
+    timers.current.push(t);
   };
+
   const reset = () => {
-    stopScramble();
+    clearTimers();
     setSigning(false);
     setHash("");
-    setMessage(DEFAULT_MSG);
     setPhase("compose");
   };
+
+  const failed = phase === "rejected";
 
   return (
     <div className="flex flex-col gap-4 text-dark-text">
       <div className="flex items-center justify-between gap-3">
         <span className="inline-flex items-center gap-2 rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
           <span className="text-dark-text-muted">gas fee</span>
-          <strong className="font-semibold text-dark-text">≈ {FEE}</strong>
+          <strong className="font-semibold text-dark-text">≈ {fmt(GAS_FEE)} ETH</strong>
         </span>
         <button
           type="button"
           onClick={reset}
-          className="font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
         >
           reset
         </button>
       </div>
 
-      {/* the strip: four stations, a track that fills as the tx advances */}
+      {/* the strip: three stations, a track that fills as the tx advances */}
       <div className="relative px-1">
         <div className="absolute left-6 right-6 top-[15px] h-0.5 bg-dark-border" />
         <div
           className="absolute left-6 top-[15px] h-0.5 bg-violet-bright transition-all duration-500"
-          style={{ width: `calc((100% - 3rem) * ${idx / (STAGES.length - 1)})` }}
+          style={{ width: `calc((100% - 3rem) * ${stage / (STAGES.length - 1)})` }}
         />
         <ol className="relative flex justify-between">
-          {STAGES.map((stage, i) => {
-            const done = i < idx;
-            const active = i === idx;
-            const Icon = stage.icon;
+          {STAGES.map((s, i) => {
+            const Icon = s.icon;
+            const isFailStation = failed && i === STAGES.length - 1;
+            const done = failed ? i < STAGES.length - 1 : i < stage;
+            const active = !failed && i === stage;
             return (
-              <li key={stage.label} className="flex w-12 flex-col items-center gap-1.5">
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
-                    active
-                      ? "border-violet-bright bg-violet-bright text-[#1a102c]"
-                      : done
-                        ? "border-violet-bright bg-lab-code-panel-tint text-violet-bright"
-                        : "border-dark-border bg-dark-bg text-dark-text-faint"
-                  }`}
-                >
-                  {done ? <CheckIcon className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+              <li key={s.label} className="flex w-12 flex-col items-center gap-1.5">
+                <span className="relative z-10 h-8 w-8">
+                  {/* opaque base so the track line reads as passing behind the node */}
+                  <span className="absolute inset-0 rounded-full bg-dark-bg" aria-hidden />
+                  <span
+                    className={`absolute inset-0 flex items-center justify-center rounded-full border transition-colors ${
+                      isFailStation
+                        ? "border-[#ff8a8a] bg-dark-bg text-[#ff8a8a]"
+                        : active
+                          ? "border-violet-bright bg-violet-bright text-[#1a102c]"
+                          : done
+                            ? "border-violet-bright bg-lab-code-panel-tint text-violet-bright"
+                            : "border-dark-border bg-dark-bg text-dark-text-faint"
+                    }`}
+                  >
+                    {isFailStation ? (
+                      <XMarkIcon className="h-4 w-4" />
+                    ) : done ? (
+                      <CheckIcon className="h-4 w-4" />
+                    ) : (
+                      <Icon className="h-4 w-4" />
+                    )}
+                  </span>
                 </span>
                 <span
-                  className={`text-[10px] font-medium ${active || done ? "text-dark-text" : "text-dark-text-faint"}`}
+                  className={`text-[10px] font-medium ${
+                    isFailStation ? "text-[#ff8a8a]" : active || done ? "text-dark-text" : "text-dark-text-faint"
+                  }`}
                 >
-                  {stage.label}
+                  {s.label}
                 </span>
               </li>
             );
@@ -190,62 +209,89 @@ export const TransactionJourney = () => {
 
       <p className="m-0 min-h-[3.25rem] text-sm leading-relaxed text-dark-text-muted">{captionFor(phase, signing)}</p>
 
-      <div className="min-h-[150px]">
+      <div className="min-h-[176px]">
         {phase === "compose" && (
           <div className="flex flex-col gap-3 rounded-xl border border-dark-border bg-dark-surface p-4">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="h-4 w-4 shrink-0 rounded-full bg-gradient-to-br from-violet-bright to-[#ff7ccb]" />
-              <span className="font-mono text-dark-text">{ACCOUNT}</span>
-              <span className="text-dark-text-faint">your account</span>
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 shrink-0 rounded-full bg-gradient-to-br from-violet-bright to-[#ff7ccb]" />
+                <span className="font-mono text-dark-text">{ACCOUNT}</span>
+                <span className="text-dark-text-faint">you</span>
+              </span>
+              <span className="font-mono text-dark-text-muted">{fmt(BALANCE)} ETH</span>
             </div>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">Action</span>
-              <input
-                value={message}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
-                placeholder={DEFAULT_MSG}
-                className="rounded-lg border border-dark-border bg-dark-bg px-3 py-2 font-mono text-sm text-dark-text outline-none transition-colors focus:border-violet-bright"
-              />
-            </label>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-dark-text-muted">Gas {GAS_UNITS} units</span>
-              <span className="font-mono text-dark-text">≈ {FEE}</span>
+            <div className="flex items-center gap-2 text-xs">
+              <PaperAirplaneIcon className="h-4 w-4 shrink-0 text-dark-text-faint" />
+              <span className="text-dark-text-muted">send to</span>
+              <span className="truncate font-mono text-dark-text">{RECIPIENT}</span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">Amount</span>
+              <div className="flex gap-2">
+                {AMOUNTS.map(a => {
+                  const sel = a === amount;
+                  const afford = a + GAS_FEE <= BALANCE;
+                  return (
+                    <button
+                      key={a}
+                      type="button"
+                      onClick={() => setAmount(a)}
+                      className={`flex-1 cursor-pointer rounded-lg border px-3 py-2 text-left font-mono text-sm transition-colors ${
+                        sel
+                          ? "border-violet-bright bg-lab-code-panel-tint text-dark-text"
+                          : "border-dark-border bg-dark-bg text-dark-text-muted hover:border-violet-bright/60"
+                      }`}
+                    >
+                      {a} ETH
+                      {!afford && <span className="ml-1 text-[10px] text-dark-text-faint">over balance</span>}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
 
-        {(phase === "signed" || phase === "mempool") && (
+        {phase === "signed" && (
           <div className="flex flex-col gap-3 rounded-xl border border-dark-border bg-dark-surface p-4">
-            <Field label="Action" value={message} />
+            <SummaryLine amount={amount} />
             <div className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">
-                Signed hash
-              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">Signature</span>
               <code className="break-all rounded-lg border border-dark-border bg-dark-bg px-3 py-2 font-mono text-xs leading-relaxed text-violet-bright">
                 {signing ? scramble || "0x…" : hash}
               </code>
             </div>
-
-            {phase === "mempool" && (
-              <div className="flex flex-col gap-2 rounded-lg border border-dark-border bg-dark-bg p-3">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">
-                  Mempool · pending
+            {!signing &&
+              (enough ? (
+                <span className="flex items-center gap-1.5 text-xs text-dark-text-muted">
+                  <ShieldCheckIcon className="h-4 w-4 shrink-0 text-lab-mint" />
+                  Produced by your private key. Nobody can forge it.
                 </span>
-                <MempoolRow hash={DECOYS[0].hash} gas={DECOYS[0].gas} />
-                <MempoolRow hash={DECOYS[1].hash} gas={DECOYS[1].gas} />
-                <MempoolRow hash={shortHash(hash)} gas={FEE.replace(" ETH", "")} mine />
-                <MempoolRow hash={DECOYS[2].hash} gas={DECOYS[2].gas} />
-              </div>
-            )}
+              ) : (
+                <span className="flex items-center gap-1.5 text-xs" style={{ color: REJECT }}>
+                  <ShieldCheckIcon className="h-4 w-4 shrink-0" />
+                  Signing only proves it&apos;s you. The network still has to accept it, and you don&apos;t hold this
+                  much.
+                </span>
+              ))}
+          </div>
+        )}
+
+        {phase === "checking" && (
+          <div className="flex flex-col gap-3 rounded-xl border border-dark-border bg-dark-surface p-4">
+            <SummaryLine amount={amount} />
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">
+                Nodes checking
+              </span>
+              <CheckRow label="Signature is really yours" state="checking" />
+              <CheckRow label="Account holds enough ETH" state="checking" />
+            </div>
           </div>
         )}
 
         {phase === "mined" && (
-          <div
-            className={`flex flex-col gap-3 rounded-xl border border-violet-bright bg-dark-surface p-4 transition-all duration-500 ${
-              minedIn ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-            }`}
-          >
+          <div className="flex flex-col gap-3 rounded-xl border border-violet-bright bg-dark-surface p-4">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-1.5 font-mono text-sm text-dark-text">
                 <CubeIcon className="h-4 w-4 text-violet-bright" />
@@ -256,16 +302,40 @@ export const TransactionJourney = () => {
                 permanent
               </span>
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-dark-bg px-3 py-2">
-              <CheckIcon className="h-4 w-4 shrink-0 text-lab-mint" />
-              <div className="min-w-0">
-                <div className="truncate font-mono text-xs text-violet-bright">{shortHash(hash)}</div>
-                <div className="truncate text-xs text-dark-text-muted">{message}</div>
-              </div>
+            <ChainView blockNumber={blockNumber} />
+            <div className="flex flex-col gap-1.5">
+              <CheckRow label="Signature is really yours" state="pass" />
+              <CheckRow label="Account holds enough ETH" state="pass" />
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-dark-text-muted">Gas paid to the network</span>
-              <span className="font-mono text-dark-text">{FEE}</span>
+            <BalanceAfter to={BALANCE - amount - GAS_FEE} note="amount sent, plus gas" />
+          </div>
+        )}
+
+        {phase === "rejected" && (
+          <div className="flex flex-col gap-3 rounded-xl border border-[#ff8a8a]/40 bg-dark-surface p-4">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 font-mono text-sm text-[#ff8a8a]">
+                <XMarkIcon className="h-4 w-4" />
+                Rejected
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-dark-text-faint">
+                never reached a block
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <CheckRow label="Signature is really yours" state="pass" />
+              <CheckRow
+                label="Account holds enough ETH"
+                state="fail"
+                note={`(needs more than your ${fmt(BALANCE)} ETH)`}
+              />
+            </div>
+            <div className="flex flex-col gap-1 rounded-lg border border-dark-border bg-dark-bg px-3 py-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-dark-text-muted">Your balance</span>
+                <span className="font-mono text-dark-text">{fmt(BALANCE)} ETH unchanged</span>
+              </div>
+              <span className="text-[11px] text-dark-text-faint">it never reached a block, so no gas was charged</span>
             </div>
           </div>
         )}
@@ -273,8 +343,8 @@ export const TransactionJourney = () => {
 
       <div className="flex flex-wrap gap-2.5">
         {phase === "compose" && (
-          <PrimaryButton onClick={sign} disabled={!message.trim()} icon={FingerPrintIcon}>
-            Sign transaction
+          <PrimaryButton onClick={sign} icon={FingerPrintIcon}>
+            Sign with your key
           </PrimaryButton>
         )}
         {phase === "signed" && (
@@ -282,12 +352,12 @@ export const TransactionJourney = () => {
             Broadcast
           </PrimaryButton>
         )}
-        {phase === "mempool" && (
-          <PrimaryButton onClick={mine} icon={CubeIcon}>
-            Mine the block
+        {phase === "checking" && (
+          <PrimaryButton onClick={() => undefined} disabled icon={PaperAirplaneIcon}>
+            Checking…
           </PrimaryButton>
         )}
-        {phase === "mined" && (
+        {(phase === "mined" || phase === "rejected") && (
           <PrimaryButton onClick={reset} icon={ArrowPathIcon}>
             Send another
           </PrimaryButton>
@@ -297,30 +367,59 @@ export const TransactionJourney = () => {
   );
 };
 
-const Field = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col gap-1.5">
-    <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">{label}</span>
-    <span className="rounded-lg border border-dark-border bg-dark-bg px-3 py-2 font-mono text-sm text-dark-text">
-      {value}
+const SummaryLine = ({ amount }: { amount: number }) => (
+  <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-dark-bg px-3 py-2 font-mono text-xs">
+    <span className="text-dark-text">Send {amount} ETH</span>
+    <span className="text-dark-text-faint">→</span>
+    <span className="truncate text-dark-text-muted">{RECIPIENT}</span>
+  </div>
+);
+
+const CheckRow = ({ label, state, note }: { label: string; state: "checking" | "pass" | "fail"; note?: string }) => (
+  <div className="flex items-center gap-2 text-xs">
+    {state === "checking" ? (
+      <span className="h-3.5 w-3.5 shrink-0 animate-pulse rounded-full border border-dark-text-faint" />
+    ) : state === "pass" ? (
+      <CheckIcon className="h-3.5 w-3.5 shrink-0 text-lab-mint" />
+    ) : (
+      <XMarkIcon className="h-3.5 w-3.5 shrink-0" style={{ color: REJECT }} />
+    )}
+    <span
+      style={state === "fail" ? { color: REJECT } : undefined}
+      className={state === "fail" ? "" : "text-dark-text-muted"}
+    >
+      {label}
+      {note && <span className="text-dark-text-faint"> {note}</span>}
     </span>
   </div>
 );
 
-const MempoolRow = ({ hash, gas, mine }: { hash: string; gas: string; mine?: boolean }) => (
-  <div
-    className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs ${
-      mine ? "bg-lab-code-panel-tint" : "opacity-50"
-    }`}
-  >
-    <span className={`font-mono ${mine ? "text-violet-bright" : "text-dark-text-muted"}`}>{hash}</span>
-    <span className="flex items-center gap-2 font-mono text-dark-text-muted">
-      {gas} ETH
-      {mine && (
-        <span className="inline-flex items-center gap-1 rounded-full border border-violet-bright px-1.5 py-0.5 text-[9px] font-semibold uppercase text-violet-bright">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-bright" />
-          yours
+const BalanceAfter = ({ to, note }: { to: number; note: string }) => (
+  <div className="flex flex-col gap-1 rounded-lg border border-dark-border bg-dark-bg px-3 py-2 text-xs">
+    <div className="flex items-center justify-between">
+      <span className="text-dark-text-muted">Your balance</span>
+      <span className="font-mono text-dark-text">
+        {fmt(BALANCE)} <span className="text-dark-text-faint">→</span> {fmt(to)} ETH
+      </span>
+    </div>
+    <span className="text-[11px] text-dark-text-faint">{note}</span>
+  </div>
+);
+
+const ChainView = ({ blockNumber }: { blockNumber: number }) => (
+  <div className="flex items-center justify-center gap-1 py-1">
+    <span className="text-xs text-dark-text-faint">…</span>
+    {[0, 1].map(i => (
+      <Fragment key={i}>
+        <span className="rounded-md border border-dark-border bg-dark-bg px-2.5 py-1.5 opacity-60">
+          <CubeIcon className="h-4 w-4 text-dark-text-faint" />
         </span>
-      )}
+        <span className="h-px w-2 bg-dark-border" />
+      </Fragment>
+    ))}
+    <span className="flex flex-col items-center gap-0.5 rounded-md border border-violet-bright bg-lab-code-panel-tint px-2.5 py-1.5">
+      <CubeIcon className="h-4 w-4 text-violet-bright" />
+      <span className="font-mono text-[9px] text-violet-bright">#…{String(blockNumber).slice(-4)}</span>
     </span>
   </div>
 );
@@ -340,7 +439,7 @@ const PrimaryButton = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className="inline-flex items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:opacity-50"
+    className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
   >
     <Icon className="h-4 w-4" />
     {children}
