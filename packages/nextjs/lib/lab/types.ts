@@ -11,13 +11,23 @@ type CardBase = {
   title: string;
 };
 
+// Visual companions rendered inline in the card body (see ConceptCard /
+// ExperimentCard), never in the side rail: a reading card with illustrations
+// gives the rail up so the column runs full width (see Lab's cardHasRail).
+// illustrations are static images stacked under the prose, in order. Each is a
+// co-located react component like an experiment's surface.
+type WithIllustrations = {
+  illustrations?: ComponentType[];
+};
+
 // The mental-model knowledge nugget.
 // read-only, no interaction.
-export type ConceptCard = CardBase & {
-  type: "concept";
-  label: "CONCEPT";
-  body: string;
-};
+export type ConceptCard = CardBase &
+  WithIllustrations & {
+    type: "concept";
+    label: "CONCEPT";
+    body: string;
+  };
 
 // Code reveal. Renders a file from the lab's segments with the learner's
 // region fills threaded in (unfilled regions show a placeholder). Read-only.
@@ -56,14 +66,15 @@ export type CodeExerciseCard = CardBase & {
 
 // Open-form prose prompt. Learner writes their own answer; no canonical.
 // TODO: Future AI grading scores the response against rubricConcepts.
-export type QuestionCard = CardBase & {
-  type: "question";
-  label: "QUESTION";
-  question: string;
-  rubricConcepts: string[];
-  // Optional scaffolding, revealed one rung at a time like a code exercise's ladder.
-  hints?: string[];
-};
+export type QuestionCard = CardBase &
+  WithIllustrations & {
+    type: "question";
+    label: "QUESTION";
+    question: string;
+    rubricConcepts: string[];
+    // Optional scaffolding, revealed one rung at a time like a code exercise's ladder.
+    hints?: string[];
+  };
 
 // Hands-on exploration, the whole deploy beat included. The world only
 // exists after the learner presses Deploy — the shell requires every region
@@ -78,32 +89,34 @@ export type QuestionCard = CardBase & {
 // component receiving the booted World — full react, no widget language;
 // mid-lab placement is fine when the component scopes what it shows. Omit it
 // for a pure deploy beat: the console is the whole story.
-export type ExperimentCard = CardBase & {
-  type: "experiment";
-  label: "EXPERIMENT";
-  scenario: string;
-  component?: ComponentType<{ world: World }>;
-  // mount the activity console under the card — the deploy receipt plus every
-  // read/write the surface makes. Omit for no console; "open" starts it
-  // expanded (a deploy card, where the log is the point); "closed" folds it
-  // by default (a surface card, where the experience leads).
-  console?: "open" | "closed";
-  // Share one deployed world across cards. A card sets sharesWorld: true to opt
-  // its world (keyed by its own id) into reuse; a later card sets reusesWorld to
-  // that card's id to mount its component on the same world instead of deploying
-  // its own. sharesWorld doesn't change where the world is stored — it declares
-  // intent at the deploy site and is what reusesWorld is validated against.
-  sharesWorld?: boolean;
-  reusesWorld?: string;
-};
+export type ExperimentCard = CardBase &
+  WithIllustrations & {
+    type: "experiment";
+    label: "EXPERIMENT";
+    scenario: string;
+    component?: ComponentType<{ world: World }>;
+    // mount the activity console under the card — the deploy receipt plus every
+    // read/write the surface makes. Omit for no console; "open" starts it
+    // expanded (a deploy card, where the log is the point); "closed" folds it
+    // by default (a surface card, where the experience leads).
+    console?: "open" | "closed";
+    // Share one deployed world across cards. A card sets sharesWorld: true to opt
+    // its world (keyed by its own id) into reuse; a later card sets reusesWorld to
+    // that card's id to mount its component on the same world instead of deploying
+    // its own. sharesWorld doesn't change where the world is stored — it declares
+    // intent at the deploy site and is what reusesWorld is validated against.
+    sharesWorld?: boolean;
+    reusesWorld?: string;
+  };
 
 // End-of-chapter prose. Ties the chapter's cards together (what was
 // built, what the learner should now hold). Read-only.
-export type SummaryCard = CardBase & {
-  type: "summary";
-  label: "SUMMARY";
-  body: string;
-};
+export type SummaryCard = CardBase &
+  WithIllustrations & {
+    type: "summary";
+    label: "SUMMARY";
+    body: string;
+  };
 
 export type Card = ConceptCard | CodeCard | CodeExerciseCard | QuestionCard | ExperimentCard | SummaryCard;
 

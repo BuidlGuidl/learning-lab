@@ -1,5 +1,7 @@
 import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
+import { VendingMachine } from "./assets/VendingMachine";
+import { Crowdfunding, StateNetwork, TransactionLifecycle, WhatJustHappened } from "./assets/illustrations";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -25,6 +27,7 @@ export const lab = defineLab({
           id: "the-world-computer",
           label: "CONCEPT",
           title: "The world computer",
+          illustrations: [StateNetwork],
           body: "Most apps you use run on servers owned by a single company.\n**Ethereum is different**, it runs on thousands of independent computers around the world, called **nodes**.\n\nTogether, those nodes act as one shared computer. Every node keeps its own copy of the same record: who owns what, and the **programs** running on the network, called **smart contracts**.\n\nWhen something changes, every node runs the same check on its own copy, and they all agree on a single shared history. The duplicated effort is the point: because everyone verifies the work independently, no one has to trust a central authority.\n\nNo company owns Ethereum, so there is no admin who can block a valid transaction, delete an app, or rewrite history.",
         },
         {
@@ -32,6 +35,7 @@ export const lab = defineLab({
           id: "accounts-transactions-gas",
           label: "CONCEPT",
           title: "Interacting with the world computer",
+          illustrations: [TransactionLifecycle],
           body: "To change something on Ethereum, you need to sign a **transaction** with a local app called a **wallet**. The wallet signs it with your **account**'s **private key**. Never share that key, since anyone with it controls your funds. Other people identify your account by its **address**, a public identifier where they can send you **ETH** (the network's native currency) and other assets.\n\nThe wallet broadcasts your signed transaction to the network, the nodes check it, and if it follows the rules the change is recorded permanently. Transactions are bundled into **blocks**, added one after another to form the **blockchain**.\n\nEvery change also costs **gas**, a small fee in ETH for the network's work. Bigger actions cost more, and you pay even if it fails. The fee also blocks spam, since every action has a cost.",
         },
         {
@@ -57,6 +61,7 @@ export const lab = defineLab({
           id: "smart-contracts",
           label: "CONCEPT",
           title: "Smart contracts",
+          illustrations: [VendingMachine],
           body: "A **smart contract** is a program stored on Ethereum. Like a regular user account, a contract has its own address and stores data.\n\nThe classic mental model is a vending machine. You put in the right coin, press a button, and the machine follows its rules. If the payment is valid, it releases the item, with nobody behind the counter deciding whether to serve you.\n\nOnce deployed, a contract's code is public for anyone to read, and it can never be changed.",
         },
       ],
@@ -94,6 +99,7 @@ export const lab = defineLab({
           id: "what-were-building",
           label: "CONCEPT",
           title: "What we're building",
+          illustrations: [Crowdfunding],
           body: "Now that you can read a little Solidity, here is what we are going to build with it: a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nHere's the skeleton we'll start from. The gaps are the pieces you'll fill in yourself over the next few cards, one at a time.\n\n```solidity\ncontract Crowdfund {\n  // GOAL: the funding target (you'll set this)\n  // contributions: a ledger of who sent what (you'll add this)\n\n  function fund() public payable {\n    // record the contribution (you'll write this)\n  }\n\n  function refund() public {\n    // pay contributors back if the goal isn't met (you'll write this)\n  }\n\n  function claim() public {\n    // pay the creator once the goal is reached\n  }\n}\n```\n\nThe interesting part is that no company is running this behind the scenes. The contract follows these rules on its own.",
         },
         {
@@ -126,6 +132,7 @@ export const lab = defineLab({
           id: "what-just-happened",
           label: "EXPERIMENT",
           title: "What just happened",
+          illustrations: [WhatJustHappened],
           scenario:
             "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
           reusesWorld: "deploy-goal",

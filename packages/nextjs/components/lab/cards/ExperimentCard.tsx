@@ -166,6 +166,12 @@ const DeployWorldCard = ({ card, lab }: Props) => {
     <CardFrame card={card}>
       <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.scenario}</Markdown>
 
+      {(card.illustrations ?? []).map((Illustration, index) => (
+        <div key={index} className="mb-5">
+          <Illustration />
+        </div>
+      ))}
+
       {crash && (
         <div className="alert alert-error text-sm mb-3">
           <span className="font-mono whitespace-pre-wrap break-all">{crash}</span>
@@ -343,6 +349,12 @@ const ReuseWorldCard = ({ card, lab }: Props) => {
   return (
     <CardFrame card={card}>
       <Markdown className="text-base-content/90 leading-relaxed mb-4">{card.scenario}</Markdown>
+
+      {(card.illustrations ?? []).map((Illustration, index) => (
+        <div key={index} className="mb-5">
+          <Illustration />
+        </div>
+      ))}
 
       {!open ? (
         // the owner hasn't shipped a live contract yet — point back, never self-deploy
