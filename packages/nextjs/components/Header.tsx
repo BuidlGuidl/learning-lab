@@ -4,11 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SwitchTheme } from "~~/components/SwitchTheme";
-import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 
 /**
- * Minimal site header — product wordmark + theme toggle + wallet. Lab navigation
- * lives in the chapter sidebar; the theme toggle moved up here when the footer went.
+ * Minimal site header — product wordmark + theme toggle. The lab runs entirely in-browser
+ * (tevm), so there's no wallet to connect; chapter navigation lives in the sidebar.
  */
 export const Header = () => {
   const pathname = usePathname();
@@ -26,10 +25,7 @@ export const Header = () => {
         <Image src="/eth-diamond-purple.svg" alt="" width={24} height={24} />
         Learning Lab
       </Link>
-      <div className="flex items-center gap-3">
-        <SwitchTheme className="site-theme-switch" />
-        <RainbowKitCustomConnectButton />
-      </div>
+      <SwitchTheme className="site-theme-switch" />
     </div>
   );
 };
