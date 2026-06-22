@@ -12,6 +12,7 @@ import type { Chapter, Lab } from "./types";
 export type LabSpec = {
   id: string;
   title: string;
+  overview?: string;
   // marked .sol sources, keyed by filename (generated from contracts/ by
   // scripts/gen-lab-sources.mjs)
   contracts: Record<string, string>;
@@ -77,6 +78,7 @@ export function defineLab(spec: LabSpec): Lab {
   return {
     id: spec.id,
     title: spec.title,
+    overview: spec.overview,
     files,
     regions,
     deploy: spec.deploy,
