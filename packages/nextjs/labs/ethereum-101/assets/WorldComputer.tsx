@@ -219,7 +219,7 @@ export const WorldComputer = () => {
       setCaption("Back online — it snaps straight to the network's current state.");
     } else {
       setNodes(prev => prev.map((n, j) => (j === i ? { ...n, status: "offline" } : n)));
-      setCaption("A node dropped off the network. No off switch here — the rest carry on without it.");
+      setCaption("A node dropped off the network. No off switch here, the rest carry on without it.");
     }
   };
 
