@@ -116,6 +116,8 @@ export type Chapter = {
 export type Lab = {
   id: string;
   title: string;
+  // one-line mission, shown to the grader for orientation only
+  overview?: string;
   // derived from the marked contracts by defineLab — segments per file, and
   // every region (file, scope, canonical) keyed by id
   files: Record<string, Segment[]>;
