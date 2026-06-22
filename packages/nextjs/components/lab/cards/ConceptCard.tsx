@@ -27,7 +27,7 @@ export const ConceptCard = ({ card }: Props) => {
       type="button"
       className={`btn btn-sm gap-2 font-mono text-xs text-lab-text hover:border-lab-violet hover:text-lab-violet ${
         overlay
-          ? "absolute right-0 top-0 z-10 border-lab-border bg-lab-surface/90 shadow-sm backdrop-blur"
+          ? "absolute right-0 top-0 z-10 border-lab-border bg-lab-surface shadow-sm"
           : "mt-6 self-start border-lab-border bg-transparent"
       }`}
       onClick={() => setInteractiveOpen(!interactiveOpen)}
