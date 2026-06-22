@@ -23,7 +23,7 @@ export const ReadGoal = ({ world }: Props) => {
   };
 
   return (
-    <div className="rounded-box bg-base-200 px-5 py-4 flex flex-col gap-3 items-start">
+    <div className="rounded-box px-5 py-4 flex flex-col gap-3 items-start">
       <p className="text-sm text-base-content/80 m-0">
         It&apos;s a real contract now, with public state. Ask it for the <code className="font-mono">GOAL</code> you set
         — the answer comes straight from on-chain, not the source file.
@@ -35,7 +35,7 @@ export const ReadGoal = ({ world }: Props) => {
       {goal !== null && (
         <p className="font-mono text-sm m-0">
           <span className="text-base-content/60">GOAL</span> ={" "}
-          <span className="text-success tabular-nums">{formatEther(goal)} ETH</span>
+          <span className="text-lab-mint tabular-nums">{formatEther(goal)} ETH</span>
         </p>
       )}
     </div>
