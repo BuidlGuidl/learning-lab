@@ -1,14 +1,9 @@
 "use client";
 
-// The contract as an app: a trustless escrow you can actually drive. Fund the
-// pool from three browser accounts, crank the chain clock past the deadline,
-// then watch the deal settle — refunds if it fell short, the creator's claim if
-// the goal was hit. Every button is a real transaction against the learner's
-// own code; the only thing the UI invents is the staging.
-//
-// Time only moves by mining: this tevm rejects increaseTime /
-// setNextBlockTimestamp, so the clock steps forward by mining blocks, the same
-// trick tests.ts uses to land past the deadline.
+// The contract as an app: fund the pool from three accounts, mine the chain past
+// the deadline, then settle. Every button is a real tx against the learner's code.
+// This tevm rejects increaseTime/setNextBlockTimestamp, so time only moves by
+// mining blocks — the trick tests.ts uses to land past the deadline.
 import {
   type CSSProperties,
   type ComponentType,
@@ -16,13 +11,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { FUNDING_WINDOW_S } from "./deploy";
 import { Address } from "@scaffold-ui/components";
-import { formatEther, parseEther } from "viem";
+import { formatEther } from "viem";
 import {
-  ArrowDownIcon,
   ArrowUturnLeftIcon,
   BuildingLibraryIcon,
   CheckBadgeIcon,
@@ -30,6 +25,7 @@ import {
   ForwardIcon,
   KeyIcon,
   LockClosedIcon,
+  PaperAirplaneIcon,
   ShieldCheckIcon,
   TrophyIcon,
   UsersIcon,
@@ -39,14 +35,16 @@ import type { Address as Account, World } from "~~/lib/lab/harness";
 type Props = { world: World };
 
 const ONE_DAY_S = 24n * 60n * 60n;
-// how much chain time one "advance" click mines forward — ~4 clicks crosses a
-// 7-day window, enough to feel the clock move without dragging it out.
+// chain time per mine click — ~4 clicks crosses the 7-day window
 const STEP_S = 2n * ONE_DAY_S;
+// fixed contribution per send — three funders × 4 clears the 10 ETH goal
+const FUND_AMOUNT = 4n * 10n ** 18n;
+// guide prompts for the three funder sends, in order
+const FUND_STEPS = ["Let's send 4 ETH into the pool", "Let's send another 4 ETH in", "One more — let's fill the pool"];
 
-// A reverted write comes back as viem's verbose RevertError dump. Pull the
-// human reason out of it and pair it with the exact require() line that fired —
-// that's the whole lesson: the UI offered the action, the contract's own line
-// refused it. Keyed by the revert string each require carries in Crowdfund.sol.
+// A reverted write comes back as viem's verbose RevertError. Pull the human reason
+// out and pair it with the require() line that fired — keyed by each require's
+// revert string in Crowdfund.sol.
 const REVERTS: Record<string, { line: string; lesson: string }> = {
   "goal was reached": {
     line: 'require(address(this).balance < GOAL, "goal was reached");',
@@ -101,10 +99,8 @@ const explainRevert = (raw: string | null) => {
   return null;
 };
 
-// The top-of-stage banner, one branch per state the deal can be in. `accent`
-// is a lab text-colour for the icon + label: mint for the good outcomes, the
-// lab's soft peach for the short one (not daisyUI's hot alert orange), violet
-// while it's still live.
+// The phase banner, one branch per deal state. `accent` colours the icon + label:
+// mint for the good outcomes, peach for the short one, violet while still live.
 const MINT = "text-lab-mint";
 const PEACH = "text-peach-deep dark:text-peach-bright";
 const VIOLET = "text-lab-violet";
@@ -146,8 +142,9 @@ const phaseFor = (claimed: boolean, closed: boolean, goalMet: boolean): Phase =>
   };
 };
 
-// A pill action button that spins on its own `tag` while a write is in flight
-// and locks out while any other one runs.
+// Pill button that spins on its own `tag` and locks out while any write runs.
+// `active` marks the one button the guided flow wants next (filled, pinged,
+// tooltip open); active={false} locks the rest of its sequence.
 const ActionButton = ({
   busy,
   tag,
@@ -155,6 +152,9 @@ const ActionButton = ({
   onClick,
   className,
   disabled,
+  active,
+  tip,
+  tipClass,
   children,
 }: {
   busy: string | null;
@@ -163,13 +163,42 @@ const ActionButton = ({
   onClick: () => void;
   className?: string;
   disabled?: boolean;
+  active?: boolean;
+  tip?: string;
+  tipClass?: string;
   children: ReactNode;
-}) => (
-  <button className={`btn btn-sm gap-2 ${className ?? ""}`} onClick={onClick} disabled={busy !== null || disabled}>
-    {busy === tag ? <span className="loading loading-spinner loading-xs" /> : <Icon className="w-4 h-4" />}
-    {children}
-  </button>
-);
+}) => {
+  const button = (
+    <span className="relative inline-flex">
+      {/* corner ping marking the live button */}
+      {active && (
+        <span className="absolute -right-1 -top-1 z-10 flex h-3 w-3">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lab-mint opacity-75" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-lab-mint ring-2 ring-lab-surface" />
+        </span>
+      )}
+      <button
+        className={`btn btn-sm gap-2 ${active ? "btn-primary" : (className ?? "")}`}
+        onClick={onClick}
+        disabled={busy !== null || disabled || active === false}
+      >
+        {busy === tag ? <span className="loading loading-spinner loading-xs" /> : <Icon className="w-4 h-4" />}
+        {children}
+      </button>
+    </span>
+  );
+  if (!tip) return button;
+  // active buttons open the tooltip by default; the rest reveal on hover. --tt-bg
+  // is set explicitly because daisyUI's default inherits --color-primary.
+  return (
+    <span
+      className={`tooltip ${active ? "tooltip-open" : ""} ${tipClass ?? "tooltip-left"} [--tt-bg:var(--color-violet-bright-strong)] before:text-[var(--color-deep-iris)] dark:[--tt-bg:var(--color-deep-iris)] dark:before:text-white`}
+      data-tip={tip}
+    >
+      {button}
+    </span>
+  );
+};
 
 const SectionLabel = ({
   icon: Icon,
@@ -184,6 +213,56 @@ const SectionLabel = ({
   </div>
 );
 
+// true for ~0.8s after `value` changes — drives the balance-move highlights
+const useChanged = (value: bigint) => {
+  const [moved, setMoved] = useState(false);
+  const prev = useRef(value);
+  useEffect(() => {
+    if (prev.current === value) return;
+    prev.current = value;
+    setMoved(true);
+    const t = setTimeout(() => setMoved(false), 800);
+    return () => clearTimeout(t);
+  }, [value]);
+  return moved;
+};
+
+// rolls the displayed ETH amount toward `value` over ~0.8s — an odometer effect
+const useCountUp = (value: bigint) => {
+  const target = Number(formatEther(value));
+  const [shown, setShown] = useState(target);
+  const fromRef = useRef(target);
+  useEffect(() => {
+    const from = fromRef.current;
+    fromRef.current = target;
+    if (from === target) return;
+    let raf = 0;
+    let start = 0;
+    const tick = (now: number) => {
+      if (!start) start = now;
+      const t = Math.min(1, (now - start) / 800);
+      setShown(from + (target - from) * (1 - (1 - t) ** 2));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
+  return shown;
+};
+
+// Rolls its figure to the new value and flashes it (scale + mint) on every change.
+const LiveBalance = ({ value, className }: { value: bigint; className?: string }) => {
+  const moved = useChanged(value);
+  const shown = useCountUp(value);
+  return (
+    <span
+      className={`mx-0.5 inline-block transition-all duration-300 ${className ?? ""} ${moved ? "scale-110 font-semibold text-lab-mint!" : ""}`}
+    >
+      {shown.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+    </span>
+  );
+};
+
 // One account: a blockie + a mono detail line, with whatever action the phase
 // allows it. The creator and the contributors share this shell.
 const AccountRow = ({
@@ -191,31 +270,36 @@ const AccountRow = ({
   address,
   detail,
   action,
+  balance,
 }: {
   badge: ReactNode;
   address: Account;
   detail: ReactNode;
   action: ReactNode;
-}) => (
-  <div className="rounded-box px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-    <div className="flex items-center gap-3 min-w-0">
-      {badge}
-      <div className="flex flex-col gap-0.5 min-w-0">
-        <Address address={address} disableAddressLink size="sm" />
-        <span className="text-xs font-mono text-base-content/50">{detail}</span>
+  balance: bigint;
+}) => {
+  const moved = useChanged(balance);
+  return (
+    <div
+      className={`rounded-box px-4 py-3 flex items-center justify-between gap-3 flex-wrap transition-colors duration-300 ${moved ? "bg-lab-mint/20!" : ""}`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        {badge}
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <Address address={address} disableAddressLink size="sm" />
+          <span className="text-xs font-mono text-base-content/50">{detail}</span>
+        </div>
       </div>
+      {action}
     </div>
-    {action}
-  </div>
-);
+  );
+};
 
 export const UseIt = ({ world }: Props) => {
   const crowdfund = world.contracts.Crowdfund;
-  // accounts[0] deployed the contract, so it's the creator (the only one who
-  // can claim); the next three are the contributors who pay into the pool.
-  // Memoised on `world` so they keep a stable identity across renders —
-  // otherwise the fresh array each render would re-arm refresh's effect and
-  // spin an infinite read loop.
+  // accounts[0] is the creator (only one who can claim); the next three contribute.
+  // Memoised so the array keeps a stable identity — a fresh one each render would
+  // re-arm refresh's effect into an infinite read loop.
   const creator = world.accounts[0];
   const funders = useMemo(() => world.accounts.slice(1, 4), [world]);
 
@@ -230,12 +314,6 @@ export const UseIt = ({ world }: Props) => {
   const [refunded, setRefunded] = useState<Set<Account>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // what each funder pays in, keyed by address and typed on their own row.
-  // Default 2 keeps three funders short of the 10 ETH goal (so refunds light
-  // up); push a row higher and the goal gets hit instead (so the claim does).
-  const [amounts, setAmounts] = useState<Record<Account, string>>({});
-  const amountOf = (a: Account) => amounts[a] ?? "2";
-  const setAmountFor = (a: Account, value: string) => setAmounts(prev => ({ ...prev, [a]: value }));
 
   const refresh = useCallback(async () => {
     const roster = [creator, ...funders];
@@ -282,7 +360,7 @@ export const UseIt = ({ world }: Props) => {
   };
 
   const fund = (from: Account) =>
-    run(`fund:${from}`, () => world.write(crowdfund, "fund", { from, value: parseEther(amountOf(from)) }));
+    run(`fund:${from}`, () => world.write(crowdfund, "fund", { from, value: FUND_AMOUNT }));
   const refund = (from: Account) =>
     run(`refund:${from}`, async () => {
       const result = await world.write(crowdfund, "refund", { from });
@@ -296,10 +374,8 @@ export const UseIt = ({ world }: Props) => {
       return result;
     });
 
-  // No increaseTime in this tevm — the only way to move the clock is to mine.
-  // Each mine adds its interval to the current chain time, so a fixed step
-  // marches time forward block by block. Two blocks per call because the
-  // interval is the gap *between* mined blocks; one alone wouldn't apply it.
+  // Each mine adds its interval to the chain clock. Two blocks per call because
+  // the interval is the gap *between* mined blocks; one alone wouldn't apply it.
   const mineForward = (intervalS: bigint) =>
     run("clock", async () => {
       const mine = world.client.tevmMine as unknown as (p: { blockCount: number; interval: number }) => Promise<void>;
@@ -307,9 +383,6 @@ export const UseIt = ({ world }: Props) => {
       return {};
     });
   const step = () => mineForward(STEP_S);
-  const skipToDeadline = () => {
-    if (deadline !== null && now !== null) mineForward(deadline - now + ONE_DAY_S);
-  };
 
   if (goal === null || deadline === null || now === null) {
     return (
@@ -323,6 +396,20 @@ export const UseIt = ({ world }: Props) => {
   const goalMet = pool >= goal;
   const revert = explainRevert(error);
   const phase = phaseFor(claimed, closed, goalMet);
+  // the next guided step, derived from state: first unfunded funder, then mining,
+  // then the claim — only that button lights up and stays enabled.
+  const nextFunder = closed ? undefined : funders.find(a => (ledger[a] ?? 0n) === 0n);
+  const allFunded = !closed && !nextFunder;
+  // the banner's live instruction; falls back to the phase note when the guided
+  // path runs out (claimed, or a short campaign)
+  const stepNote = nextFunder
+    ? `send 4 ETH from account #${funders.indexOf(nextFunder) + 1} into the pool.`
+    : allFunded
+      ? "the pool's full — mine blocks to push the clock past the deadline."
+      : closed && goalMet && !claimed
+        ? "the deadline passed — the creator can now claim the whole pool."
+        : null;
+  const bannerNote = stepNote ?? phase.note;
   const pct = goal === 0n ? 0 : Math.min(100, Number((pool * 100n) / goal));
   // window elapsed, for the clock bar: deploy time is deadline minus the window.
   const elapsed = now - (deadline - FUNDING_WINDOW_S);
@@ -341,18 +428,15 @@ export const UseIt = ({ world }: Props) => {
         <phase.icon className={`w-5 h-5 shrink-0 ${phase.accent}`} />
         <div>
           <span className={`font-semibold ${phase.accent}`}>{phase.label}.</span>{" "}
-          <span className="text-base-content/70">{phase.note}</span>
+          <span className="text-base-content/70">{bannerNote}</span>
         </div>
       </div>
 
-      {/* the pool and the clock, side by side. The pool is the vessel ETH piles
-          into — addressable by anyone, controlled by no one — kept small now;
-          the deadline is the live thing the student cranks forward by mining. */}
+      {/* the pool and the clock, side by side */}
       <div className="rounded-box grid gap-5 px-5 py-5 sm:grid-cols-2">
         <div className="flex flex-col items-center gap-3 text-center">
           <SectionLabel icon={BuildingLibraryIcon}>the escrow pool</SectionLabel>
-          {/* radial-progress only paints the filled arc, so a faint full ring
-              sits underneath as the empty vessel — reads as a tank even at zero. */}
+          {/* faint full ring under the filled arc, so the gauge reads even at zero */}
           <div className="relative grid place-items-center">
             <div
               className="radial-progress text-lab-track"
@@ -360,12 +444,12 @@ export const UseIt = ({ world }: Props) => {
               aria-hidden
             />
             <div
-              className={`radial-progress absolute inset-0 m-auto ${goalMet ? "text-lab-mint" : "text-lab-violet"} ${busy?.startsWith("fund") ? "animate-pulse-fast" : ""}`}
+              className={`radial-progress absolute inset-0 m-auto transition-colors duration-500 ${goalMet ? "text-lab-mint" : "text-lab-violet"} ${busy?.startsWith("fund") ? "animate-pulse-fast" : ""}`}
               style={{ "--value": pct, "--size": "7rem", "--thickness": "0.6rem" } as CSSProperties}
               role="progressbar"
             >
               <div className="flex flex-col items-center leading-none">
-                <span className="text-xl font-mono tabular-nums text-lab-text">{formatEther(pool)}</span>
+                <LiveBalance value={pool} className="font-mono text-xl tabular-nums text-lab-text" />
                 <span className="mt-1 text-xs text-base-content/50">/ {formatEther(goal)} ETH</span>
               </div>
             </div>
@@ -397,18 +481,19 @@ export const UseIt = ({ world }: Props) => {
             <span>block #{blockNumber?.toString() ?? "…"}</span>
             <span>{chainDate}</span>
           </div>
-          {!closed && (
-            <div className="mt-1 flex items-center gap-2 flex-wrap">
-              <ActionButton busy={busy} tag="clock" icon={ForwardIcon} onClick={step} className="btn-outline">
+          {allFunded && (
+            <div className="mt-1">
+              <ActionButton
+                busy={busy}
+                tag="clock"
+                icon={ForwardIcon}
+                onClick={step}
+                active
+                tipClass="tooltip-top"
+                tip="Let's mine some blocks to pass the deadline"
+              >
                 Mine ~2 days
               </ActionButton>
-              <button
-                className="btn btn-ghost btn-xs text-base-content/50"
-                onClick={skipToDeadline}
-                disabled={busy !== null}
-              >
-                skip to deadline
-              </button>
             </div>
           )}
         </div>
@@ -427,10 +512,22 @@ export const UseIt = ({ world }: Props) => {
             </span>
           }
           address={creator}
-          detail={`wallet ${Number(formatEther(wallets[creator] ?? 0n)).toLocaleString("en-US", { maximumFractionDigits: 4 })} ETH`}
+          balance={wallets[creator] ?? 0n}
+          detail={
+            <>
+              wallet <LiveBalance value={wallets[creator] ?? 0n} /> ETH
+            </>
+          }
           action={
             closed && goalMet && !claimed ? (
-              <ActionButton busy={busy} tag="claim" icon={TrophyIcon} onClick={claim} className="btn-primary">
+              <ActionButton
+                busy={busy}
+                tag="claim"
+                icon={TrophyIcon}
+                onClick={claim}
+                active
+                tip="Now let's claim the whole pool"
+              >
                 Claim {formatEther(pool)} ETH
               </ActionButton>
             ) : (
@@ -443,54 +540,51 @@ export const UseIt = ({ world }: Props) => {
 
         {funders.map((addr, i) => {
           const contribution = ledger[addr] ?? 0n;
-          // wallet keeps a gas tail, so round it; the pool figures are exact
-          const wallet = Number(formatEther(wallets[addr] ?? 0n)).toLocaleString("en-US", { maximumFractionDigits: 4 });
+          const walletBal = wallets[addr] ?? 0n;
           return (
             <AccountRow
               key={addr}
               badge={<span className="badge badge-ghost badge-sm font-mono shrink-0">#{i + 1}</span>}
               address={addr}
+              balance={walletBal}
               detail={
-                contribution > 0n
-                  ? `in pool ${formatEther(contribution)} ETH · wallet ${wallet} ETH`
-                  : `wallet ${wallet} ETH`
+                <>
+                  {contribution > 0n && (
+                    <>
+                      in pool <LiveBalance value={contribution} /> ETH ·{" "}
+                    </>
+                  )}
+                  wallet <LiveBalance value={walletBal} /> ETH
+                </>
               }
               action={
                 !closed ? (
-                  // each funder picks their own contribution and sends it in —
-                  // pile a couple past 3.4 ETH each and the pool clears the goal.
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      value={amountOf(addr)}
-                      onChange={e => setAmountFor(addr, e.target.value)}
-                      aria-label="amount in ETH"
-                      className="w-16 rounded-box border border-lab-border-strong bg-lab-inset px-2 py-1 font-mono text-sm tabular-nums text-lab-text focus:border-lab-violet focus:outline-none"
-                    />
-                    <span className="font-mono text-xs text-base-content/40">ETH</span>
+                  contribution > 0n ? (
+                    <span className="text-xs font-mono text-lab-mint">funded ✓</span>
+                  ) : (
+                    // only the next funder's button is lit + enabled
                     <ActionButton
                       busy={busy}
                       tag={`fund:${addr}`}
-                      icon={ArrowDownIcon}
+                      icon={PaperAirplaneIcon}
                       onClick={() => fund(addr)}
                       className="btn-outline"
-                      disabled={!(Number(amountOf(addr)) > 0)}
+                      active={addr === nextFunder}
+                      tip={FUND_STEPS[i] ?? "Send 4 ETH into the pool"}
                     >
-                      send
+                      send 4 ETH
                     </ActionButton>
-                  </div>
+                  )
                 ) : contribution > 0n ? (
-                  // Shown after the deadline whether or not it can succeed — if the
-                  // goal was hit (or the pool's been claimed) the contract reverts
-                  // and the card below turns that into the lesson.
+                  // shown after the deadline even when it'll revert — the card
+                  // below turns that revert into the lesson
                   <ActionButton
                     busy={busy}
                     tag={`refund:${addr}`}
                     icon={ArrowUturnLeftIcon}
                     onClick={() => refund(addr)}
-                    className="btn-outline"
+                    className="btn-outline border-peach-deep text-peach-deep hover:bg-peach-deep hover:text-white dark:border-peach-bright dark:text-peach-bright dark:hover:bg-peach-bright dark:hover:text-lab-canvas"
+                    tip="Pull this contribution back out"
                   >
                     Refund {formatEther(contribution)} ETH
                   </ActionButton>
