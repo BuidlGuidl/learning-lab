@@ -10,6 +10,8 @@ import { defineLab } from "~~/lib/lab/define";
 export const lab = defineLab({
   id: "ethereum-101",
   title: "Ethereum 101",
+  overview:
+    'Takes the learner from "what is Ethereum" to writing, deploying, and using their own crowdfunding contract, learning real Solidity by doing it in the browser.',
   contracts,
   deploy,
   tests,
