@@ -268,17 +268,21 @@
     display: none;
   }
 
+  /* Floats as an inset card: gaps on every side (the backdrop shows through) so it reads as a
+     distinct panel, clear of the navbar, with the code's scroll visibly contained inside it. */
   .lab-build-panel {
     position: fixed;
-    top: var(--lab-header-height);
-    right: 0;
-    bottom: 0;
+    top: calc(var(--lab-header-height) + 16px);
+    right: 16px;
+    bottom: 16px;
     z-index: 50;
     width: var(--lab-build-panel-width);
     flex: none;
-    border-left: 1px solid var(--color-dark-border);
-    box-shadow: var(--shadow-lab);
-    transform: translateX(100%);
+    border: 1px solid var(--color-dark-border);
+    border-radius: 14px;
+    box-shadow: 0 24px 60px -12px rgb(0 0 0 / 0.45);
+    /* +16px clears the right gap too, so it parks fully off-screen when closed. */
+    transform: translateX(calc(100% + 16px));
     transition: transform var(--lab-code-motion);
   }
 
