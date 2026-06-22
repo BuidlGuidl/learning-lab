@@ -1,6 +1,6 @@
 // Label is type in caps, pinned by the union so it can't drift from
 // the dispatch. TODO: WE can probably drive from type in future
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import type { DeployFn, LabTests, World } from "./harness";
 import type { Region, Segment } from "./regions";
 
@@ -14,16 +14,22 @@ type CardBase = {
 // Visual companions rendered inline in the card body (see ConceptCard /
 // ExperimentCard), never in the side rail: a reading card with illustrations
 // gives the rail up so the column runs full width (see Lab's cardHasRail).
-// illustrations are static images stacked under the prose, in order. Each is a
-// co-located react component like an experiment's surface.
+// illustrations are static images stacked under the prose, in order; interactive
+// is an optional widget the learner opens with a button, mounted inline on
+// demand. Each is a co-located react component like an experiment's surface.
+// An illustration optionally hosts children as an overlay pinned over its image
+// (see ConceptCard, which drops the interactive button into the first one).
 type WithIllustrations = {
-  illustrations?: ComponentType[];
+  illustrations?: ComponentType<{ children?: ReactNode }>[];
+};
+type WithVisuals = WithIllustrations & {
+  interactive?: ComponentType;
 };
 
 // The mental-model knowledge nugget.
 // read-only, no interaction.
 export type ConceptCard = CardBase &
-  WithIllustrations & {
+  WithVisuals & {
     type: "concept";
     label: "CONCEPT";
     body: string;
@@ -67,7 +73,7 @@ export type CodeExerciseCard = CardBase & {
 // Open-form prose prompt. Learner writes their own answer; no canonical.
 // TODO: Future AI grading scores the response against rubricConcepts.
 export type QuestionCard = CardBase &
-  WithIllustrations & {
+  WithVisuals & {
     type: "question";
     label: "QUESTION";
     question: string;
@@ -112,7 +118,7 @@ export type ExperimentCard = CardBase &
 // End-of-chapter prose. Ties the chapter's cards together (what was
 // built, what the learner should now hold). Read-only.
 export type SummaryCard = CardBase &
-  WithIllustrations & {
+  WithVisuals & {
     type: "summary";
     label: "SUMMARY";
     body: string;

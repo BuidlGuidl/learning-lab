@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
+import { InteractivePanel } from "./InteractivePanel";
 import { Sidebar } from "./Sidebar";
 import {
   ArrowLeftIcon,
@@ -34,6 +35,8 @@ export const Lab = ({ lab }: Props) => {
   const next = useLabStore(s => s.next);
   const prev = useLabStore(s => s.prev);
   const skipCard = useLabStore(s => s.skipCard);
+  const interactiveOpen = useLabStore(s => s.interactiveOpen);
+  const setInteractiveOpen = useLabStore(s => s.setInteractiveOpen);
 
   // Rail stays closed by default so the learner lands focused on the task; the
   // chapter toggle in the topbar opens it on demand. On desktop it's an in-flow
@@ -49,13 +52,15 @@ export const Lab = ({ lab }: Props) => {
   }, [lab, init]);
 
   useEffect(() => {
-    if (!codeSheetOpen) return;
+    if (!codeSheetOpen && !interactiveOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setCodeSheetOpen(false);
+      if (e.key !== "Escape") return;
+      setCodeSheetOpen(false);
+      setInteractiveOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [codeSheetOpen]);
+  }, [codeSheetOpen, interactiveOpen, setInteractiveOpen]);
 
   const chapter = lab.chapters[chapterIndex];
   const card = chapter?.cards[cardIndex];
@@ -67,6 +72,22 @@ export const Lab = ({ lab }: Props) => {
   const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
   const hasContracts = Object.keys(lab.files).length > 0;
   const primaryFile = Object.keys(lab.files)[0];
+  // The rail hosts one of two things. A reading card (concept / question /
+  // summary) that carries its illustration inline gives up the code rail so the
+  // column runs full width; if it also ships an interactive widget, the rail
+  // returns on demand to host it (toggled from the card, see ConceptCard).
+  // Everything else shows the code panel whenever the lab has contracts.
+  const isReadingCard = card.type === "concept" || card.type === "question" || card.type === "summary";
+  const hasIllustrations = "illustrations" in card && (card.illustrations?.length ?? 0) > 0;
+  const currentInteractive = "interactive" in card ? card.interactive : undefined;
+  const codeRail = hasContracts && !(isReadingCard && hasIllustrations);
+  const interactiveRail = Boolean(currentInteractive) && interactiveOpen;
+  const railMode: "interactive" | "code" | null = interactiveRail ? "interactive" : codeRail ? "code" : null;
+  const cardHasRail = railMode !== null;
+  // Mobile: the code panel hides behind a trigger (codeSheetOpen); the interactive
+  // panel is summoned already-open from the card, so its sheet rides interactiveOpen.
+  const sheetOpen = railMode === "interactive" ? interactiveOpen : codeSheetOpen;
+  const closeRail = () => (railMode === "interactive" ? setInteractiveOpen(false) : setCodeSheetOpen(false));
   const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
   const currentLabCard = completedBeforeCurrent + cardIndex + 1;
   const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
@@ -95,7 +116,7 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
-      <div className={`lab__content ${hasContracts ? "lab__content--with-code" : ""} overflow-y-auto drawer-content`}>
+      <div className={`lab__content ${cardHasRail ? "lab__content--with-code" : ""} overflow-y-auto drawer-content`}>
         <div className="mx-auto w-[min(100%,760px)]">
           <section className="min-w-0">
             <div className="w-full max-w-3xl mx-auto shrink-0 relative z-[1]">
@@ -170,53 +191,59 @@ export const Lab = ({ lab }: Props) => {
             </div>
           </section>
         </div>
-        {hasContracts && (
+        {cardHasRail && (
           <>
-            {/* Mobile: sticky bar that opens the code as a bottom sheet. Hidden on desktop, where the panel is a fixed side rail. */}
-            <button
-              type="button"
-              className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(56px+env(safe-area-inset-bottom))] items-center gap-2 border-t border-lab-border bg-lab-surface px-4 pb-[env(safe-area-inset-bottom)] font-mono text-[13px] font-semibold text-lab-text shadow-[0_-6px_20px_-10px_rgb(0_0_0/0.25)] min-[900px]:hidden"
-              onClick={() => setCodeSheetOpen(true)}
-              aria-expanded={codeSheetOpen}
-              aria-controls="lab-code-sheet"
-            >
-              <CodeBracketIcon className="w-4 h-4" />
-              <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{primaryFile}</span>
-              <span className="inline-flex items-center gap-1 text-[11px] uppercase text-lab-violet">
-                view code
-                <ChevronUpIcon className="w-4 h-4" />
-              </span>
-            </button>
+            {/* Mobile: sticky bar that opens the code as a bottom sheet. Hidden on desktop, where the panel is a fixed side rail. The interactive panel has no trigger here — it's summoned from the card body. */}
+            {railMode === "code" && (
+              <button
+                type="button"
+                className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(56px+env(safe-area-inset-bottom))] items-center gap-2 border-t border-lab-border bg-lab-surface px-4 pb-[env(safe-area-inset-bottom)] font-mono text-[13px] font-semibold text-lab-text shadow-[0_-6px_20px_-10px_rgb(0_0_0/0.25)] min-[900px]:hidden"
+                onClick={() => setCodeSheetOpen(true)}
+                aria-expanded={codeSheetOpen}
+                aria-controls="lab-code-sheet"
+              >
+                <CodeBracketIcon className="w-4 h-4" />
+                <span className="flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">{primaryFile}</span>
+                <span className="inline-flex items-center gap-1 text-[11px] uppercase text-lab-violet">
+                  view code
+                  <ChevronUpIcon className="w-4 h-4" />
+                </span>
+              </button>
+            )}
 
             <div
               className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-[280ms] min-[900px]:hidden ${
-                codeSheetOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                sheetOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
               }`}
-              onClick={() => setCodeSheetOpen(false)}
+              onClick={closeRail}
               aria-hidden
             />
 
             <div
               id="lab-code-sheet"
               className={`lab-code-host fixed inset-x-0 bottom-0 z-50 flex h-[85vh] max-h-[85vh] flex-col overflow-hidden rounded-t-[18px] border-t border-dark-border bg-dark-surface shadow-[0_-16px_48px_-16px_rgb(0_0_0/0.4)] transition-transform duration-[280ms] min-[900px]:static min-[900px]:h-auto min-[900px]:max-h-none min-[900px]:overflow-visible min-[900px]:rounded-none min-[900px]:border-0 min-[900px]:bg-transparent min-[900px]:shadow-none ${
-                codeSheetOpen ? "max-[899px]:translate-y-0" : "max-[899px]:translate-y-full"
+                sheetOpen ? "max-[899px]:translate-y-0" : "max-[899px]:translate-y-full"
               }`}
               role="dialog"
-              aria-label="Contract code"
-              aria-modal={codeSheetOpen || undefined}
+              aria-label={railMode === "interactive" ? card.title : "Contract code"}
+              aria-modal={sheetOpen || undefined}
             >
               <div className="relative flex shrink-0 items-center justify-center border-b border-dark-border bg-dark-bg px-3 py-2.5 min-[900px]:hidden">
                 <span className="h-1 w-[38px] rounded-full bg-dark-text-faint" aria-hidden />
                 <button
                   type="button"
                   className="absolute top-1/2 right-2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[10px] text-lab-muted hover:bg-lab-inset hover:text-lab-text"
-                  onClick={() => setCodeSheetOpen(false)}
-                  aria-label="Close code"
+                  onClick={closeRail}
+                  aria-label="Close"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <CodeBuildPanel lab={lab} />
+              {railMode === "interactive" && currentInteractive ? (
+                <InteractivePanel card={card} Widget={currentInteractive} onClose={() => setInteractiveOpen(false)} />
+              ) : (
+                <CodeBuildPanel lab={lab} />
+              )}
             </div>
           </>
         )}

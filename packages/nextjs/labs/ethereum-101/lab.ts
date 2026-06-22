@@ -1,6 +1,8 @@
 import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
+import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingMachine } from "./assets/VendingMachine";
+import { WorldComputer } from "./assets/WorldComputer";
 import { Crowdfunding, StateNetwork, TransactionLifecycle, WhatJustHappened } from "./assets/illustrations";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
@@ -28,6 +30,7 @@ export const lab = defineLab({
           label: "CONCEPT",
           title: "The world computer",
           illustrations: [StateNetwork],
+          interactive: WorldComputer,
           body: "Most apps you use run on servers owned by a single company.\n**Ethereum is different**, it runs on thousands of independent computers around the world, called **nodes**.\n\nTogether, those nodes act as one shared computer. Every node keeps its own copy of the same record: who owns what, and the **programs** running on the network, called **smart contracts**.\n\nWhen something changes, every node runs the same check on its own copy, and they all agree on a single shared history. The duplicated effort is the point: because everyone verifies the work independently, no one has to trust a central authority.\n\nNo company owns Ethereum, so there is no admin who can block a valid transaction, delete an app, or rewrite history.",
         },
         {
@@ -36,6 +39,7 @@ export const lab = defineLab({
           label: "CONCEPT",
           title: "Interacting with the world computer",
           illustrations: [TransactionLifecycle],
+          interactive: TransactionJourney,
           body: "To change something on Ethereum, you need to sign a **transaction** with a local app called a **wallet**. The wallet signs it with your **account**'s **private key**. Never share that key, since anyone with it controls your funds. Other people identify your account by its **address**, a public identifier where they can send you **ETH** (the network's native currency) and other assets.\n\nThe wallet broadcasts your signed transaction to the network, the nodes check it, and if it follows the rules the change is recorded permanently. Transactions are bundled into **blocks**, added one after another to form the **blockchain**.\n\nEvery change also costs **gas**, a small fee in ETH for the network's work. Bigger actions cost more, and you pay even if it fails. The fee also blocks spam, since every action has a cost.",
         },
         {
