@@ -65,6 +65,11 @@ type LabState = {
   // card reads it back, so a deployed world survives navigation. Holds an
   // in-memory chain, so it's dropped on lab switch.
   worlds: Record<string, WorldState>;
+  // Whether the current card's interactive widget is open in the side rail. A
+  // reading card shows its illustration inline and opens the widget on demand
+  // (see ConceptCard's button + Lab's rail); reset on every navigation so it
+  // never bleeds from one card to the next.
+  interactiveOpen: boolean;
 };
 
 type LabActions = {
@@ -82,6 +87,7 @@ type LabActions = {
   failDeploy: (worldId: string, crash: string) => void;
   markRevealed: (worldId: string) => void;
   appendConsoleEntry: (worldId: string, entry: ConsoleEntry) => void;
+  setInteractiveOpen: (open: boolean) => void;
   reset: () => void;
 };
 
@@ -99,6 +105,7 @@ const initialState: LabState = {
   progress: {},
   transcript: emptyTranscript,
   worlds: {},
+  interactiveOpen: false,
 };
 
 // region id -> the learner's latest submitted text (a skip writes the
@@ -148,17 +155,17 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       if (s.cardIndex < chapter.cards.length - 1) to = { chapterIndex: s.chapterIndex, cardIndex: s.cardIndex + 1 };
       else if (s.chapterIndex < lab.chapters.length - 1) to = { chapterIndex: s.chapterIndex + 1, cardIndex: 0 };
       else return s;
-      return { ...to, maxReached: isPositionAfter(to, s.maxReached) ? to : s.maxReached };
+      return { ...to, maxReached: isPositionAfter(to, s.maxReached) ? to : s.maxReached, interactiveOpen: false };
     }),
   // Free-jump from the sidebar. Moves position only — the watermark stays put, so
   // jumping ahead is a peek, not progress, and those cards keep their lock.
-  goTo: (chapterIndex, cardIndex) => set({ chapterIndex, cardIndex }),
+  goTo: (chapterIndex, cardIndex) => set({ chapterIndex, cardIndex, interactiveOpen: false }),
   prev: lab =>
     set(s => {
-      if (s.cardIndex > 0) return { cardIndex: s.cardIndex - 1 };
+      if (s.cardIndex > 0) return { cardIndex: s.cardIndex - 1, interactiveOpen: false };
       if (s.chapterIndex > 0) {
         const prevChapter = lab.chapters[s.chapterIndex - 1];
-        return { chapterIndex: s.chapterIndex - 1, cardIndex: prevChapter.cards.length - 1 };
+        return { chapterIndex: s.chapterIndex - 1, cardIndex: prevChapter.cards.length - 1, interactiveOpen: false };
       }
       return s;
     }),
@@ -258,5 +265,6 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       if (!world) return s;
       return { worlds: { ...s.worlds, [worldId]: { ...world, log: [...world.log, entry] } } };
     }),
+  setInteractiveOpen: open => set({ interactiveOpen: open }),
   reset: () => set(initialState),
 }));

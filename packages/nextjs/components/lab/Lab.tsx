@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
+import { InteractivePanel } from "./InteractivePanel";
 import { Sidebar } from "./Sidebar";
 import { useMediaQuery } from "usehooks-ts";
 import {
@@ -44,6 +45,10 @@ export const Lab = ({ lab }: Props) => {
   const next = useLabStore(s => s.next);
   const prev = useLabStore(s => s.prev);
   const skipCard = useLabStore(s => s.skipCard);
+  // Interactive peek: a card's widget, opened from its "Open interactive" button (see ConceptCard).
+  // Reuses the code panel's overlay mechanics behind .lab--interactive-open; reset on navigation.
+  const interactiveOpen = useLabStore(s => s.interactiveOpen);
+  const setInteractiveOpen = useLabStore(s => s.setInteractiveOpen);
 
   const isDesktop = useMediaQuery("(min-width: 1024px)"); // Tailwind's lg, matching the code-peek CSS
 
@@ -61,11 +66,12 @@ export const Lab = ({ lab }: Props) => {
   // Mirror the rail to the viewport; re-runs only on crossing lg, so a manual toggle sticks within a breakpoint.
   useEffect(() => setSidebarOpen(isDesktop), [isDesktop]);
 
-  // `c` toggles the panel, Esc closes it — global, except while a text field has focus (isEditable).
+  // `c` toggles the code panel, Esc closes either peek — global, except while a text field has focus (isEditable).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setCodeSheetOpen(false);
+        setInteractiveOpen(false);
         return;
       }
       if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey && !isEditable(e.target)) {
@@ -75,7 +81,7 @@ export const Lab = ({ lab }: Props) => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [setInteractiveOpen]);
 
   const chapter = lab.chapters[chapterIndex];
   const card = chapter?.cards[cardIndex];
@@ -86,6 +92,8 @@ export const Lab = ({ lab }: Props) => {
   const totalCards = chapter.cards.length;
   const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
   const hasContracts = Object.keys(lab.files).length > 0;
+  // The widget this card opens in the interactive peek, if any (concept/question/summary carry it).
+  const currentInteractive = "interactive" in card ? card.interactive : undefined;
   const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
   const currentLabCard = completedBeforeCurrent + cardIndex + 1;
   const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
@@ -106,7 +114,7 @@ export const Lab = ({ lab }: Props) => {
     // can't resolve against main's flex-grow height). The drawer-side override below
     // then caps daisyUI's 100vh rail so it fills the slot instead of overflowing.
     <div
-      className={`lab flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open" : ""} ${codeSheetOpen ? "lab--code-open" : ""}`}
+      className={`lab flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open" : ""} ${codeSheetOpen ? "lab--code-open" : ""} ${interactiveOpen ? "lab--interactive-open" : ""}`}
     >
       <input
         id={DRAWER_ID}
@@ -224,6 +232,28 @@ export const Lab = ({ lab }: Props) => {
                 </button>
               </div>
               <CodeBuildPanel lab={lab} />
+            </div>
+          </>
+        )}
+        {currentInteractive && (
+          <>
+            {/* Interactive peek: same overlay mechanics as the code panel, on its own toggle so the code
+                panel can still open above it. Opened from the card's "Open interactive" button. */}
+            <div className="lab-interactive-backdrop" onClick={() => setInteractiveOpen(false)} aria-hidden />
+
+            <div id="lab-interactive-sheet" className="lab-interactive-host">
+              <div className="lab-interactive-sheet__handle">
+                <span className="h-1 w-[38px] rounded-full bg-dark-text-faint" aria-hidden />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[10px] text-lab-muted hover:bg-lab-inset hover:text-lab-text"
+                  onClick={() => setInteractiveOpen(false)}
+                  aria-label="Close interactive"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <InteractivePanel card={card} Widget={currentInteractive} onClose={() => setInteractiveOpen(false)} />
             </div>
           </>
         )}
