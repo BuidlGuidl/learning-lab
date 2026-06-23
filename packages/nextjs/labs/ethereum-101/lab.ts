@@ -88,11 +88,7 @@ export const lab = defineLab({
           title: "Read the counter",
           question:
             "In the `Counter` contract, calling `increment()` runs a single line:\n\n```solidity\ncount[msg.sender] += 1;\n```\n\n`msg.sender` is the address that called the function. So what does this line do?",
-          rubricConcepts: [
-            "it looks up the caller's own current number in `count`",
-            "adds one to it",
-            "and stores the result back, so each address keeps its own independent count",
-          ],
+          rubricConcepts: ["it increments the count for the calling address (`msg.sender`) by 1"],
           hints: [
             "Read it right to left: `count[msg.sender]` is this caller's own slot. What does `+= 1` do to it?",
             "Different callers have a different `msg.sender`, so whose count goes up when you call `increment()`?",
