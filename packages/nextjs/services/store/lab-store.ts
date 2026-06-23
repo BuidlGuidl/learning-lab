@@ -1,3 +1,4 @@
+import { type LabSnapshot, saveSnapshot } from "./lab-persistence";
 import { create } from "zustand";
 // type-only — no runtime dependency on these modules
 import type { ConsoleEntry } from "~~/components/lab/cards/Console";
@@ -74,6 +75,7 @@ type LabState = {
 
 type LabActions = {
   init: (lab: Lab) => void;
+  hydrate: (snapshot: LabSnapshot) => void;
   next: (lab: Lab) => void;
   prev: (lab: Lab) => void;
   goTo: (chapterIndex: number, cardIndex: number) => void;
@@ -140,6 +142,18 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         deploy: lab.deploy,
         tests: lab.tests,
         transcript: { labId: lab.id, events: [] },
+      };
+    }),
+  // Restore saved learner state after init has set the lab shape: answers, the graded transcript,
+  // and the progress watermark. Position is restored by the component, which clamps it against the
+  // live lab.
+  hydrate: snapshot =>
+    set(s => {
+      if (!s.currentLabId) return s; // nothing mounted to seed onto
+      return {
+        maxReached: snapshot.maxReached,
+        progress: snapshot.progress,
+        transcript: snapshot.transcript,
       };
     }),
   // Gate-aware forward nav: a gradable card blocks until cleared (pass or skip), prev stays
@@ -268,3 +282,27 @@ export const useLabStore = create<LabState & LabActions>(set => ({
   setInteractiveOpen: open => set({ interactiveOpen: open }),
   reset: () => set(initialState),
 }));
+
+// Save the durable learner state to localStorage whenever it changes. No-ops during SSR and
+// until a lab is mounted.
+if (typeof window !== "undefined") {
+  useLabStore.subscribe((s, prev) => {
+    if (!s.currentLabId) return;
+    // Experiment worlds change often and aren't saved, so skip the write unless the saved slice
+    // actually moved. Immutable updates give fresh references, so identity is a sound check.
+    const unchanged =
+      s.progress === prev.progress &&
+      s.transcript === prev.transcript &&
+      s.maxReached === prev.maxReached &&
+      s.chapterIndex === prev.chapterIndex &&
+      s.cardIndex === prev.cardIndex;
+    if (unchanged) return;
+    saveSnapshot(s.currentLabId, {
+      chapterIndex: s.chapterIndex,
+      cardIndex: s.cardIndex,
+      maxReached: s.maxReached,
+      progress: s.progress,
+      transcript: s.transcript,
+    });
+  });
+}
