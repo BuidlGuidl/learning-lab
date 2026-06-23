@@ -184,6 +184,21 @@
   line-height: 0.82;
 }
 
+/* flow-root makes the list clear the drop-cap float only when it sits beside it:
+   wide indent on line 2, tight indent (padding-left) once below the cap. Using
+   padding keeps the bullet markers inside the box so they clear the cap too. */
+.lab-card--dropcap .lab-card__body > div > ul,
+.lab-card--dropcap .lab-card__body > div > ol {
+  display: flow-root;
+  margin-left: 0;
+  padding-left: 1.5rem;
+}
+
+/* Deliberate violet markers, matching the card's accent. */
+.lab-card__body li::marker {
+  color: var(--color-lab-violet);
+}
+
 .lab-card :not(pre) > code {
   border-radius: 6px;
   background: var(--color-lab-tint);
@@ -283,6 +298,83 @@
   }
 
   .lab--code-open .lab-build-panel {
+    transform: translateX(0);
+  }
+}
+
+/* Interactive peek panel — mirrors the code panel's overlay mechanics on its own
+   .lab--interactive-open toggle (opened from a card's "Open interactive"). Sits a
+   layer below the code panel (z 30/35 vs 40/50) so the code peek can open on top. */
+.lab-interactive-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgb(0 0 0 / 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lab-code-motion);
+}
+
+.lab--interactive-open .lab-interactive-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (width < 64rem) {
+  .lab-interactive-host {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 35;
+    display: flex;
+    height: 85vh;
+    max-height: 85vh;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid var(--color-dark-border);
+    border-radius: 18px 18px 0 0;
+    background: var(--color-dark-surface);
+    box-shadow: 0 -16px 48px -16px rgb(0 0 0 / 0.4);
+    transform: translateY(100%);
+    transition: transform var(--lab-code-motion);
+  }
+
+  .lab--interactive-open .lab-interactive-host {
+    transform: translateY(0);
+  }
+
+  .lab-interactive-sheet__handle {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--color-dark-border);
+    background: var(--color-dark-bg);
+    padding: 10px 12px;
+  }
+}
+
+@media (width >= 64rem) {
+  .lab-interactive-sheet__handle {
+    display: none;
+  }
+
+  .lab-interactive-panel {
+    position: fixed;
+    top: var(--lab-header-height);
+    right: 0;
+    bottom: 0;
+    z-index: 35;
+    width: var(--lab-build-panel-width);
+    flex: none;
+    border-left: 1px solid var(--color-dark-border);
+    box-shadow: var(--shadow-lab);
+    transform: translateX(100%);
+    transition: transform var(--lab-code-motion);
+  }
+
+  .lab--interactive-open .lab-interactive-panel {
     transform: translateX(0);
   }
 }

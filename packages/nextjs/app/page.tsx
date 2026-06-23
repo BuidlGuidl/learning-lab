@@ -30,7 +30,7 @@ const PRODUCT_COPY = {
   hero: {
     title: (
       <>
-        Learn Ethereum.
+        Learn Ethereum
         <br />
         by doing.
       </>
