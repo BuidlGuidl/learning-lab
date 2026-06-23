@@ -31,12 +31,3 @@ export const Crowdfunding = makeIllustration({
   height: 675,
   alt: "Many contributors send ETH to a crowdfunding contract that holds the funds. If the goal is reached the creator is paid; if not, every contributor can reclaim a refund — with no company in the middle.",
 });
-
-// Ch2 · What just happened — source to bytecode to EVM here, then the same bytes
-// replicated across every mainnet node.
-export const WhatJustHappened = makeIllustration({
-  src: "/what-just-happened-ch2-10.png",
-  width: 1200,
-  height: 675,
-  alt: "On the left, your device: Solidity source compiles to bytecode and runs on an EVM in this browser tab. On the right, mainnet: the same bytecode lives on every node, and anyone can read and verify the source.",
-});

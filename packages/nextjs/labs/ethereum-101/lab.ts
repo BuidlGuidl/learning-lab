@@ -3,7 +3,7 @@ import { UseIt } from "./UseIt";
 import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingMachine } from "./assets/VendingMachine";
 import { WorldComputer } from "./assets/WorldComputer";
-import { Crowdfunding, StateNetwork, TransactionLifecycle, WhatJustHappened } from "./assets/illustrations";
+import { Crowdfunding, StateNetwork, TransactionLifecycle } from "./assets/illustrations";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -48,7 +48,7 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "What if one company owned it?",
           question:
-            "Why does it matter that no single person or company is in charge of Ethereum? What would be at risk if someone were?",
+            "Imagine Ethereum was owned and controlled by a single company. In your own words, what would be at risk if someone were?",
           rubricConcepts: [
             "censor users or apps",
             "change the rules unilaterally",
@@ -136,9 +136,8 @@ export const lab = defineLab({
           id: "what-just-happened",
           label: "EXPERIMENT",
           title: "What just happened",
-          illustrations: [WhatJustHappened],
           scenario:
-            "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in this tab. On mainnet the exact same bytes would live on every node in the network, and anyone could read the contract's state and verify its source. Open source isn't a virtue bolted on afterwards here. It's the default condition of code on Ethereum.",
+            "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in the browser. On a live network like Ethereum mainnet, the same bytes would be part of Ethereum’s shared state and replicated across full nodes in the network. Anyone could read the contract’s public state, inspect its bytecode, and, if the source code has been published, verify that the source compiles to the deployed bytecode.",
           reusesWorld: "deploy-goal",
           component: ReadGoal,
           console: "open",
