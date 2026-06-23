@@ -39,3 +39,20 @@ export const PublicLedger = makeIllustration({
   height: 675,
   alt: "A public ledger panel floating in an open plaza, listing rows of pseudonymous addresses next to the ETH amount each contributed, with pagination — anyone can scroll through and read every entry.",
 });
+
+// Ch4 · The contract is the referee — the contract's deadline splits time into
+// a funding window and a refund window.
+export const DeadlineWindows = makeIllustration({
+  src: "/require-deadlines-ch4-1.png",
+  width: 1200,
+  height: 603,
+  alt: "A contract marked with a deadline at the center, splitting time into two windows: a funding window before the deadline, and a refund window after it once the goal has failed, with contributors interacting at each stage.",
+});
+
+// Ch4 · Reentrancy — the attack loop that drains a vulnerable contract.
+export const Reentrancy = makeIllustration({
+  src: "/reentrancy-ch4-3.png",
+  width: 1200,
+  height: 675,
+  alt: "A four-step reentrancy attack: a vulnerable contract's refund() sends ETH to an attacker contract, the attacker's fallback runs and calls refund() again before the first call finishes, and the loop repeats, draining the vulnerable contract's balance.",
+});
