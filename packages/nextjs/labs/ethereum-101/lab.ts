@@ -153,16 +153,16 @@ export const lab = defineLab({
           id: "eth-is-native",
           label: "CONCEPT",
           title: "Contracts have balance too",
-          body: "Money isn't an add-on in Ethereum. Contracts have **balances**, just like accounts do. You already know `msg.sender`, who called a function. Two more pieces complete the picture: `msg.value`, how much ETH came with the call, and `payable`, the keyword a function needs before it will accept ETH at all. `fund()` is built from exactly those three.",
+          body: "Just like your account, a contract has its own **balance**. ETH can go in and come back out.\n\nTo accept ETH, a function has to be marked `payable`, otherwise the call is rejected. Once it's in, `msg.value` tells you how much arrived, just like `msg.sender` tells you who sent it.\n\n```solidity\nfunction fund() public payable {\n  // msg.value = the ETH sent with this call\n}\n```\n\nNext, we'll give the contract a way to record every contribution.",
         },
         {
           type: "code-exercise",
           id: "declare-contributions",
           label: "CODE EXERCISE",
-          title: "The ledger",
+          title: "Declare the ledger",
           region: "contributions",
           prompt:
-            "The contract needs to remember who sent what, so we want a **ledger**: their address and the amount they sent, one row per contributor. That's the same `mapping(address => uint256)` from the `Counter`, now keyed by contributor instead of counting calls. Declare one named `contributions`, marked `public`. Any address that hasn't contributed just reads zero.",
+            "The contract needs to remember who sent what, so we'll keep a **ledger** that pairs each contributor's address with the amount they sent. It's the same `mapping(address => uint256)` shape as the `Counter`, except the number it stores is now an ETH amount instead of a call count.\n\nDeclare one named `contributions`, marked `public`. Any address that hasn't contributed just reads zero.",
           placeholder: "mapping(address => uint256) public scores;",
           hints: [
             "Read the type as key then value: the `address` is who contributed, the `uint256` is how much they sent.",
@@ -175,7 +175,7 @@ export const lab = defineLab({
           id: "the-ledger-is-public",
           label: "CONCEPT",
           title: "The ledger is public",
-          body: "Anyone can read every row of that mapping: every contribution, every address. Addresses are **pseudonymous**, not private: nobody knows it's you behind 0xab12…, but everything that address does is in the open.\n\n> Privacy on Ethereum is an open frontier the ecosystem is actively building, not a solved problem.",
+          body: "Anyone can read every row of that mapping: every contribution, every address. Addresses are **pseudonymous**, not private. Nobody knows it's you behind 0xab12…, but everything that address does is in the open.\n\n> Privacy on Ethereum is possible, but it takes extra work and isn't widely used yet, far from the default.",
         },
         {
           type: "code-exercise",
@@ -184,7 +184,7 @@ export const lab = defineLab({
           title: "Record the funding",
           region: "fund-body",
           prompt:
-            "> You're only writing the body. Hit **peek code** or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and cleared the `require`s. Two things still need to happen:\n\n1. the ledger has to remember this contributor's new total\n2. the contract should announce that a contribution landed, using the `Funded` event it already declares",
+            "> You're only writing the body. Hit the `</> code` button or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and passed the `require` checks. Two things still need to happen:\n\n1. the ledger has to remember this contributor's new total\n2. the contract should announce that a contribution landed, using the `Funded` event it already declares",
           placeholder: "balances[msg.sender] += msg.value;\nemit Deposited(msg.sender, msg.value);",
           hints: [
             "The ledger is `contributions[address]`. Adding to a running total is `+=`, not `=`.",
