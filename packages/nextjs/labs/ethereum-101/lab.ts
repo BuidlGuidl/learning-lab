@@ -48,7 +48,7 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "What if one company owned it?",
           question:
-            "Imagine Ethereum was owned and controlled by a single company. In your own words, what would be at risk if someone were?",
+            "Imagine Ethereum was owned and controlled by a single company. In your own words, what risks would that create?",
           rubricConcepts: [
             "censor users or apps",
             "change the rules unilaterally",
