@@ -3,7 +3,14 @@ import { UseIt } from "./UseIt";
 import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingMachine } from "./assets/VendingMachine";
 import { WorldComputer } from "./assets/WorldComputer";
-import { Crowdfunding, PublicLedger, StateNetwork, TransactionLifecycle } from "./assets/illustrations";
+import {
+  Crowdfunding,
+  DeadlineWindows,
+  PublicLedger,
+  Reentrancy,
+  StateNetwork,
+  TransactionLifecycle,
+} from "./assets/illustrations";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -213,8 +220,9 @@ export const lab = defineLab({
           type: "concept",
           id: "require-and-deadlines",
           label: "CONCEPT",
-          title: "require and deadlines",
-          body: 'Every deal needs someone to enforce it, and here that someone is the contract itself. It has to be able to say no: when a condition isn\'t met, it **reverts** the whole transaction, rolling everything back as if it never happened. The tool for that is `require(condition, "reason")`. Time is a rule too, so the contract reads `block.timestamp` as its clock and holds people to a **deadline** with nobody checking a calendar. Escrow agent and referee in one.',
+          title: "The contract is the referee",
+          illustrations: [DeadlineWindows],
+          body: 'Every deal needs someone to enforce it, and the contract handles that itself. Part of that is being able to say no. When a condition isn\'t met, it **reverts** the transaction, rolling everything back as if it never happened. The tool for that is `require(condition, "reason")`.\n\nTime is a rule too. It reads the time from `block.timestamp` and enforces a **deadline** fixed at deployment. Escrow agent and referee in one.',
         },
         {
           type: "code-exercise",
@@ -223,7 +231,7 @@ export const lab = defineLab({
           title: "Write refund()",
           region: "refund",
           prompt:
-            "`refund()` is the deal's other half: if the campaign fell short, each contributor can take their money back. The order of these steps matters, and the next card is about why. Write the body in order:\n\n1. allow the refund only if the deadline has passed and the goal wasn't reached\n2. read the caller's own contribution, and require it's more than zero\n3. zero their row in `contributions`, before any ETH moves\n4. send them their amount, and require the send succeeded\n5. emit `Refunded`",
+            "`refund()` is the deal's other half: if the campaign fell short, each contributor can take their money back. The order of these steps matters, and the next card is about why. Write the body in order:\n\n1. allow the refund only if the deadline has passed and the goal wasn't reached\n2. read the caller's own contribution, and require it's more than zero\n3. zero their row in `contributions`, before any ETH moves\n4. send them their amount, and require the transfer succeeded\n5. emit `Refunded`",
           placeholder:
             'require(block.timestamp >= deadline, "too early");\nuint256 amount = balances[msg.sender];\nbalances[msg.sender] = 0;\n(bool ok, ) = msg.sender.call{ value: amount }("");\nrequire(ok, "send failed");',
           hints: [
@@ -237,7 +245,8 @@ export const lab = defineLab({
           id: "reentrancy",
           label: "CONCEPT",
           title: "Reentrancy, and why code is forever",
-          body: "The receiver of ETH can be a contract too, with code that runs the moment the ETH arrives, and that code can call `refund()` again, mid-flight. If `refund()` sent first and zeroed after, those nested calls would each pass the checks and drain everything. That exact bug was TheDAO hack in 2016. Deployed code can't be patched, so the discipline of updating state before external calls, and the audit culture around it, are sacred in Ethereum.",
+          illustrations: [Reentrancy],
+          body: "The receiver of ETH can be a contract too, with code that runs the moment the ETH arrives, and that code can call `refund()` again before the first call finishes. That's a **reentrancy** attack. If `refund()` sent first and zeroed after, those nested calls would each pass the checks and drain everything.\n\nThat exact bug was behind TheDAO hack in 2016. Deployed code can't be patched, so the habit of updating state before external calls, and of auditing code before it ships, is non-negotiable in Ethereum.",
         },
         {
           type: "question",
@@ -251,7 +260,7 @@ export const lab = defineLab({
             "so when the nested call runs, `contributions[attacker]` is already zero and it fails the `amount > 0` require",
             "updating state before the external call is the general defense, not a quirk of this one contract",
           ],
-          hints: ["Follow your lines in order: what is contributions[attacker] by the time the second call runs?"],
+          hints: ["Follow your lines in order: what is `contributions[attacker]` by the time the second call runs?"],
         },
       ],
     },
