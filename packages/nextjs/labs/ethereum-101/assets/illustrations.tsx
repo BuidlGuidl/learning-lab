@@ -31,3 +31,11 @@ export const Crowdfunding = makeIllustration({
   height: 675,
   alt: "Many contributors send ETH to a crowdfunding contract that holds the funds. If the goal is reached the creator is paid; if not, every contributor can reclaim a refund — with no company in the middle.",
 });
+
+// Ch3 · The ledger is public — anyone can read every row.
+export const PublicLedger = makeIllustration({
+  src: "/public-ledger-ch3-3.png",
+  width: 1200,
+  height: 675,
+  alt: "A public ledger panel floating in an open plaza, listing rows of pseudonymous addresses next to the ETH amount each contributed, with pagination — anyone can scroll through and read every entry.",
+});

@@ -3,7 +3,7 @@ import { UseIt } from "./UseIt";
 import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingMachine } from "./assets/VendingMachine";
 import { WorldComputer } from "./assets/WorldComputer";
-import { Crowdfunding, StateNetwork, TransactionLifecycle } from "./assets/illustrations";
+import { Crowdfunding, PublicLedger, StateNetwork, TransactionLifecycle } from "./assets/illustrations";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
 import { tests } from "./tests";
@@ -175,6 +175,7 @@ export const lab = defineLab({
           id: "the-ledger-is-public",
           label: "CONCEPT",
           title: "The ledger is public",
+          illustrations: [PublicLedger],
           body: "Anyone can read every row of that mapping: every contribution, every address. Addresses are **pseudonymous**, not private. Nobody knows it's you behind 0xab12…, but everything that address does is in the open.\n\n> Privacy on Ethereum is possible, but it takes extra work and isn't widely used yet, far from the default.",
         },
         {
