@@ -2,20 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { getHighlighter, shikiFontStyleToCss } from "./highlighter";
+import { useTheme } from "next-themes";
 import Editor from "react-simple-code-editor";
 import type { Highlighter } from "shiki";
-
-const PANEL_FG = "var(--color-dark-text-muted)";
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 // Overlay editor: a transparent textarea over a Shiki-highlighted layer. The
-// highlight runs through the SAME Shiki highlighter + theme as the read-only
-// CodeBlock, so the editor's colors match the reveal panel exactly — including
-// tokens a CodeMirror grammar classifies differently (function names, pragma).
-const toHtml = (highlighter: Highlighter, code: string) =>
+// highlight runs through the SAME Shiki highlighter as the read-only CodeBlock,
+// on the active light/dark theme, so the editor's colors track the page exactly.
+const toHtml = (highlighter: Highlighter, code: string, theme: "github-dark-dimmed" | "github-light") =>
   highlighter
-    .codeToTokensBase(code, { lang: "solidity", theme: "github-dark-dimmed" })
+    .codeToTokensBase(code, { lang: "solidity", theme })
     .map(line =>
       line
         .map(tok => {
@@ -34,6 +32,10 @@ type Props = {
 };
 
 export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Props) => {
+  // Track the active theme so the highlight, text, and surface match the light/dark
+  // page — the same logic the read-only CodeBlock uses.
+  const { resolvedTheme } = useTheme();
+  const activeTheme = resolvedTheme === "dark" ? "github-dark-dimmed" : "github-light";
   // Loads once (shared promise); until ready, render plain escaped text — same on
   // server and first client render, so there's no hydration mismatch.
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
@@ -48,11 +50,11 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
     };
   }, []);
 
-  const highlight = (code: string) => (highlighter ? toHtml(highlighter, code) : escapeHtml(code));
+  const highlight = (code: string) => (highlighter ? toHtml(highlighter, code, activeTheme) : escapeHtml(code));
 
   return (
     <div
-      className={`code-input-panel overflow-hidden rounded-box border border-base-300 bg-dark-surface ${readOnly ? "opacity-70" : ""}`}
+      className={`code-input-panel overflow-hidden rounded-box border border-base-300 bg-lab-inset ${readOnly ? "opacity-70" : ""}`}
     >
       <Editor
         value={value}
@@ -66,7 +68,7 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
           fontFamily: "var(--font-mono), monospace",
           fontSize: "0.875rem",
           lineHeight: 1.6,
-          color: PANEL_FG,
+          color: "var(--color-lab-text)",
           minHeight: "4.5rem",
         }}
       />

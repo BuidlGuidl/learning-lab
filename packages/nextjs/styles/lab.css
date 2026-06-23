@@ -651,9 +651,10 @@
   outline: none;
 }
 
-/* TODO:(github-dark-dimmed accent) is hardcoded — revisit if the panel
-   theme changes. DaisyUI `primary` reads near-black on this dark panel. */
+/* Focus ring in the lab's violet brand. lab-violet flips with the theme
+   (ethereum-violet on light, violet-bright on dark), so it reads on both
+   editor surfaces. */
 .code-input-panel:focus-within {
-  border-color: var(--color-editor-focus);
-  box-shadow: 0 0 0 1px var(--color-editor-focus);
+  border-color: var(--color-lab-violet);
+  box-shadow: 0 0 0 1px var(--color-lab-violet);
 }
