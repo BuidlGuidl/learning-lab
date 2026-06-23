@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
 import { Sidebar } from "./Sidebar";
@@ -16,7 +16,8 @@ import {
 import { isCardCleared } from "~~/lib/grader/transcript";
 import type { Lab as LabType } from "~~/lib/lab/types";
 import { warmCompiler } from "~~/lib/solc/solc";
-import { useLabStore } from "~~/services/store/lab-store";
+import { loadSnapshot } from "~~/services/store/lab-persistence";
+import { type Position, useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
   lab: LabType;
@@ -24,6 +25,25 @@ type Props = {
 
 const DRAWER_ID = "lab-drawer";
 const isGradable = (type: string) => type === "code-exercise" || type === "question";
+
+// A saved position is only safe to restore if it still exists — lab content shifts while
+// authoring, and an out-of-bounds index would render a blank card. null falls back to the start.
+const validPosition = (lab: LabType, pos: Position): Position | null => {
+  const chapter = lab.chapters[pos.chapterIndex];
+  if (!chapter || pos.cardIndex < 0 || pos.cardIndex >= chapter.cards.length) return null;
+  return pos;
+};
+
+// The card encoded in ?ch=&card=, validated against the lab. Absent params return null so the
+// saved position can take over.
+const positionFromUrl = (lab: LabType): Position | null => {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has("ch") || !params.has("card")) return null;
+  const chapterIndex = Number(params.get("ch"));
+  const cardIndex = Number(params.get("card"));
+  if (!Number.isInteger(chapterIndex) || !Number.isInteger(cardIndex)) return null;
+  return validPosition(lab, { chapterIndex, cardIndex });
+};
 
 // True only for elements that consume text, so the `c` peek shortcut still fires over toggles.
 // The daisyUI theme switcher is an <input type="checkbox">, so "any <input>" would wrongly
@@ -41,6 +61,8 @@ export const Lab = ({ lab }: Props) => {
   const cardIndex = useLabStore(s => s.cardIndex);
   const transcript = useLabStore(s => s.transcript);
   const init = useLabStore(s => s.init);
+  const hydrate = useLabStore(s => s.hydrate);
+  const goTo = useLabStore(s => s.goTo);
   const next = useLabStore(s => s.next);
   const prev = useLabStore(s => s.prev);
   const skipCard = useLabStore(s => s.skipCard);
@@ -53,10 +75,35 @@ export const Lab = ({ lab }: Props) => {
   const [codeSheetOpen, setCodeSheetOpen] = useState(false);
 
   useEffect(() => {
+    // Read before init: init resets progress/transcript, and the persist subscriber writes that
+    // reset to storage — reading after would see the just-cleared blob.
+    const snapshot = loadSnapshot(lab.id);
     init(lab);
+    // Restore answers/verdicts, then place the learner: a ?ch=&card= in the URL wins so a refresh
+    // or shared link reopens that card, else resume the saved position.
+    if (snapshot) hydrate(snapshot);
+    const target = positionFromUrl(lab) ?? (snapshot ? validPosition(lab, snapshot) : null);
+    if (target && (target.chapterIndex !== 0 || target.cardIndex !== 0)) {
+      goTo(target.chapterIndex, target.cardIndex);
+    }
     // kick off the soljson download (~7MB) now, so the first submit doesn't eat the whole wait
     warmCompiler();
-  }, [lab, init]);
+  }, [lab, init, hydrate, goTo]);
+
+  // Mirror the card position into the URL so a refresh or shared link reopens it. replaceState,
+  // not push, so Back exits the lab instead of walking cards. Skip the first run — it fires
+  // before the restore above has settled the position.
+  const positionMirrored = useRef(false);
+  useEffect(() => {
+    if (!positionMirrored.current) {
+      positionMirrored.current = true;
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    params.set("ch", String(chapterIndex));
+    params.set("card", String(cardIndex));
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  }, [chapterIndex, cardIndex]);
 
   // Mirror the rail to the viewport; re-runs only on crossing lg, so a manual toggle sticks within a breakpoint.
   useEffect(() => setSidebarOpen(isDesktop), [isDesktop]);
