@@ -1,5 +1,6 @@
 import "@rainbow-me/rainbowkit/styles.css";
 import "@scaffold-ui/components/styles.css";
+import PlausibleProvider from "next-plausible";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import "~~/styles/globals.css";
@@ -14,6 +15,9 @@ export const metadata = getMetadata({
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning className={``}>
+      <head>
+        <PlausibleProvider src="https://plausible.io/js/pa-G-inyMLoFwlqhorT07uDn.js" />
+      </head>
       <body>
         <ThemeProvider enableSystem defaultTheme="dark">
           <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
