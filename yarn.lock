@@ -5144,6 +5144,7 @@ __metadata:
     kubo-rpc-client: "npm:~6.1.0"
     next: "npm:~16.2.4"
     next-nprogress-bar: "npm:~2.4.7"
+    next-plausible: "npm:^4.0.0"
     next-themes: "npm:~0.4.6"
     postcss: "npm:~8.5.10"
     prettier: "npm:~3.8.3"
@@ -17892,6 +17893,17 @@ __metadata:
   dependencies:
     nprogress-v2: "npm:^1.0.4"
   checksum: 10/f15a2b17b575e9aad2ddc62bcbc7fa7af18500973fa3b0e5129f7e3be6581ed99cb36098f722bb6df2119509b150e279056731e1ea17387af03260bebe208615
+  languageName: node
+  linkType: hard
+
+"next-plausible@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "next-plausible@npm:4.0.0"
+  peerDependencies:
+    next: "^11.1.0 || ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 "
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/569c544343a6581e2d27fd002d9e9f44804e01ab24e0e1b2f125d4e85dc167d943052cf21c174e1656499c43b0b96bf17874bb40e16f3a1650d9ea6c6776c7c0
   languageName: node
   linkType: hard
 
