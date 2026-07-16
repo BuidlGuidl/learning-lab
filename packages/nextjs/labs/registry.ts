@@ -13,9 +13,7 @@ export const registry: Record<string, LabEntry> = {
     title: "Ethereum 101",
     load: () => import("./ethereum-101/lab"),
   },
-  // Runs concurrently with ethereum-101 while it's built out. When ready, it
-  // takes over as the canonical 101 (point this id's load at the v2 lab, or
-  // rename). Off the home picker until then — reach it at /labs/ethereum-101-v2.
+  // Under construction, intentionally not linked from home until it replaces ethereum-101.
   "ethereum-101-v2": {
     title: "Ethereum 101 V2",
     load: () => import("./ethereum-101-v2/lab"),

@@ -1,13 +1,9 @@
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
-// Ethereum 101 V2 — the next iteration of the Ethereum 101 curriculum, built
-// from a blank slate while the current /labs/ethereum-101 stays live. When V2
-// is ready it takes over as the canonical 101 (swap the registry entry). Until
-// then it's reachable at /labs/ethereum-101-v2 and off the home picker.
+// Ethereum 101 V2 — blank-slate rebuild of the ethereum-101 curriculum.
 
-// No contracts yet — a blank canvas. Add marked .sol sources under
-// contracts/ and run `yarn gen:labs` when the first code exercise lands.
+// TODO: Add marked .sol sources under contracts/ and run `yarn gen:labs` when the first code exercise lands.
 const deploy: DeployFn = async () => ({});
 const tests: LabTests = {};
 
