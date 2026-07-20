@@ -6,6 +6,7 @@ import type { NextPage } from "next";
 import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { HeroShowcase } from "~~/app/_components/HeroShowcase";
 import { SwitchTheme } from "~~/components/SwitchTheme";
+import { registry } from "~~/labs/registry";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -58,6 +59,8 @@ const lpH2 = `${lpHeading} text-[clamp(32px,3.6vw,46px)] leading-[1.06]`;
 const lpLead = "max-w-[56ch] m-0 text-[19px] leading-[1.6] text-lp-text-secondary";
 const lpEyebrow =
   "inline-flex items-center self-start gap-[7px] rounded-tags bg-lp-eyebrow-bg px-3 py-1.5 text-sm font-bold uppercase text-lp-accent";
+const cardCountLabel = (labId: keyof typeof registry) => `${registry[labId].cardCount} cards`;
+
 const curriculumModules: ModuleCardProps[] = [
   {
     href: MARKETING_ROUTES.ethereum101,
@@ -65,7 +68,7 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/ethereum-101-learning-lab.png",
     imageAlt: "",
-    meta: ["Beginner", "23 cards"],
+    meta: ["Beginner", cardCountLabel("ethereum-101")],
     title: "Ethereum 101",
     body: (
       <>
@@ -81,9 +84,8 @@ const curriculumModules: ModuleCardProps[] = [
     artTint: "mint",
     imageSrc: "/feature-global.png",
     imageAlt: "",
-    meta: ["Intermediate", "ERC-721 · NFTs"],
+    meta: ["Intermediate", cardCountLabel("tokenization")],
     mintMetaIndex: 0,
-    comingSoon: true,
     title: "Tokenization",
     body: (
       <>
@@ -91,7 +93,7 @@ const curriculumModules: ModuleCardProps[] = [
         your own ERC-721 token, mint it, send it to another account, and control who else can move it.
       </>
     ),
-    action: "Coming soon",
+    action: "Start Tokenization",
   },
 ];
 

@@ -12,6 +12,7 @@
 //
 // Red here = the lab is incoherent and must not ship. Run:
 //   yarn validate-labs
+import { registry } from "../labs/registry";
 import { analyzeFocus } from "../lib/lab/focus";
 import { type CompileFn, type Compiled } from "../lib/lab/harness";
 import { extractLabContracts } from "../lib/lab/regions";
@@ -21,7 +22,7 @@ import { OZ_SOURCES } from "../lib/solc/oz-sources";
 import { resolveSources } from "../lib/solc/resolve-imports";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import solc from "solc";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -63,6 +64,8 @@ const fail = (labId: string, message: string) => {
   console.error(`  ✗ ${labId}: ${message}`);
 };
 
+const normalizeHint = (value: string) => value.replace(/\s+/g, " ").trim().toLowerCase();
+
 async function validateLab(labId: string) {
   const labDir = path.join(labsRoot, labId);
   const failuresBefore = failures;
@@ -74,8 +77,12 @@ async function validateLab(labId: string) {
     .readdirSync(contractsDir)
     .filter(f => f.endsWith(".sol"))
     .sort();
-  const fromDisk = Object.fromEntries(solFiles.map(f => [f, fs.readFileSync(path.join(contractsDir, f), "utf8")]));
-  const { contracts } = (await import(path.join(labDir, "contracts.gen.ts"))) as {
+  // CRLF-normalized to match gen-lab-sources — a Windows checkout must not read as stale
+  const fromDisk = Object.fromEntries(
+    solFiles.map(f => [f, fs.readFileSync(path.join(contractsDir, f), "utf8").replace(/\r\n/g, "\n")]),
+  );
+  // pathToFileURL: a bare Windows path ("C:\…") is not a valid ESM specifier
+  const { contracts } = (await import(pathToFileURL(path.join(labDir, "contracts.gen.ts")).href)) as {
     contracts: Record<string, string>;
   };
   const stale =
@@ -89,11 +96,35 @@ async function validateLab(labId: string) {
   console.log(`  ✓ ${regionIds.length} region(s): ${regionIds.join(", ")}`);
 
   // 3. region ↔ card cross-check
-  const { lab } = (await import(path.join(labDir, "lab.ts"))) as { lab: Lab };
+  const { lab } = (await import(pathToFileURL(path.join(labDir, "lab.ts")).href)) as { lab: Lab };
+  const actualCardCount = lab.chapters.reduce((count, chapter) => count + chapter.cards.length, 0);
+  const registryCardCount = registry[labId]?.cardCount;
+  if (registryCardCount !== actualCardCount) {
+    fail(labId, `registry cardCount is ${registryCardCount ?? "missing"}, but the lab has ${actualCardCount} card(s)`);
+  }
+  if (failures > failuresBefore) return;
+  console.log(`  ✓ registry cardCount matches lab (${actualCardCount})`);
+
   const exerciseRegions = lab.chapters
     .flatMap(c => c.cards)
     .filter((c): c is CodeExerciseCard => c.type === "code-exercise")
     .map(c => c.region);
+  const codeExerciseCards = lab.chapters
+    .flatMap(c => c.cards)
+    .filter((c): c is CodeExerciseCard => c.type === "code-exercise");
+  for (const card of codeExerciseCards) {
+    const canonical = regions[card.region]?.canonical;
+    const normalizedCanonical = canonical ? normalizeHint(canonical) : "";
+    for (const [index, hint] of (card.hints ?? []).entries()) {
+      const normalizedHint = normalizeHint(hint);
+      if (/full answer/i.test(hint) || /```/.test(hint) || /^\s*write\b/i.test(hint)) {
+        fail(labId, `card "${card.id}" hint ${index + 1} gives answer-shaped guidance; keep hints Socratic`);
+      }
+      if (normalizedCanonical && normalizedHint.includes(normalizedCanonical)) {
+        fail(labId, `card "${card.id}" hint ${index + 1} includes the canonical solution`);
+      }
+    }
+  }
   for (const id of regionIds) {
     const count = exerciseRegions.filter(r => r === id).length;
     if (count !== 1) fail(labId, `region "${id}" referenced by ${count} code-exercise cards (want exactly 1)`);

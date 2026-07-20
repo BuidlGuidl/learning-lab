@@ -25,7 +25,9 @@ for (const labId of fs.readdirSync(labsRoot)) {
 
   let body = "";
   for (const f of files) {
-    const source = fs.readFileSync(path.join(contractsDir, f), "utf8");
+    // normalize CRLF: a Windows checkout (autocrlf) must snapshot byte-identical
+    // to a Unix one, and validate-labs compares against the same normalization
+    const source = fs.readFileSync(path.join(contractsDir, f), "utf8").replace(/\r\n/g, "\n");
     body += `  ${JSON.stringify(f)}: ${JSON.stringify(source)},\n`;
   }
 

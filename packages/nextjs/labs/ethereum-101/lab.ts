@@ -121,7 +121,7 @@ export const lab = defineLab({
           hints: [
             "Follow the placeholder's shape; only the name and value change.",
             "`public` lets anyone read it; `constant` bakes the value in at deploy time.",
-            "Write `uint256 public constant GOAL = 10 ether;`. `ether` is a built-in unit, no maths needed.",
+            "Check the prompt for the exact type, visibility, modifier, name, and value. `ether` is a built-in unit, no maths needed.",
           ],
         },
         {
@@ -170,7 +170,7 @@ export const lab = defineLab({
           hints: [
             "Read the type as key then value: the `address` is who contributed, the `uint256` is how much they sent.",
             "Mark it `public` the same way you did with `GOAL`. The placeholder shows the exact shape, just rename it.",
-            "Write `mapping(address => uint256) public contributions;`.",
+            "Which name will the rest of the lab read when it looks up each contributor's amount?",
           ],
         },
         {
@@ -193,7 +193,7 @@ export const lab = defineLab({
           hints: [
             "The ledger is `contributions[address]`. Adding to a running total is `+=`, not `=`.",
             "`Funded` takes who paid and how much, and you already have both in scope: `msg.sender` and `msg.value`.",
-            "Write `contributions[msg.sender] += msg.value;` then `emit Funded(msg.sender, msg.value);`.",
+            "Read your two lines back as a story: first update this caller's row, then announce the same caller and amount.",
           ],
         },
         {
@@ -235,9 +235,9 @@ export const lab = defineLab({
           placeholder:
             'require(block.timestamp >= deadline, "too early");\nuint256 amount = balances[msg.sender];\nbalances[msg.sender] = 0;\n(bool ok, ) = msg.sender.call{ value: amount }("");\nrequire(ok, "send failed");',
           hints: [
-            "The two guards are `block.timestamp >= deadline` and `address(this).balance < GOAL`. Then `uint256 amount = contributions[msg.sender];` and require `amount > 0`.",
-            'Sending raw ETH is `(bool ok, ) = msg.sender.call{ value: amount }("")` followed by `require(ok, "send failed")`. That pattern is the one new thing here, the rest you\'ve met.',
-            "Order: set `contributions[msg.sender] = 0;` before the `call`, then `emit Refunded(msg.sender, amount);` last.",
+            "Start with the deal's two conditions: what has to be true about time, and what has to be true about the goal?",
+            "Before sending ETH, which row do you read, and what must be true about that amount?",
+            "Trace the reentrancy card before you write the send: which state change has to happen before any external call?",
           ],
         },
         {

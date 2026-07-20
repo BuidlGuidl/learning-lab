@@ -29,7 +29,14 @@ const OUT = path.join(nextjsRoot, "lib/solc/oz-sources.ts");
 
 // Everything the current labs import. Add entry points here when a future lab
 // needs more of OZ, then re-run this script.
-const entryPoints = ["@openzeppelin/contracts/token/ERC20/ERC20.sol", "@openzeppelin/contracts/access/Ownable.sol"];
+const entryPoints = [
+  "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+  "@openzeppelin/contracts/access/Ownable.sol",
+  "@openzeppelin/contracts/token/ERC721/ERC721.sol",
+  "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
+  "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+  "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
+];
 
 // @-scoped keys map straight onto OZ's on-disk layout under ozRoot. Return
 // undefined on a miss so the crawler reports the unresolved import by name.

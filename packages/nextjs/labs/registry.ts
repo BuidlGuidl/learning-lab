@@ -2,6 +2,7 @@ import type { Lab } from "~~/lib/lab/types";
 
 type LabEntry = {
   title: string;
+  cardCount: number;
   load: () => Promise<{ lab: Lab }>;
 };
 
@@ -11,6 +12,12 @@ type LabEntry = {
 export const registry: Record<string, LabEntry> = {
   "ethereum-101": {
     title: "Ethereum 101",
+    cardCount: 23,
     load: () => import("./ethereum-101/lab"),
+  },
+  tokenization: {
+    title: "Tokenization",
+    cardCount: 27,
+    load: () => import("./tokenization/lab"),
   },
 };
