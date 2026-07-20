@@ -1,3 +1,5 @@
+import { WorldComputer } from "./assets/WorldComputer";
+import { StateNetwork } from "./assets/illustrations";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
@@ -100,6 +102,8 @@ export const lab = defineLab({
           id: "the-world-computer",
           label: "CONCEPT",
           title: "The World Computer",
+          illustrations: [StateNetwork],
+          interactive: WorldComputer,
           body: "Ethereum is powered by thousands of independent computers around the world, called **nodes**. Together, those nodes act as one shared computer.\n\nEvery node keeps its own copy of the exact same record. When something changes, every node runs the same check on its own copy, and they all agree on a single shared history.\n\nThe duplicated effort is the point: because everyone verifies the work independently, no one has to trust a central authority!",
         },
         {
