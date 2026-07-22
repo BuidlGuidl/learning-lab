@@ -18,4 +18,10 @@ export const registry: Record<string, LabEntry> = {
     title: "Ethereum 101 V2",
     load: () => import("./ethereum-101-v2/lab"),
   },
+  // Curriculum proposal: broad beginner scope with v1's interaction cadence,
+  // intentionally unlinked while the team reviews the learner journey.
+  "ethereum-101-v3": {
+    title: "Ethereum 101 V3",
+    load: () => import("./ethereum-101-v3/lab"),
+  },
 };
