@@ -8,16 +8,16 @@ import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
 // Ethereum 101 V5 — the skeleton for the restructure agreed in PR #63.
 //
-// Structure and per-card scope live in OUTLINE.md next to this file; this lab
-// is that outline made walkable. Card bodies are info-level drafts — every
-// point the final copy must land, in order, in plain sentences — not polished
-// prose. Bracketed notes mark placeholders (interactives to build, optional
-// content still under discussion).
+// ⚠️ BEHIND THE OUTLINE: OUTLINE.md next to this file is the source of truth
+// and has since moved to 6 sections / 18 cards — the banking contrast now
+// lives in its own section 3 (Why not just use a bank?) between More than
+// money and Your money, your keys, with a custody bridge card. This file
+// still implements the earlier 5-section pass and needs a rebuild to match.
 //
-// Narrative spine: what is it → what can it do → how do you hold it → how do
-// you use it → recap. Ground rules from the outline: one home per concept,
-// later mentions are one-line callbacks, and the banking contrast is a single
-// short paragraph in card 1.2 — nowhere else.
+// Card bodies are info-level drafts — every point the final copy must land,
+// in order, in plain sentences — not polished prose. Bracketed notes mark
+// placeholders. Ground rules from the outline: one home per concept; later
+// mentions are one-line callbacks.
 const deploy: DeployFn = async () => ({});
 const tests: LabTests = {};
 
