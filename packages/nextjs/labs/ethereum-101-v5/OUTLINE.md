@@ -16,6 +16,7 @@ just banks → how you hold it → how you use it → recap.**
 - Plain language everywhere. When a term of art is unavoidable (gas, smart
   contract, blockchain), define it in one sentence at its home card and move on.
 - No card should end by restating its own opening.
+- No stretch of more than two consecutive text-only cards.
 
 ---
 
@@ -25,7 +26,6 @@ just banks → how you hold it → how you use it → recap.**
 
 ### 1.1 The world computer
 
-- **Type:** concept · WorldComputer interactive + StateNetwork illustration (existing)
 - **The one new idea:** Ethereum is one shared computer run by thousands of independent machines.
 - **Info to cover:**
   - Most apps run on servers owned by one company; Ethereum runs on thousands of
@@ -33,16 +33,18 @@ just banks → how you hold it → how you use it → recap.**
   - Together the nodes act as one shared computer: each keeps its own copy of
     the same record (who owns what, what programs are running).
   - When something changes, every node checks it independently and they all
-    agree on one shared history. The duplicated effort is the point — everyone
-    verifying means no one has to be trusted.
+    agree on one shared history. The duplicated effort is the point twice over:
+    everyone verifying means no one has to be trusted, and copies everywhere
+    mean there's no plug to pull — the machine has run nonstop since its 2015
+    launch.
   - No company owns it: state this **once**, cleanly. The consequences are the
     next card's material.
-- **Keep out:** why decentralization matters (1.2), smart contracts (2.2),
-  blocks/blockchain (5.3).
+- **Keep out:** why decentralization matters (1.2 owns the rules/fairness
+  payoffs — the no-plug-to-pull durability above stays here, with the nodes
+  that explain it), smart contracts (2.2), blocks/blockchain (5.3).
 
 ### 1.2 Why "no one in charge" matters
 
-- **Type:** concept
 - **The one new idea:** the practical payoff of decentralization — stated
   positively, on its own terms.
 - **Info to cover:**
@@ -63,7 +65,6 @@ just banks → how you hold it → how you use it → recap.**
 
 ### 2.1 Not just a better Bitcoin
 
-- **Type:** concept
 - **The one new idea:** Ethereum = decentralized money **plus** programs.
 - **Info to cover:**
   - Bitcoin proved money can move without a middleman; most readers have heard
@@ -75,7 +76,6 @@ just banks → how you hold it → how you use it → recap.**
 
 ### 2.2 Smart contracts
 
-- **Type:** concept · VendingMachine illustration (existing)
 - **The one new idea:** what a program-on-Ethereum is. Defined once, here.
 - **Info to cover:**
   - A **smart contract** is a program stored on Ethereum, with its own address.
@@ -89,7 +89,6 @@ just banks → how you hold it → how you use it → recap.**
 
 ### 2.3 What people build — and the buzzwords
 
-- **Type:** concept · interactive placeholder: tap-through app gallery or mini-quiz
 - **The one new idea:** the real app landscape, with the jargon decoded.
 - **Info to cover:**
   - Categories in plain words: payments and savings, borrowing/lending/trading
@@ -115,7 +114,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 3.1 The system we all grew up with
 
-- **Type:** concept
 - **The one new idea:** banking's catch is structural, not villainy.
 - **Info to cover:**
   - Banks mostly work: cards swipe, checks clear, loans finance homes. Say this
@@ -131,10 +129,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 3.2 And the rules can change on you
 
-- **Type:** concept · interactive placeholder: **"Can they do that?" mini-quiz**
-  — can your bank freeze your account? reverse a payment? change fees
-  retroactively? and can anyone do that on Ethereum? (drives the point playfully
-  instead of preachily; also breaks up a text-only run)
 - **The one new idea:** the rules are fluid, and the gatekeeper powers are real.
 - **Info to cover:**
   - The rules shift without notice — what you think you agreed to can change
@@ -154,8 +148,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 3.3 Who holds your money?
 
-- **Type:** concept · illustration placeholder: bank-ledger-entry vs.
-  you-holding-keys (new asset; also breaks up the text run into section 4)
 - **The one new idea:** custody — the deepest difference, and the bridge to
   section 4.
 - **Info to cover:**
@@ -178,7 +170,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 4.1 Ether
 
-- **Type:** concept
 - **The one new idea:** ETH is the network's native money.
 - **Info to cover:**
   - Ether (ETH) is the currency built into Ethereum: hold it, send it to anyone,
@@ -193,7 +184,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 4.2 Accounts and addresses
 
-- **Type:** concept
 - **The one new idea:** your account lives on the network; the address is its public name.
 - **Info to cover:**
   - An account holds your ETH and lets you act on the network. It lives *on the
@@ -201,16 +191,17 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
   - Its **address** is a public identifier, like an account number — it's what
     people use to send you ETH, and it's safe to share.
   - Anyone can create an account in seconds: no paperwork, no ID, no permission.
+  - **One forward-looking sentence:** sharing your address can't cost you
+    anything — but what the world can *see* through a shared address is a
+    thread we pick up at the permanent record (5.3). Do not explain it here.
   - End on the hook: with no sign-up authority, how do you prove an account is
     *yours*?
 - **Keep out:** private key content (4.3 owns it); "wallet holds the key not the
-  ETH" (4.4 owns it).
+  ETH" (4.4 owns it); public-by-default/transparency detail (5.3 owns it — the
+  forward sentence above is the only mention).
 
 ### 4.3 The private key
 
-- **Type:** concept · interactive placeholder: Austin's brute-force key game
-  (pick digit count, watch short keys get cracked, see full-length keys become
-  untouchable)
 - **The one new idea:** a secret number is the only proof of ownership.
 - **Info to cover:**
   - Every account comes with a **private key**: a secret value created with it.
@@ -219,30 +210,31 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
     made concrete — one-line callback at most.)
   - Anyone who learns your private key controls the account and can take
     everything in it. Never share it.
-  - Let the game carry "why can't someone just guess it?" — keep the text short.
+  - Let the brute-force key game (crack a short key, fail on a full-length
+    one) carry "why can't someone just guess it?" — keep the text short.
 - **Keep out:** cryptography detail (signatures land in 5.1, lightly); recovery
-  phrases (4.5 mentions them in the safety rule).
+  phrases (4.4 defines them in one clause; 4.5 drills the safety rule).
 
 ### 4.4 Wallets
 
-- **Type:** concept
 - **The one new idea:** the app that guards your key and acts for you.
 - **Info to cover:**
   - A wallet is an app on your device with two jobs: keep your private key
     secret, and let you use the network safely (send ETH, approve actions).
   - Name mismatch: unlike a real wallet it holds your *key*, not your ETH — the
     ETH stays on the network (one line; 4.2 established where accounts live).
-  - Lose the key/recovery phrase and there's no support desk to call — which is
-    why the next card is about what's safe to reveal.
+  - Wallets also give you a **recovery phrase**: your key's backup, written as
+    a short list of ordinary words (one clause here — the wallets lab owns the
+    rest). Lose the key *and* the phrase and there's no support desk to call —
+    which is why the next card is about what's safe to reveal.
   - Teaser: the next lab is entirely about wallets.
 - **Keep out:** re-deriving "key = control" from 4.3 (one-line callback max);
   wallet brand recommendations; hardware vs. software wallets.
 
 ### 4.5 What's safe to share?
 
-- **Type:** interactive · WalletSafety (existing)
 - **The one new idea:** the practical sharing rule, drilled.
-- **Info to cover (minimal text — the interactive is the card):**
+- **Info to cover (minimal text — the WalletSafety interactive is the card):**
   - Address: public by design. Private key and recovery phrase: never — no real
     app, support agent, or moderator needs them.
   - A wallet signature can authorize an action without revealing your key — so
@@ -259,7 +251,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 5.1 Transactions
 
-- **Type:** concept · TransactionJourney interactive (existing)
 - **The one new idea:** a signed instruction is how anything happens.
 - **Info to cover:**
   - A **transaction** asks the network to do something. Simplest: send ETH to an
@@ -274,24 +265,30 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 5.2 Gas
 
-- **Type:** concept
 - **The one new idea:** every action pays a small fee, and why.
 - **Info to cover:**
   - The fee is called **gas**, paid in ETH — this is 4.1's forward reference
     paying off (one line, then new material).
   - Why it exists: thousands of real machines do real work — hardware,
-    electricity, bandwidth — and the fee pays for that effort.
+    electricity, bandwidth — so using the network can't be free. The fee makes
+    every action pay its own way. **Copy guard:** never write that the fee is
+    paid *to* the node operators — most of it is destroyed by design, and who
+    earns what is a later lab (staking). "Every action covers its cost" is the
+    honest framing.
   - Second job: because every action costs something, nobody can flood the
     network with junk for free.
-  - Bigger actions cost more; you pay even if your action fails — one more
-    reason to read before you sign (callback to 4.5, one line).
+  - Honest sizing: usually tiny — pocket-change territory for a simple send —
+    but not fixed: bigger actions cost more, and the price floats up when the
+    network is busy and back down when it's quiet. No dollar figures (they age);
+    no fee-history relitigating.
+  - You pay even if your action fails — one more reason to read before you sign
+    (callback to 4.5, one line).
   - Small aside: the network's energy use fell ~99% with the 2022 switch to
     proof of stake. Name it in one sentence; staking/validators are a later lab.
 - **Keep out:** gas price/limit/units, fee markets, EIP-1559; staking mechanics.
 
 ### 5.3 Written in stone
 
-- **Type:** concept
 - **The one new idea:** where it all lands — the permanent public record.
 - **Info to cover:**
   - Confirmed transactions are bundled into **blocks**, added one after another
@@ -300,6 +297,10 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
   - Two consequences a newcomer must internalize: activity is public by default,
     and confirmed actions are effectively irreversible — there's no
     chargeback line.
+  - Public-by-default is 4.2's forward reference paying off: anyone who knows
+    your address can see its balance and entire history — knowing it never lets
+    them take anything, but it does let them watch. One-line callback, then move
+    on.
   - Frame both as features with sharp edges: the same permanence that stops
     history from being rewritten also means *your* mistakes stick.
 - **Keep out:** consensus/validators, block times, explorers (later labs).
@@ -310,7 +311,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 6.1 Explain it to a friend
 
-- **Type:** question
 - **Prompt:** a friend says "Ethereum is basically an online bank for crypto" —
   correct the picture.
 - **Rubric direction (write fresh, do NOT copy summary lines):** looking for
@@ -323,7 +323,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 6.2 Summary + what's next
 
-- **Type:** summary
 - **Info to cover:**
   - One short recap paragraph tracing the arc (shared computer → programs →
     why not just banks → your keys → transactions and their cost → permanent
@@ -342,20 +341,6 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 ## Deliberately deferred (breadth stays, depth waits)
 
 - Mempool · staking/validators/consensus · L2s · how to buy ETH · PoS mechanics
-  beyond the one energy sentence · token standards · any single-app deep dive.
+  beyond the one energy sentence · seed/recovery-phrase handling beyond 4.4's
+  one-clause definition · token standards · any single-app deep dive.
 
-## Interactive/illustration inventory
-
-| Card | Asset | Status |
-| --- | --- | --- |
-| 1.1 | WorldComputer + StateNetwork | existing |
-| 2.2 | VendingMachine | existing |
-| 2.3 | app gallery / mini-quiz | placeholder |
-| 3.2 | "Can they do that?" bank-vs-Ethereum quiz | placeholder |
-| 3.3 | bank ledger vs. your keys illustration | placeholder |
-| 4.3 | private-key brute-force game | placeholder |
-| 4.5 | WalletSafety | existing |
-| 5.1 | TransactionJourney + TransactionLifecycle | existing |
-
-No stretch of more than two consecutive text-only cards (longest runs:
-1.2→2.1, 4.1→4.2, 5.2→5.3).
