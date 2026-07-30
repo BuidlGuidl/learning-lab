@@ -15,11 +15,18 @@ export const StateNetwork = makeIllustration({
   alt: "A globe of many equal nodes connected in a mesh, each node holding the same copy of account state — balance, ownership, contract code — with no center and no node larger than the others.",
 });
 
-// Ch1 · Interacting with the world computer — a transaction's life from
-// signature to permanence.
+// Ch5 · Transactions — a transaction's life from signature to permanence.
 export const TransactionLifecycle = makeIllustration({
   src: "/transaction-flow-ch1-2.png",
   width: 1200,
   height: 675,
   alt: "A transaction's lifecycle in four steps: you sign it with your key, it is broadcast to the network, a validator includes it in a block, and it becomes a permanent on-chain record.",
+});
+
+// Ch5 · Written in stone — the record is public: anyone can read every row.
+export const PublicLedger = makeIllustration({
+  src: "/public-ledger-ch3-3.png",
+  width: 1200,
+  height: 675,
+  alt: "A public ledger panel floating in an open plaza, listing rows of pseudonymous addresses next to ETH amounts, with pagination — anyone can scroll through and read every entry.",
 });
