@@ -15,9 +15,9 @@ export const registry: Record<string, LabEntry> = {
   },
   // Skeleton of the PR #63 restructure — the OUTLINE.md flow made walkable,
   // info-level drafts instead of final copy. Unlinked tinkering slot,
-  // reachable at /labs/ethereum-101-v5.
-  "ethereum-101-v5": {
-    title: "Ethereum 101 V5",
-    load: () => import("./ethereum-101-v5/lab"),
+  // reachable at /labs/ethereum-101-v2.
+  "ethereum-101-v2": {
+    title: "Ethereum 101 V2",
+    load: () => import("./ethereum-101-v2/lab"),
   },
 };

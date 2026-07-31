@@ -6,7 +6,7 @@ import { StateNetwork, TransactionLifecycle } from "./assets/illustrations";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
-// Ethereum 101 V5 — the skeleton for the restructure agreed in PR #63.
+// Ethereum 101 V2 — the skeleton for the restructure agreed in PR #63.
 //
 // ⚠️ BEHIND THE OUTLINE: OUTLINE.md next to this file is the source of truth
 // and has since moved to 6 sections / 18 cards — the banking contrast now
@@ -22,8 +22,8 @@ const deploy: DeployFn = async () => ({});
 const tests: LabTests = {};
 
 export const lab = defineLab({
-  id: "ethereum-101-v5",
-  title: "Ethereum 101 V5",
+  id: "ethereum-101-v2",
+  title: "Ethereum 101 V2",
   overview:
     "Skeleton of the restructured Ethereum 101: what Ethereum is, what it can do, how you hold it, and how you use it. Bodies are info-level drafts, not final copy — see OUTLINE.md.",
   contracts: {},

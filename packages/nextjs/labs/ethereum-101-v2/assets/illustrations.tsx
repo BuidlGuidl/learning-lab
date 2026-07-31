@@ -1,6 +1,6 @@
 "use client";
 
-// The Ethereum 101 v5 static illustrations, each a configured makeIllustration
+// The Ethereum 101 v2 static illustrations, each a configured makeIllustration
 // instance. They render inline in the card body under the prose (see
 // ConceptCard / ExperimentCard); the interactive widgets (WorldComputer,
 // TransactionJourney) are separate, opened on demand from the same cards.
