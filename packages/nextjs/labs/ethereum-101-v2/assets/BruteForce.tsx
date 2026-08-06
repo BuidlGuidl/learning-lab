@@ -28,14 +28,22 @@ const shuffled = <T,>(arr: T[]): T[] => {
   return out;
 };
 
-// A guess rendered char-by-char against the target: matches light up mint,
-// misses go orange, and the 0x prefix stays grey — so "close" guesses show
-// how far they really are.
-const MatchedHex = ({ value, target }: { value: string; target: string }) => (
+// A key rendered char-by-char against its counterpart: matches light up mint
+// and the 0x prefix stays grey. Misses go orange on the guess string; on the
+// target they keep the default text color (missClass="").
+const MatchedHex = ({
+  value,
+  target,
+  missClass = "text-peach-bright",
+}: {
+  value: string;
+  target: string;
+  missClass?: string;
+}) => (
   <span className="break-all">
     <span className="text-dark-text-muted">0x</span>
     {value.split("").map((ch, i) => (
-      <span key={i} className={ch === target[i] ? "text-mint-bright" : "text-peach-bright"}>
+      <span key={i} className={ch === target[i] ? "text-mint-bright" : missClass || undefined}>
         {ch}
       </span>
     ))}
@@ -154,7 +162,13 @@ export const BruteForce = () => {
           <div className="flex flex-col gap-1">
             <span className="text-dark-text-muted">target key · 16 possibilities</span>
             <span className="rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 text-sm">
-              0x{toyTarget || "…"}
+              {toyTarget ? (
+                <MatchedHex value={toyTarget} target={toyGuess} missClass="" />
+              ) : (
+                <>
+                  <span className="text-dark-text-muted">0x</span>…
+                </>
+              )}
             </span>
           </div>
           <div className="flex flex-col gap-1">
@@ -174,7 +188,7 @@ export const BruteForce = () => {
           <div className="flex flex-col gap-1">
             <span className="text-dark-text-muted">target key · 2²⁵⁶ possibilities</span>
             <span className="break-all rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2">
-              0x{realTarget}
+              <MatchedHex value={realTarget} target={realGuess} missClass="" />
             </span>
           </div>
           <div className="flex flex-col gap-1">
