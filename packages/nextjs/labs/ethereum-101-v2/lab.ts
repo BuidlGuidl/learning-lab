@@ -115,7 +115,7 @@ export const lab = defineLab({
           id: "ether",
           label: "CONCEPT",
           title: "Ether",
-          body: "**Ether (ETH)** is Ethereum's built-in currency. You can hold it and send it to anyone, anywhere.\n\nExchanges let you trade between ETH and currencies like dollars or euros.\n\nETH also pays transaction fees, which the gas card covers.\n\n[Interactive/image/game to be added]",
+          body: "**Ether (ETH)** is Ethereum's built-in currency. New ETH is created by the network itself, no person or company issues it. You can hold it and send it to anyone, anywhere, at any time.\n\nExchanges let you trade between ETH and currencies like dollars or euros. You don't need to buy a whole ETH. It can be split into very small fractions, so you can start with any amount.\n\nETH is also used to pay transaction fees. You'll learn more about this in Section 5.\n\n[Interactive/image/game to be added]",
         },
         {
           type: "concept",
