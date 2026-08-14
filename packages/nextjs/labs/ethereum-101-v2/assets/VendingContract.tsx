@@ -404,22 +404,40 @@ export const VendingContract = () => {
         <div>{"}"}</div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {AMOUNTS.map(amount => (
-          <button
-            key={amount}
-            type="button"
-            onClick={() => choose(amount)}
-            aria-pressed={pay === amount}
-            className={`cursor-pointer rounded-lg border px-3 py-1.5 font-mono text-xs transition-colors ${
-              pay === amount
-                ? "border-violet-bright bg-lab-code-panel-tint font-semibold text-dark-text"
-                : "border-dark-border bg-dark-surface text-dark-text-muted hover:border-violet-bright hover:text-dark-text"
-            }`}
-          >
-            send {amount.toFixed(2)} ETH
-          </button>
-        ))}
+      {/* one segmented control, so it reads as a single choice rather than three
+          independent buttons, with the call that spends it sitting beside it */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div
+          role="radiogroup"
+          aria-label="How much ether to send"
+          className="inline-flex divide-x divide-dark-border overflow-hidden rounded-lg border border-dark-border bg-dark-surface"
+        >
+          {AMOUNTS.map(amount => (
+            <button
+              key={amount}
+              type="button"
+              role="radio"
+              aria-checked={pay === amount}
+              onClick={() => choose(amount)}
+              className={`cursor-pointer px-3 py-2 font-mono text-xs transition-colors ${
+                pay === amount
+                  ? "bg-lab-code-panel-tint font-semibold text-dark-text"
+                  : "text-dark-text-muted hover:text-dark-text"
+              }`}
+            >
+              send {amount.toFixed(2)} ETH
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={buy}
+          disabled={busy}
+          className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {busy ? "running…" : "Call buy()"}
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-dark-text-muted">
@@ -443,15 +461,6 @@ export const VendingContract = () => {
       </div>
 
       <p className="m-0 min-h-[3.5rem] text-sm leading-relaxed text-dark-text-muted">{caption}</p>
-
-      <button
-        type="button"
-        onClick={buy}
-        disabled={busy}
-        className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {busy ? "running…" : "Call buy()"}
-      </button>
 
       <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-dark-text-muted">
         <LightBulbIcon className="h-4 w-4 shrink-0 text-violet-bright" />
