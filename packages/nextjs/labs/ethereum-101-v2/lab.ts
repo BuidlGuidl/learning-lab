@@ -14,9 +14,6 @@ import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 // Copy style follows the original Ethereum 101 lab and ethereum.org/learn:
 // short sentences, second person, honest tone, each term bolded and defined
 // once at its home card.
-//
-// Cards that don't yet have an interactive, image, or game end with an
-// "[Interactive/image/game to be added]" placeholder line.
 const deploy: DeployFn = async () => ({});
 const tests: LabTests = {};
 
@@ -47,7 +44,7 @@ export const lab = defineLab({
           id: "why-decentralization-matters",
           label: "CONCEPT",
           title: "Why decentralization matters",
-          body: "Plenty of things run fine with a single company or a small centralized group in charge. Why go to the trouble of building a different kind of system? Turns out that decentralization has some very important advantages for users.\n\nStart with the rules. Ethereum's rules are public. Anyone can read exactly what's allowed and what isn't.\n\nThey apply to everyone equally. And they can't be changed quietly: every change happens in the open, where the whole network can see it.\n\nAnd there's no administrator behind the scenes. No one can freeze your account, block an action the rules allow, or rewrite what already happened.\n\nThroughout this lab you'll learn why these three properties are important.\n\n[Note: this content is repeated in section 3: 'Why not just use a bank?'. Not sure the best way to solve this. This card could be a different topic and Section 3 could be moved up to be next. Probably makes more sense to change the point of this card and leave section 3 where it is. It has an ok flow with 'what is ethereum' -> 'ethereum is than money' -> 'why ethereum as money has advantages over banks']\n\n[Interactive/image/game to be added]",
+          body: "Plenty of things run fine with a single company or a small centralized group in charge. Why go to the trouble of building a different kind of system? Turns out that decentralization has some very important advantages for users.\n\nStart with the rules. Ethereum's rules are public. Anyone can read exactly what's allowed and what isn't.\n\nThey apply to everyone equally. And they can't be changed quietly: every change happens in the open, where the whole network can see it.\n\nAnd there's no administrator behind the scenes. No one can freeze your account, block an action the rules allow, or rewrite what already happened.\n\nThroughout this lab you'll learn why these three properties are important.",
         },
       ],
     },
@@ -60,7 +57,7 @@ export const lab = defineLab({
           id: "not-just-a-better-bitcoin",
           label: "CONCEPT",
           title: "Not just a better Bitcoin",
-          body: "You've almost certainly heard of **Bitcoin**. It proved that money can move from person to person, anywhere on Earth, with no middleman in between.\n\nEthereum does that too, but the World Computer is more than just a digital banking platform. It’s an open-source system that allows anyone to write programs that are accessible to every user around the globe.\n\nA shared computer that only tracks money is useful. A shared computer that runs code can become almost anything.\n\nThose programs are called smart contracts.\n\n[Interactive/image/game to be added]",
+          body: "You've almost certainly heard of **Bitcoin**. It proved that money can move from person to person, anywhere on Earth, with no middleman in between.\n\nEthereum does that too, but the World Computer is more than just a digital banking platform. It’s an open-source system that allows anyone to write programs that are accessible to every user around the globe.\n\nA shared computer that only tracks money is useful. A shared computer that runs code can become almost anything.\n\nThose programs are called smart contracts.",
         },
         {
           type: "concept",
@@ -75,7 +72,7 @@ export const lab = defineLab({
           id: "what-people-build",
           label: "CONCEPT",
           title: "What people build",
-          body: "Ethereum already has a storied history of people coding inventive ways of solving real-world problems. Here are some types of Ethereum solutions that go beyond holding and transferring money:\n\n- **DeFi** (Decentralized Finance): borrowing, lending, and trading run by programs instead of firms.\n- **Stablecoins**: tokens that match the value of a fiat currency like the dollar.\n- **NFTs** (Non-Fungible Tokens): unique digital objects you truly own: art, game items, tickets, memberships.\n- **DAOs** (Decentralized Autonomous Organizations): internet-native co-ops where every member has a vote on how the organization runs.\n- Plus games, identity solutions, and plenty of other exciting things being invented every day!\n\nNot every app needs Ethereum. It shines when strangers need shared rules and shared records without handing one company control.\n\nThe most familiar one-company-in-control system of all is the one holding your paycheck.\n\n[Interactive/image/game to be added]",
+          body: "Ethereum already has a storied history of people coding inventive ways of solving real-world problems. Here are some types of Ethereum solutions that go beyond holding and transferring money:\n\n- **DeFi** (Decentralized Finance): borrowing, lending, and trading run by programs instead of firms.\n- **Stablecoins**: tokens that match the value of a fiat currency like the dollar.\n- **NFTs** (Non-Fungible Tokens): unique digital objects you truly own: art, game items, tickets, memberships.\n- **DAOs** (Decentralized Autonomous Organizations): internet-native co-ops where every member has a vote on how the organization runs.\n- Plus games, identity solutions, and plenty of other exciting things being invented every day!\n\nNot every app needs Ethereum. It shines when strangers need shared rules and shared records without handing one company control.\n\nThe most familiar one-company-in-control system of all is the one holding your paycheck.",
         },
       ],
     },
@@ -88,21 +85,21 @@ export const lab = defineLab({
           id: "the-system-we-grew-up-with",
           label: "CONCEPT",
           title: "The system we all grew up with",
-          body: "Banks mostly work. Cards swipe, checks clear, loans put people in homes. You probably used the system today without a second thought.\n\nBut there’s a major hidden drawback to the banking system. It’s governed by rules that were written by a small group. Those rules span thousands of pages filled with confusing legal and regulatory language. Realistically, no one but the rule-writers ever reads or fully understands them.\n\nSo you use the system on faith, not because you checked the rules and liked them, but because checking was never really an option.\n\n[Interactive/image/game to be added]",
+          body: "Banks mostly work. Cards swipe, checks clear, loans put people in homes. You probably used the system today without a second thought.\n\nBut there’s a major hidden drawback to the banking system. It’s governed by rules that were written by a small group. Those rules span thousands of pages filled with confusing legal and regulatory language. Realistically, no one but the rule-writers ever reads or fully understands them.\n\nSo you use the system on faith, not because you checked the rules and liked them, but because checking was never really an option.",
         },
         {
           type: "concept",
           id: "rules-can-change-on-you",
           label: "CONCEPT",
           title: "And the rules can change on you",
-          body: "The rules you're taking on faith are also a moving target. Terms update, policies shift, and what you thought you agreed to can be different by the time you look again.\n\nSometimes the changes have favored the people closest to the system (the 2008 bank bailouts are the best-known example).\n\nAnd the gatekeepers are real. An institution can freeze an account, decline a payment, or revoke access, at its own discretion.\n\nNow weigh that against what you already know. On Ethereum the rules are public, and they only change in the open. They run as code, the same for everyone, every time. And there's no administrator with a freeze button.\n\n[Interactive/image/game to be added]",
+          body: "The rules you're taking on faith are also a moving target. Terms update, policies shift, and what you thought you agreed to can be different by the time you look again.\n\nSometimes the changes have favored the people closest to the system (the 2008 bank bailouts are the best-known example).\n\nAnd the gatekeepers are real. An institution can freeze an account, decline a payment, or revoke access, at its own discretion.\n\nNow weigh that against what you already know. On Ethereum the rules are public, and they only change in the open. They run as code, the same for everyone, every time. And there's no administrator with a freeze button.",
         },
         {
           type: "concept",
           id: "who-holds-your-money",
           label: "CONCEPT",
           title: "Who holds your money?",
-          body: 'At a bank, "your" account is an entry in the bank\'s ledger. The bank holds the money on your behalf, and you have a legal claim to it. Both you and the bank agree that the institution will do what you request with "your" money that they control. That arrangement is called **third-party custody**.\n\nEthereum is a **self-custody** system, meaning you hold the keys to your own money. Having direct control of your own money is real freedom, but that freedom comes with more responsibility.\n\nThe next section is all about the concepts, skills, and tools you will need to learn to safely keep self-custody of your own money.\n\n[Interactive/image/game to be added]',
+          body: 'At a bank, "your" account is an entry in the bank\'s ledger. The bank holds the money on your behalf, and you have a legal claim to it. Both you and the bank agree that the institution will do what you request with "your" money that they control. That arrangement is called **third-party custody**.\n\nEthereum is a **self-custody** system, meaning you hold the keys to your own money. Having direct control of your own money is real freedom, but that freedom comes with more responsibility.\n\nThe next section is all about the concepts, skills, and tools you will need to learn to safely keep self-custody of your own money.',
         },
       ],
     },
@@ -115,14 +112,14 @@ export const lab = defineLab({
           id: "ether",
           label: "CONCEPT",
           title: "Ether",
-          body: "**Ether (ETH)** is Ethereum's built-in currency. New ETH is created by the network itself, no person or company issues it. You can hold it and send it to anyone, anywhere, at any time.\n\nExchanges let you trade between ETH and currencies like dollars or euros. You don't need to buy a whole ETH. It can be split into very small fractions, so you can start with any amount.\n\nETH is also used to pay transaction fees. You'll learn more about this in Section 5.\n\n[Interactive/image/game to be added]",
+          body: "**Ether (ETH)** is Ethereum's built-in currency. New ETH is created by the network itself, no person or company issues it. You can hold it and send it to anyone, anywhere, at any time.\n\nExchanges let you trade between ETH and currencies like dollars or euros. You don't need to buy a whole ETH. It can be split into very small fractions, so you can start with any amount.\n\nETH is also used to pay transaction fees. You'll learn more about this in Section 5.",
         },
         {
           type: "concept",
           id: "accounts-and-addresses",
           label: "CONCEPT",
           title: "Accounts and addresses",
-          body: "An Ethereum **account** holds ETH and lets you perform actions on the network. Accounts live on the network itself, not on your phone or laptop.\n\nEvery account has an **address**: its public name, a bit like a bank account number. It's what people use to send you ETH, and it's safe to share.\n\nAnyone can create an account in seconds. No paperwork, no ID, no permission. The network doesn't even ask for your name! Which leaves a puzzle: if no authority signed you up, how do you prove an account is yours?\n\n[Interactive/image/game to be added]",
+          body: "An Ethereum **account** holds ETH and lets you perform actions on the network. Accounts live on the network itself, not on your phone or laptop.\n\nEvery account has an **address**: its public name, a bit like a bank account number. It's what people use to send you ETH, and it's safe to share.\n\nAnyone can create an account in seconds. No paperwork, no ID, no permission. The network doesn't even ask for your name! Which leaves a puzzle: if no authority signed you up, how do you prove an account is yours?",
         },
         {
           type: "concept",
@@ -137,7 +134,7 @@ export const lab = defineLab({
           id: "wallets",
           label: "CONCEPT",
           title: "Wallets",
-          body: "Nobody types a giant secret number by hand. That's what a **wallet** is for. It's an app on your device with two jobs: keep your private key secret, and put it to work safely when you use the network.\n\nAn Ethereum wallet differs from a physical wallet in an important way: Ethereum wallets hold your key (the thing that securely allows you to control your money) not your money (ETH) itself. Your ETH stays on the network, with the rest of your account.\n\nYour wallet also hands you a **recovery phrase**: your key's backup, written as a short list of ordinary words. Your recovery phrase holds just as much power as your private key so carefully guard both.\n\nThere's a whole lab on wallets coming next. Before that, learn what's safe to reveal.\n\n[Interactive/image/game to be added]",
+          body: "Nobody types a giant secret number by hand. That's what a **wallet** is for. It's an app on your device with two jobs: keep your private key secret, and put it to work safely when you use the network.\n\nAn Ethereum wallet differs from a physical wallet in an important way: Ethereum wallets hold your key (the thing that securely allows you to control your money) not your money (ETH) itself. Your ETH stays on the network, with the rest of your account.\n\nYour wallet also hands you a **recovery phrase**: your key's backup, written as a short list of ordinary words. Your recovery phrase holds just as much power as your private key so carefully guard both.\n\nThere's a whole lab on wallets coming next. Before that, learn what's safe to reveal.",
         },
         {
           type: "concept",
@@ -158,7 +155,7 @@ export const lab = defineLab({
           id: "transactions",
           label: "CONCEPT",
           title: "Transactions",
-          body: "So how do you actually make something happen on the network?\n\nEverything you do on Ethereum starts as a **transaction**: an instruction signed with your key that asks the network to act. The simplest kind sends ETH from your address to another (just like a banking transaction).\n\nTransactions can do so much more than transfer ETH. They're the interaction that allows you to vote on a proposal, buy a game item, join a fundraiser, or do anything else that smart contracts allow.\n\nThe flow never changes: your wallet signs the instruction with your private key and broadcasts it to the network. Nodes then check it against the rules. If it passes, your requested instructions are carried out.\n\nThousands of machines are performing real work to execute your transaction, and that has a price.\n\n[Moved the transaction lifestyle and TransactionJourney interaction to next card]",
+          body: "So how do you actually make something happen on the network?\n\nEverything you do on Ethereum starts as a **transaction**: an instruction signed with your key that asks the network to act. The simplest kind sends ETH from your address to another (just like a banking transaction).\n\nTransactions can do so much more than transfer ETH. They're the interaction that allows you to vote on a proposal, buy a game item, join a fundraiser, or do anything else that smart contracts allow.\n\nThe flow never changes: your wallet signs the instruction with your private key and broadcasts it to the network. Nodes then check it against the rules. If it passes, your requested instructions are carried out.\n\nThousands of machines are performing real work to execute your transaction, and that has a price.",
         },
         {
           type: "concept",
@@ -167,7 +164,7 @@ export const lab = defineLab({
           title: "Gas",
           illustrations: [TransactionLifecycle],
           interactive: TransactionJourney,
-          body: "You must pay a small fee in ETH, called **gas**, to have the network carry out your transaction.\n\nNodes are physical machines that consume electricity and bandwidth on every action, so using the network can't be free. Gas compensates nodes for the costs they accrue running the network.\n\nThe gas fee also protects the network from spam. It's just not worth it to flood the network with junk if a bad actor has to pay for every bad transaction.\n\nThe gas fee is not a fixed amount. A simple transaction will cost pocket change, but bigger actions cost more. The gas price also fluctuates with network activity. More activity means more competition for the nodes' labor.\n\nGas fees are charged even if your transaction fails, because the network still did the work of checking it. That's one more reason to understand exactly what your transaction is doing before you sign it.\n\nEthereum's energy use fell by about 99% in 2022, when it switched to a system called proof of stake, but that's a story for a later lab.\n\n[The TransactionLifecycle illustration is presented too early. It's talking about block that aren't introduced until next card.]",
+          body: "You must pay a small fee in ETH, called **gas**, to have the network carry out your transaction.\n\nNodes are physical machines that consume electricity and bandwidth on every action, so using the network can't be free. Gas compensates nodes for the costs they accrue running the network.\n\nThe gas fee also protects the network from spam. It's just not worth it to flood the network with junk if a bad actor has to pay for every bad transaction.\n\nThe gas fee is not a fixed amount. A simple transaction will cost pocket change, but bigger actions cost more. The gas price also fluctuates with network activity. More activity means more competition for the nodes' labor.\n\nGas fees are charged even if your transaction fails, because the network still did the work of checking it. That's one more reason to understand exactly what your transaction is doing before you sign it.\n\nEthereum's energy use fell by about 99% in 2022, when it switched to a system called proof of stake, but that's a story for a later lab.",
         },
         {
           type: "concept",
@@ -209,7 +206,7 @@ export const lab = defineLab({
           id: "summary-what-is-next",
           label: "SUMMARY",
           title: "The big picture, and what's next",
-          body: "Ethereum is a shared computer run by thousands of machines that no company owns. Because it runs programs, it hosts far more than payments. Unlike the system you grew up with, no small group writes its rules or holds your money. You hold your own keys. And when you act, a signed transaction pays a small fee and lands in the permanent public record.\n\nThe terms you've met:\n\n- **Node**: one of the thousands of computers running Ethereum, each keeping a copy of the shared history.\n- **Smart contract**: a program on Ethereum: public code that runs the same for everyone.\n- **ETH**: the network's built-in money, and what pays for every action.\n- **Address**: your account's public name. Safe to share.\n- **Private key**: the secret number that is control of your account. **Never share it.**\n- **Wallet**: the app that guards your key and signs for you.\n- **Transaction**: a signed instruction asking the network to act.\n- **Gas**: the small fee every action pays for the network's work.\n- **Block / blockchain**: confirmed transactions, bundled and chained into the permanent record.\n\nNext up: a whole lab on wallets. Down the road: transactions under the hood, staking and how the network agrees, and eventually writing your own smart contracts.\n\n[This card needs more eyes. I did a first pass but it's still weird.]",
+          body: "Ethereum is a shared computer run by thousands of machines that no company owns. Because it runs programs, it hosts far more than payments. Unlike the system you grew up with, no small group writes its rules or holds your money. You hold your own keys. And when you act, a signed transaction pays a small fee and lands in the permanent public record.\n\nThe terms you've met:\n\n- **Node**: one of the thousands of computers running Ethereum, each keeping a copy of the shared history.\n- **Smart contract**: a program on Ethereum: public code that runs the same for everyone.\n- **ETH**: the network's built-in money, and what pays for every action.\n- **Address**: your account's public name. Safe to share.\n- **Private key**: the secret number that is control of your account. **Never share it.**\n- **Wallet**: the app that guards your key and signs for you.\n- **Transaction**: a signed instruction asking the network to act.\n- **Gas**: the small fee every action pays for the network's work.\n- **Block / blockchain**: confirmed transactions, bundled and chained into the permanent record.\n\nNext up: a whole lab on wallets. Down the road: transactions under the hood, staking and how the network agrees, and eventually writing your own smart contracts.",
         },
       ],
     },
