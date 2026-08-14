@@ -30,6 +30,7 @@ const COLOR = {
   line: "#3a3158",
   inset: "#14111c",
   faint: "#857c9e",
+  muted: "#b3aac9",
   mint: "#54d6a8",
   peach: "#f0a868",
   magenta: "#ff7ccb",
@@ -177,7 +178,7 @@ export const VendingContract = () => {
 
     // the coin drops into the slot
     setCoin({ x: 158, y: -20, shown: true });
-    await tween(520, easeInCubic, p => setCoin({ x: 158, y: -20 + p * 86, shown: true }));
+    await tween(520, easeInCubic, p => setCoin({ x: 158, y: -20 + p * 100, shown: true }));
     if (!alive()) return;
     setCoin(c => ({ ...c, shown: false }));
 
@@ -204,8 +205,8 @@ export const VendingContract = () => {
       setShake(0);
 
       // the coin comes back out of the return tray — the revert, made physical
-      setCoin({ x: 159, y: 70, shown: true });
-      await tween(680, easeOutBounce, p => setCoin({ x: 159, y: 70 + p * 93, shown: true }));
+      setCoin({ x: 159, y: 84, shown: true });
+      await tween(680, easeOutBounce, p => setCoin({ x: 159, y: 84 + p * 79, shown: true }));
       if (!alive()) return;
 
       setCaption(
@@ -282,7 +283,7 @@ export const VendingContract = () => {
         className="mx-auto h-auto w-full max-w-[15rem] select-none"
         style={{ transform: `translateX(${shake}px)` }}
         role="img"
-        aria-label="A vending machine with a coin slot, three shelves of stock, a return tray and a dispense tray."
+        aria-label={`A vending machine holding ${stock} snacks, with a screen reading ${screen.text}, a coin slot, a return tray and a dispense tray.`}
       >
         <defs>
           <linearGradient id="vc-body" x1="0" y1="0" x2="0" y2="1">
@@ -321,11 +322,11 @@ export const VendingContract = () => {
         <line x1={18} y1={76} x2={122} y2={76} stroke={COLOR.line} strokeWidth={1} />
         <line x1={18} y1={126} x2={122} y2={126} stroke={COLOR.line} strokeWidth={1} />
 
-        {/* right column: screen, coin slot, keypad */}
-        <rect x={134} y={26} width={48} height={26} rx={5} fill={COLOR.inset} stroke={COLOR.line} />
+        {/* right column: two-line screen, coin slot, keypad */}
+        <rect x={134} y={26} width={48} height={40} rx={5} fill={COLOR.inset} stroke={COLOR.line} />
         <text
           x={158}
-          y={43}
+          y={42}
           textAnchor="middle"
           fontFamily="monospace"
           fontSize={9}
@@ -334,14 +335,17 @@ export const VendingContract = () => {
         >
           {screen.text}
         </text>
+        <text x={158} y={57} textAnchor="middle" fontFamily="monospace" fontSize={7.5} fill={COLOR.muted}>
+          stock {stock}
+        </text>
 
-        <rect x={146} y={64} width={24} height={5} rx={2.5} fill={COLOR.inset} stroke={COLOR.line} />
-        <text x={158} y={80} textAnchor="middle" fontFamily="monospace" fontSize={6.5} fill={COLOR.faint}>
+        <rect x={146} y={78} width={24} height={5} rx={2.5} fill={COLOR.inset} stroke={COLOR.line} />
+        <text x={158} y={94} textAnchor="middle" fontFamily="monospace" fontSize={6.5} fill={COLOR.faint}>
           COIN
         </text>
 
         <g fill={COLOR.bodyTop} stroke={COLOR.line} strokeWidth={0.8}>
-          {[92, 107, 122].map(y =>
+          {[106, 121].map(y =>
             [140, 156].map(x => <rect key={`${x}-${y}`} x={x} y={y} width={12} height={10} rx={2} />),
           )}
         </g>
@@ -417,14 +421,6 @@ export const VendingContract = () => {
         >
           {busy ? "running…" : "Call buy()"}
         </button>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-dark-text-muted">
-        <span>machine state —</span>
-        <span className="inline-flex items-center gap-2 rounded-full border border-dark-border px-3 py-1">
-          <span>stock</span>
-          <strong className="font-semibold text-dark-text">{stock}</strong>
-        </span>
       </div>
 
       <p className="m-0 min-h-[3.5rem] text-sm leading-relaxed text-dark-text-muted">{caption}</p>
