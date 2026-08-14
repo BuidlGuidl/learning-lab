@@ -1,0 +1,2318 @@
+<title>Ethereum 101 Interaction Bench</title>
+<style>
+/* ------------------------------------------------------------------
+   Single-theme by intent: the lab's interactive rail is dark in BOTH
+   site themes (see WorldComputer.tsx), so these benches must be judged
+   on the ground they will actually render on. Every colour is painted
+   explicitly from a token; nothing is inherited from the host.
+   Palette lifted verbatim from packages/nextjs/styles/theme.css.
+------------------------------------------------------------------- */
+:root{
+  --ground:#140f20;
+  --ground-2:#191327;
+  --panel:#1f1a2c;
+  --panel-2:#262038;
+  --line:#2f2848;
+  --line-strong:#3a3158;
+  --ink:#f2eefb;
+  --ink-muted:#b3aac9;
+  --ink-faint:#857c9e;
+  --violet:#a87dff;
+  --violet-strong:#c4a6ff;
+  --mint:#54d6a8;
+  --peach:#f0a868;
+  --rogue:#ff7ccb;
+  --tint:color-mix(in srgb, var(--violet) 16%, transparent);
+  --tint-soft:color-mix(in srgb, var(--violet) 8%, transparent);
+
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+  --step--1:0.78rem;
+  --step-0:0.95rem;
+  --step-1:1.15rem;
+  --step-2:1.5rem;
+  --step-3:2.1rem;
+  --step-4:3rem;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--step-0);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:74rem;margin:0 auto;padding:clamp(1.5rem,4vw,4rem) clamp(1rem,4vw,2.5rem) 6rem}
+
+/* ---- type ---- */
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.15;letter-spacing:-0.02em}
+h1{font-size:var(--step-4);font-weight:650}
+h2{font-size:var(--step-2);font-weight:620}
+h3{font-size:var(--step-1);font-weight:600}
+p{margin:0}
+.eyebrow{
+  font-family:var(--mono);
+  font-size:var(--step--1);
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--violet);
+}
+.lede{color:var(--ink-muted);max-width:62ch;font-size:var(--step-1);line-height:1.55}
+.note{color:var(--ink-muted);max-width:68ch}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+header.masthead{
+  display:flex;flex-direction:column;gap:1rem;
+  padding-bottom:2.5rem;border-bottom:1px solid var(--line);
+}
+header.masthead .rule{
+  display:flex;gap:.6rem;align-items:center;
+  font-family:var(--mono);font-size:var(--step--1);color:var(--ink-faint);
+  letter-spacing:.06em;
+}
+header.masthead .rule b{color:var(--ink-muted);font-weight:500}
+
+section{margin-top:clamp(3rem,7vw,5.5rem)}
+.section-head{display:flex;flex-direction:column;gap:.7rem;margin-bottom:2rem}
+
+/* ---- benches ---- */
+.bench{
+  border:1px solid var(--line);border-radius:16px;background:var(--panel);
+  overflow:hidden;margin-top:2rem;
+}
+.bench-head{
+  padding:1.1rem 1.35rem;border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:baseline;justify-content:space-between;
+  background:linear-gradient(180deg,var(--tint-soft),transparent);
+}
+.bench-head .where{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-faint)
+}
+.bench-head .claim{color:var(--ink-muted);font-size:var(--step--1);max-width:46ch;line-height:1.5}
+.bench-body{padding:1.35rem}
+.bench-foot{
+  padding:.95rem 1.35rem;border-top:1px solid var(--line);background:var(--ground-2);
+  color:var(--ink-muted);font-size:var(--step--1);line-height:1.55;
+  display:flex;gap:.65rem;align-items:flex-start
+}
+.bench-foot svg{flex:none;margin-top:.2rem}
+.bench-foot b{color:var(--ink);font-weight:600}
+
+/* ---- shared control kit (mirrors the lab's button styles) ---- */
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem}
+button{font-family:inherit;font-size:var(--step--1);cursor:pointer}
+.btn{
+  border:0;border-radius:9px;padding:.62rem 1rem;font-weight:600;
+  background:var(--violet);color:#1a102c;
+  transition:opacity .15s ease, transform .12s cubic-bezier(.34,1.56,.64,1);
+}
+.btn:hover:not(:disabled){opacity:.9}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.ghost{
+  background:var(--tint);color:var(--ink);
+  border:1px solid var(--line-strong);
+}
+.btn.ghost:hover:not(:disabled){border-color:var(--violet)}
+.btn:disabled{opacity:.42;cursor:not-allowed}
+.btn.link{background:none;border:0;color:var(--ink-faint);padding:.62rem .4rem;font-weight:500}
+.btn.link:hover{color:var(--ink)}
+:where(button,[tabindex]):focus-visible{
+  outline:2px solid var(--violet-strong);outline-offset:2px;border-radius:8px
+}
+
+.caption{
+  margin-top:1rem;min-height:3.2rem;color:var(--ink-muted);
+  font-size:var(--step--1);line-height:1.55
+}
+.caption b{color:var(--ink);font-weight:600}
+.caption .hl-mint{color:var(--mint);font-weight:600}
+.caption .hl-rogue{color:var(--rogue);font-weight:600}
+.caption .hl-peach{color:var(--peach);font-weight:600}
+
+.readout{
+  display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--line);
+  background:var(--tint-soft);border-radius:999px;padding:.3rem .8rem;
+  font-family:var(--mono);font-size:.72rem;font-variant-numeric:tabular-nums
+}
+.readout span{color:var(--ink-faint)}
+.readout strong{color:var(--ink);font-weight:600}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+
+/* ================= 1. blockchain ================= */
+.chain-scroll{overflow-x:auto;padding-bottom:.6rem;margin:0 -.35rem}
+.chain{display:flex;align-items:stretch;gap:0;padding:.35rem;min-width:min-content}
+.blk{
+  flex:none;width:9.6rem;border:1.5px solid var(--line-strong);border-radius:11px;
+  background:var(--ground-2);padding:.6rem .65rem;display:flex;flex-direction:column;gap:.45rem;
+  transition:border-color .3s ease, background .3s ease, transform .3s cubic-bezier(.34,1.4,.64,1);
+}
+.blk.ok{border-color:color-mix(in srgb,var(--violet) 55%,transparent)}
+.blk.rogue{border-color:var(--rogue);background:color-mix(in srgb,var(--rogue) 9%,var(--ground-2))}
+.blk.pulse{animation:blk-pulse .7s cubic-bezier(.22,1,.36,1)}
+@keyframes blk-pulse{
+  0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--mint) 70%,transparent);transform:translateY(0)}
+  35%{transform:translateY(-4px)}
+  100%{box-shadow:0 0 0 14px transparent;transform:translateY(0)}
+}
+.blk.shake,.shake{animation:blk-shake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes blk-shake{
+  10%,90%{transform:translateX(-1.5px)} 20%,80%{transform:translateX(3px)}
+  30%,50%,70%{transform:translateX(-5px)} 40%,60%{transform:translateX(5px)}
+}
+.blk .n{
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-faint);display:flex;justify-content:space-between;align-items:center
+}
+.blk .n .tag{color:var(--rogue);font-weight:600;letter-spacing:.06em}
+.txs{display:flex;flex-direction:column;gap:.22rem;min-height:2.9rem}
+.tx{
+  font-family:var(--mono);font-size:.68rem;font-variant-numeric:tabular-nums;
+  background:var(--panel-2);border:1px solid transparent;border-radius:5px;
+  padding:.2rem .35rem;color:var(--ink-muted);text-align:left;width:100%;
+  transition:border-color .18s ease,color .18s ease,background .18s ease
+}
+.tx:hover{border-color:var(--violet);color:var(--ink)}
+.tx.edited{color:var(--rogue);border-color:var(--rogue);background:color-mix(in srgb,var(--rogue) 12%,transparent)}
+.tx.empty{display:block;color:var(--ink-faint);font-style:italic;background:none;cursor:default}
+.tx.empty:hover{border-color:transparent;color:var(--ink-faint)}
+.hashes{display:flex;flex-direction:column;gap:.12rem;font-family:var(--mono);font-size:.64rem}
+.hashes div{display:flex;gap:.35rem}
+.hashes .k{color:var(--ink-faint);width:2.6rem;flex:none}
+.hashes .v{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.v.match{color:var(--mint)} .v.mismatch{color:var(--rogue)} .v.self{color:var(--violet-strong)}
+
+.link{
+  flex:none;width:2.1rem;display:grid;place-items:center;position:relative
+}
+.link svg{overflow:visible}
+.link .seg{transition:stroke .35s ease,transform .45s cubic-bezier(.34,1.56,.64,1)}
+.link.broken .seg.up{transform:translate(-3px,-5px) rotate(-16deg)}
+.link.broken .seg.dn{transform:translate(3px,5px) rotate(-16deg)}
+
+/* ================= 2. vending ================= */
+.vend-grid{display:grid;gap:1.15rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:44rem){.vend-grid{grid-template-columns:15rem minmax(0,1fr)}}
+.vend-svg{width:100%;height:auto;max-width:15rem;margin-inline:auto;display:block;user-select:none}
+.code{
+  border:1px solid var(--line);border-radius:10px;background:var(--ground-2);
+  padding:.85rem .9rem;font-family:var(--mono);font-size:.72rem;line-height:1.85;overflow-x:auto
+}
+.code .cm{color:var(--ink-faint)}
+.code .kw{color:var(--violet-strong)}
+.code .fn{color:var(--ink)}
+.code .req{
+  display:flex;gap:.5rem;align-items:center;border-radius:5px;padding:0 .3rem;margin:0 -.3rem;
+  transition:background .25s ease,color .25s ease;color:var(--ink-muted);white-space:nowrap
+}
+.code .req .mark{width:1rem;flex:none;text-align:center;font-weight:700;color:var(--ink-faint)}
+.code .req.pass{background:color-mix(in srgb,var(--mint) 13%,transparent);color:var(--ink)}
+.code .req.pass .mark{color:var(--mint)}
+.code .req.fail{background:color-mix(in srgb,var(--rogue) 14%,transparent);color:var(--ink)}
+.code .req.fail .mark{color:var(--rogue)}
+.code .req.dim{opacity:.35}
+.picker{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.9rem}
+.chip{
+  border:1px solid var(--line-strong);background:var(--panel-2);color:var(--ink-muted);
+  border-radius:8px;padding:.4rem .7rem;font-family:var(--mono);font-size:.72rem;
+  transition:border-color .18s ease,color .18s ease,background .18s ease
+}
+.chip:hover{border-color:var(--violet);color:var(--ink)}
+.chip[aria-pressed="true"]{
+  border-color:var(--violet);background:var(--tint);color:var(--ink);font-weight:600
+}
+.field{
+  display:flex;gap:.5rem;align-items:baseline;flex-wrap:wrap;margin-top:.9rem;
+  font-family:var(--mono);font-size:.72rem;color:var(--ink-faint)
+}
+
+/* ================= 3. accounts ================= */
+.net-band{
+  border:1.5px solid color-mix(in srgb,var(--violet) 50%,transparent);border-radius:12px;
+  background:
+    radial-gradient(120% 160% at 50% 0%, color-mix(in srgb,var(--violet) 14%,transparent), transparent 70%),
+    var(--ground-2);
+  padding:.9rem 1rem;display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;align-items:center;
+  justify-content:space-between;position:relative
+}
+.net-band.pulse{animation:band-pulse .9s cubic-bezier(.22,1,.36,1)}
+@keyframes band-pulse{
+  0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--mint) 55%,transparent)}
+  100%{box-shadow:0 0 0 16px transparent}
+}
+.net-band .lbl{
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--violet);display:block;margin-bottom:.2rem
+}
+.net-band .val{font-family:var(--mono);font-size:.9rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.wire{display:block;width:100%;height:3.6rem}
+.devices{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center}
+.dev{
+  flex:1 1 7rem;max-width:9rem;border:1.5px solid var(--line-strong);border-radius:12px;
+  background:var(--ground-2);padding:.8rem .6rem;display:flex;flex-direction:column;
+  align-items:center;gap:.5rem;text-align:center;
+  transition:border-color .3s ease,opacity .4s ease,filter .4s ease,transform .4s cubic-bezier(.34,1.4,.64,1)
+}
+.dev.live{border-color:var(--violet);background:color-mix(in srgb,var(--violet) 9%,var(--ground-2))}
+.dev.dead{opacity:.4;filter:grayscale(1)}
+.dev.enter{animation:dev-in .55s cubic-bezier(.34,1.5,.64,1) both}
+@keyframes dev-in{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
+.dev .name{font-family:var(--mono);font-size:.68rem;color:var(--ink-muted);letter-spacing:.04em}
+.dev.live .name{color:var(--ink)}
+.dev .key{
+  font-family:var(--mono);font-size:.6rem;color:var(--mint);min-height:.9rem;
+  word-break:break-all;line-height:1.3
+}
+
+/* ================= 4. custody ================= */
+.vaults{display:grid;gap:.75rem;grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:32rem){.vaults{grid-template-columns:1fr}}
+.vault{
+  border:1.5px solid var(--line-strong);border-radius:12px;background:var(--ground-2);
+  padding:.85rem .75rem;display:flex;flex-direction:column;align-items:center;gap:.55rem;
+  text-align:center;transition:border-color .35s ease,background .35s ease
+}
+.vault.hit{animation:blk-shake .55s cubic-bezier(.36,.07,.19,.97)}
+.vault .title{font-size:.82rem;font-weight:600;line-height:1.25}
+.vault .who{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint)
+}
+.status{
+  width:100%;border-radius:7px;padding:.35rem .4rem;font-family:var(--mono);font-size:.66rem;
+  line-height:1.35;border:1px solid var(--line);color:var(--ink-faint);background:var(--panel-2);
+  min-height:2.5rem;display:grid;place-items:center;
+  transition:color .3s ease,border-color .3s ease,background .3s ease
+}
+.status.enter{animation:st-in .45s cubic-bezier(.34,1.5,.64,1) both}
+@keyframes st-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.status.ok{color:var(--mint);border-color:color-mix(in srgb,var(--mint) 45%,transparent);background:color-mix(in srgb,var(--mint) 10%,transparent)}
+.status.slow{color:var(--peach);border-color:color-mix(in srgb,var(--peach) 45%,transparent);background:color-mix(in srgb,var(--peach) 10%,transparent)}
+.status.gone{color:var(--rogue);border-color:color-mix(in srgb,var(--rogue) 50%,transparent);background:color-mix(in srgb,var(--rogue) 11%,transparent)}
+.vault.ok{border-color:color-mix(in srgb,var(--mint) 40%,transparent)}
+.vault.slow{border-color:color-mix(in srgb,var(--peach) 40%,transparent)}
+.vault.gone{border-color:color-mix(in srgb,var(--rogue) 45%,transparent)}
+.incidents{display:flex;flex-direction:column;gap:.4rem;margin-top:1rem}
+.inc{
+  text-align:left;border:1px solid var(--line-strong);background:var(--panel-2);
+  border-radius:9px;padding:.55rem .75rem;color:var(--ink-muted);font-size:var(--step--1);
+  display:flex;gap:.6rem;align-items:center;
+  transition:border-color .18s ease,color .18s ease,background .18s ease
+}
+.inc:hover:not(:disabled){border-color:var(--violet);color:var(--ink)}
+.inc[data-done="1"]{opacity:.5}
+.inc .dot{
+  width:.45rem;height:.45rem;border-radius:50%;background:var(--ink-faint);flex:none;
+  transition:background .25s ease
+}
+.inc[data-done="1"] .dot{background:var(--violet)}
+
+/* ---- roadmap ---- */
+.road{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+.road article{
+  border:1px solid var(--line);border-radius:11px;background:var(--ground-2);padding:.95rem 1rem;
+  display:flex;flex-direction:column;gap:.4rem
+}
+.road .card-id{
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)
+}
+.road h4{margin:0;font-size:var(--step-0);font-weight:600}
+.road p{color:var(--ink-muted);font-size:var(--step--1);line-height:1.5}
+.road .stat{
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:.15rem .45rem;border-radius:4px;align-self:flex-start
+}
+.stat.done{color:var(--mint);background:color-mix(in srgb,var(--mint) 13%,transparent)}
+.stat.built{color:var(--violet);background:var(--tint)}
+.stat.next{color:var(--peach);background:color-mix(in srgb,var(--peach) 13%,transparent)}
+.stat.skip{color:var(--ink-faint);background:var(--panel-2)}
+
+/* ================= shared drag + drop kit ================= */
+.tray{
+  display:flex;flex-wrap:wrap;gap:.45rem;padding:.7rem;border-radius:11px;
+  border:1px dashed var(--line-strong);background:var(--ground-2);min-height:3.4rem
+}
+.tray:empty::after{
+  content:"all placed";font-family:var(--mono);font-size:.7rem;color:var(--mint);
+  align-self:center;margin:auto
+}
+.tile{
+  border:1.5px solid var(--line-strong);background:var(--panel-2);color:var(--ink);
+  border-radius:9px;padding:.42rem .7rem;font-size:.8rem;line-height:1.3;
+  cursor:grab;touch-action:none;user-select:none;text-align:left;
+  transition:border-color .18s ease,background .18s ease,transform .18s cubic-bezier(.34,1.5,.64,1)
+}
+.tile:hover{border-color:var(--violet)}
+.tile.sel{border-color:var(--violet);background:var(--tint);box-shadow:0 0 0 3px color-mix(in srgb,var(--violet) 22%,transparent)}
+.tile.dragging{opacity:.28}
+.tile.ghost{
+  position:fixed;z-index:99;pointer-events:none;cursor:grabbing;
+  box-shadow:0 12px 30px rgb(0 0 0 / .5);border-color:var(--violet);background:var(--panel-2);
+  transform:rotate(-1.5deg) scale(1.04)
+}
+.tile.placed{cursor:default;border-color:color-mix(in srgb,var(--mint) 55%,transparent);
+  background:color-mix(in srgb,var(--mint) 11%,transparent)}
+.tile.reject{animation:tile-no .45s cubic-bezier(.36,.07,.19,.97)}
+@keyframes tile-no{
+  20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}
+}
+.tile.land{animation:tile-land .5s cubic-bezier(.34,1.5,.64,1)}
+@keyframes tile-land{0%{transform:scale(1.14)}100%{transform:scale(1)}}
+.zone{
+  border:1.5px dashed var(--line-strong);border-radius:12px;background:var(--ground-2);
+  padding:.7rem;display:flex;flex-direction:column;gap:.5rem;min-height:8.5rem;
+  transition:border-color .2s ease,background .2s ease
+}
+.zone.over{border-color:var(--violet);background:color-mix(in srgb,var(--violet) 10%,var(--ground-2));border-style:solid}
+.zone h5{
+  margin:0;font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:500;display:flex;justify-content:space-between;gap:.5rem
+}
+.zone .drop{display:flex;flex-direction:column;gap:.35rem}
+.zones2{display:grid;gap:.7rem;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:34rem){.zones2{grid-template-columns:1fr}}
+
+/* ================= 5. wallets ================= */
+.wal-legend{
+  display:flex;gap:1rem;flex-wrap:wrap;font-family:var(--mono);font-size:.66rem;
+  color:var(--ink-faint);margin-top:.8rem
+}
+.wal-legend b{color:var(--ink-muted);font-weight:500}
+
+/* ================= 6. legalese hunt ================= */
+.hunt-grid{display:grid;gap:1rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:48rem){.hunt-grid.split{grid-template-columns:1fr 1fr}}
+.terms{
+  height:17rem;overflow-y:auto;border:1px solid var(--line);border-radius:10px;
+  background:#100c1a;padding:.8rem .9rem;
+  font-family:Georgia,"Times New Roman",serif;font-size:.62rem;line-height:1.45;
+  color:#8f86a8;text-align:justify;hyphens:auto
+}
+.terms h6{
+  margin:.7rem 0 .25rem;font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;
+  text-transform:uppercase;color:#6a6183;font-weight:500
+}
+.terms p{
+  margin:0 0 .3rem;cursor:pointer;padding:.12rem .2rem;border-radius:3px;
+  transition:background .12s ease,color .12s ease
+}
+.terms p:hover{background:color-mix(in srgb,var(--violet) 16%,transparent);color:var(--ink)}
+.terms p.wrong{background:color-mix(in srgb,var(--rogue) 18%,transparent);color:#ffb8e0}
+.terms p.right{background:color-mix(in srgb,var(--mint) 20%,transparent);color:#c9f5e4}
+.terms .cl{color:#6a6183;font-family:var(--mono);font-size:.55rem}
+.hunt-bar{
+  display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;
+  margin-bottom:.65rem
+}
+.timer{font-family:var(--mono);font-size:1.05rem;font-variant-numeric:tabular-nums;color:var(--peach)}
+.timer.stopped{color:var(--mint)}
+.doc-label{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)
+}
+.contract-side{display:flex;flex-direction:column;gap:.6rem}
+.contract-side .code{font-size:.74rem;line-height:2}
+.contract-side .code p{
+  margin:0;cursor:pointer;border-radius:4px;padding:0 .3rem;transition:background .12s ease
+}
+.contract-side .code p:hover{background:color-mix(in srgb,var(--violet) 16%,transparent)}
+.contract-side .code p.right{background:color-mix(in srgb,var(--mint) 18%,transparent)}
+.contract-side .code p.wrong{background:color-mix(in srgb,var(--rogue) 18%,transparent)}
+
+/* ================= 7. silent rule change ================= */
+.doc{
+  border:1px solid var(--line);border-radius:11px;background:var(--ground-2);overflow:hidden
+}
+.doc-head{
+  padding:.55rem .8rem;border-bottom:1px solid var(--line);background:var(--panel-2);
+  display:flex;justify-content:space-between;align-items:center;gap:.6rem;
+  font-family:var(--mono);font-size:.66rem;color:var(--ink-muted)
+}
+.doc-head .ver{color:var(--violet-strong);font-weight:600}
+.clauses{display:flex;flex-direction:column}
+.clause{
+  padding:.5rem .8rem;border-bottom:1px solid var(--line);font-size:.78rem;line-height:1.5;
+  color:var(--ink-muted);transition:background .3s ease
+}
+.clause:last-child{border-bottom:0}
+.clause .was{text-decoration:line-through;color:var(--ink-faint);opacity:.75}
+.clause .now{color:var(--rogue);font-weight:600}
+.clause.changed{background:color-mix(in srgb,var(--rogue) 9%,transparent)}
+.clause.changed.enter{animation:cl-in .5s cubic-bezier(.34,1.5,.64,1) both}
+@keyframes cl-in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.clause.pub{background:color-mix(in srgb,var(--mint) 9%,transparent)}
+/* the clause that authorised the silent rewrite — flagged, but not as a change */
+.clause.enabler{
+  background:color-mix(in srgb,var(--peach) 10%,transparent);
+  box-shadow:inset 2px 0 0 var(--peach)
+}
+.clause .now.ok{color:var(--mint)}
+.night{
+  position:relative;border-radius:11px;overflow:hidden;transition:filter .8s ease
+}
+.night.asleep{filter:brightness(.45) saturate(.6)}
+.side-toggle{display:flex;gap:.35rem;margin-bottom:.85rem}
+.side-toggle button{
+  flex:1;border:1px solid var(--line-strong);background:var(--panel-2);color:var(--ink-muted);
+  border-radius:8px;padding:.45rem .6rem;font-size:.76rem;
+  transition:border-color .18s ease,background .18s ease,color .18s ease
+}
+.side-toggle button[aria-pressed="true"]{border-color:var(--violet);background:var(--tint);color:var(--ink);font-weight:600}
+
+/* ================= 8. ether denominations ================= */
+.denom{
+  display:grid;gap:.5rem;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:1.1rem
+}
+@media(max-width:34rem){.denom{grid-template-columns:1fr}}
+.unit{
+  border:1px solid var(--line);border-radius:10px;background:var(--ground-2);padding:.6rem .7rem;
+  display:flex;flex-direction:column;gap:.15rem;overflow:hidden
+}
+.unit .u{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+.unit .v{
+  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.92rem;color:var(--ink);
+  word-break:break-all;line-height:1.3
+}
+.unit.lead{border-color:var(--violet);background:color-mix(in srgb,var(--violet) 10%,var(--ground-2))}
+.unit.lead .v{color:var(--violet-strong)}
+.ruler{width:100%;height:3.6rem;display:block;margin:.3rem 0 .1rem}
+input[type=range]{
+  width:100%;appearance:none;background:transparent;cursor:pointer;height:1.6rem;margin:0
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:5px;border-radius:3px;
+  background:linear-gradient(90deg,var(--line-strong),var(--violet))
+}
+input[type=range]::-moz-range-track{
+  height:5px;border-radius:3px;
+  background:linear-gradient(90deg,var(--line-strong),var(--violet))
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:18px;height:18px;border-radius:50%;background:var(--violet);
+  border:3px solid var(--panel);margin-top:-7px;box-shadow:0 0 0 1px var(--violet)
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;background:var(--violet);
+  border:3px solid var(--panel);box-shadow:0 0 0 1px var(--violet)
+}
+.stops{
+  display:flex;justify-content:space-between;font-family:var(--mono);font-size:.6rem;
+  color:var(--ink-faint);margin-top:-.2rem
+}
+.spend{
+  display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:1rem;
+  padding-top:.9rem;border-top:1px solid var(--line)
+}
+.spend .lbl{font-family:var(--mono);font-size:.66rem;color:var(--ink-faint)}
+
+/* ================= 9. transactions ================= */
+.errands{display:grid;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(10.5rem,1fr));margin-bottom:1rem}
+.errand{
+  text-align:left;border:1.5px solid var(--line-strong);background:var(--panel-2);color:var(--ink-muted);
+  border-radius:10px;padding:.55rem .7rem;display:flex;flex-direction:column;gap:.15rem;
+  transition:border-color .18s ease,background .18s ease,color .18s ease
+}
+.errand:hover{border-color:var(--violet);color:var(--ink)}
+.errand[aria-pressed="true"]{border-color:var(--violet);background:var(--tint);color:var(--ink)}
+.errand .app{font-size:.8rem;font-weight:600;line-height:1.25}
+.errand .src{font-family:var(--mono);font-size:.58rem;color:var(--ink-faint);letter-spacing:.04em}
+.errand .seen{font-family:var(--mono);font-size:.56rem;color:var(--mint)}
+
+.tx-grid{display:grid;gap:.8rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:50rem){.tx-grid{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}}
+
+.envelope{
+  border:1.5px solid var(--line-strong);border-radius:12px;background:var(--ground-2);
+  padding:.7rem .8rem;display:flex;flex-direction:column;gap:.3rem;transition:border-color .35s ease
+}
+.envelope.sealed{border-color:color-mix(in srgb,var(--violet) 60%,transparent)}
+.env-head{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:.3rem;border-bottom:1px solid var(--line);margin-bottom:.15rem
+}
+.fld{display:grid;grid-template-columns:4.2rem minmax(0,1fr);gap:.5rem;align-items:start;
+  font-family:var(--mono);font-size:.69rem;line-height:1.5}
+.fld .k{color:var(--ink-faint)}
+.fld .v{color:var(--ink);word-break:break-all;font-variant-numeric:tabular-nums}
+.fld .v .sub{color:var(--ink-faint)}
+.fld.swap{animation:fld-in .42s cubic-bezier(.34,1.5,.64,1) both}
+@keyframes fld-in{from{opacity:0;transform:translateX(9px)}to{opacity:1;transform:none}}
+
+.calldata{position:relative;border-radius:6px;background:var(--panel-2);padding:.28rem .4rem;overflow:hidden}
+.calldata .sel{color:var(--violet-strong);font-weight:600;display:block}
+.calldata .w{color:var(--ink-faint);display:block;word-break:break-all}
+.calldata .empty{color:var(--mint)}
+.scanbar{
+  position:absolute;top:0;bottom:0;width:38%;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--violet) 45%,transparent),transparent)
+}
+
+.reveal{
+  border:1.5px dashed var(--line-strong);border-radius:12px;background:var(--ground-2);
+  padding:.75rem .8rem;display:flex;flex-direction:column;gap:.55rem;min-height:9rem;
+  transition:border-color .35s ease,background .35s ease
+}
+.reveal.on{border-style:solid;border-color:color-mix(in srgb,var(--violet) 55%,transparent)}
+.reveal.danger{border-style:solid;border-color:var(--rogue);background:color-mix(in srgb,var(--rogue) 8%,var(--ground-2))}
+.reveal .hint{font-size:.76rem;color:var(--ink-faint);line-height:1.5;margin:auto 0}
+.call{font-family:var(--mono);font-size:.73rem;line-height:1.6}
+.call .fn{color:var(--violet-strong);font-weight:600}
+.reveal.danger .call .fn{color:var(--rogue)}
+.call .arg{display:grid;grid-template-columns:5rem minmax(0,1fr);gap:.4rem;padding-left:.7rem}
+.call .arg .an{color:var(--ink-faint)}
+.call .arg .av{color:var(--ink);word-break:break-all}
+.call .arg.enter{animation:fld-in .4s cubic-bezier(.34,1.5,.64,1) both}
+.plain{font-size:.78rem;line-height:1.5;color:var(--ink-muted)}
+.plain b{color:var(--ink);font-weight:600}
+.reveal.danger .plain b{color:var(--rogue)}
+.sigline{
+  display:flex;flex-direction:column;gap:.2rem;padding-top:.5rem;border-top:1px solid var(--line)
+}
+.sigline .sig{font-family:var(--mono);font-size:.6rem;color:var(--mint);word-break:break-all}
+.keynote{display:flex;gap:.4rem;align-items:center;font-family:var(--mono);font-size:.59rem;color:var(--ink-faint)}
+.outcome{
+  border-radius:9px;padding:.55rem .65rem;font-size:.78rem;line-height:1.45;
+  border:1px solid var(--line);color:var(--ink-muted);margin-top:.8rem
+}
+.outcome.good{color:var(--ink);border-color:color-mix(in srgb,var(--mint) 45%,transparent);background:color-mix(in srgb,var(--mint) 9%,transparent)}
+.outcome.bad{color:var(--ink);border-color:color-mix(in srgb,var(--rogue) 50%,transparent);background:color-mix(in srgb,var(--rogue) 10%,transparent)}
+.outcome.enter{animation:st-in .45s cubic-bezier(.34,1.5,.64,1) both}
+.outcome b{font-weight:600}
+.outcome.good b{color:var(--mint)}
+.outcome.bad b{color:var(--rogue)}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Ethereum 101 V2 &middot; PR #64</p>
+  <h1>Interaction Bench</h1>
+  <p class="lede">Nine interactive experiences for the cards that don't have one yet, built the way the lab's own components are built &mdash; SVG, frame-driven motion, and the lab's palette. Every control here changes a model you can keep poking at, and each bench uses a deliberately different kind of interaction so no two cards feel alike.</p>
+  <div class="rule">
+    <span>branch <b>ethereum-101-v2</b></span><span>&middot;</span>
+    <span><b>18</b> cards</span><span>&middot;</span>
+    <span><b>4</b> interactives already shipped</span><span>&middot;</span>
+    <span><b>9</b> new benches below</span>
+  </div>
+</header>
+
+<section>
+  <div class="section-head">
+    <p class="eyebrow">First round</p>
+    <h2>Four benches, built to the WorldComputer bar</h2>
+    <p class="note">These are the four cards with the most to gain and no interactive yet. Each one is a model with real state that survives being played with, not a question with an animation bolted on. Motion is frame-driven with hand-picked easing, colours come from <span class="mono">theme.css</span>, and every gesture teaches the specific claim the card makes.</p>
+  </div>
+
+  <!-- ============ 1 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 6 &middot; making things happen &middot; the-blockchain</p>
+        <h3>Build it, then break it</h3>
+      </div>
+      <p class="claim">Teaches why history is tamper-evident: each block's seal is computed from the one before it.</p>
+    </div>
+    <div class="bench-body" id="chain-root">
+      <div class="bar">
+        <span class="readout"><span>pending</span><strong id="ch-pending">2 tx</strong></span>
+        <button class="btn link" data-act="reset">reset</button>
+      </div>
+      <div class="chain-scroll"><div class="chain" id="ch-chain"></div></div>
+      <p class="caption" id="ch-caption"></p>
+      <div class="controls">
+        <button class="btn" data-act="seal">Seal a block</button>
+        <button class="btn ghost" data-act="reseal" disabled>Re-seal the chain</button>
+      </div>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why this beats a quiz.</b> The hashes are really computed from the block contents, so a learner who edits a transaction sees a specific seal change to a specific new value &mdash; and then watches the break travel forward one block at a time. Repairing it costs them every block after the edit, which is the whole security argument, felt rather than asserted.</span>
+    </div>
+  </article>
+
+  <!-- ============ 2 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 2 &middot; more than money &middot; smart-contracts</p>
+        <h3>The machine doesn't decide &mdash; the code did</h3>
+      </div>
+      <p class="claim">Teaches deterministic execution and all-or-nothing revert: a failed condition undoes everything, including the payment.</p>
+    </div>
+    <div class="bench-body" id="vend-root">
+      <div class="bar">
+        <span class="readout"><span>contract holds</span><strong id="vm-bal">0.00 ETH</strong></span>
+        <button class="btn link" data-act="reset">reset</button>
+      </div>
+      <div class="vend-grid">
+        <svg class="vend-svg" viewBox="0 0 200 270" role="img" aria-label="A vending machine with a coin slot, three shelves of stock and a return tray.">
+          <defs>
+            <linearGradient id="vm-glass" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#a87dff" stop-opacity=".16"/>
+              <stop offset="55%" stop-color="#a87dff" stop-opacity=".04"/>
+              <stop offset="100%" stop-color="#a87dff" stop-opacity=".12"/>
+            </linearGradient>
+            <linearGradient id="vm-body" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2b2340"/><stop offset="100%" stop-color="#1b1528"/>
+            </linearGradient>
+            <clipPath id="vm-clip"><rect x="18" y="26" width="104" height="150" rx="6"/></clipPath>
+          </defs>
+
+          <rect x="8" y="12" width="184" height="248" rx="16" fill="url(#vm-body)" stroke="#3a3158" stroke-width="2"/>
+          <rect x="18" y="26" width="104" height="150" rx="6" fill="url(#vm-glass)" stroke="#3a3158" stroke-width="1.4"/>
+
+          <g id="vm-shelves" clip-path="url(#vm-clip)"></g>
+
+          <line x1="18" y1="76" x2="122" y2="76" stroke="#3a3158" stroke-width="1"/>
+          <line x1="18" y1="126" x2="122" y2="126" stroke="#3a3158" stroke-width="1"/>
+
+          <!-- right column: screen, slot, keypad -->
+          <rect x="134" y="26" width="48" height="26" rx="5" fill="#140f20" stroke="#3a3158"/>
+          <text id="vm-screen" x="158" y="43" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#54d6a8">READY</text>
+
+          <g id="vm-slot">
+            <rect x="146" y="64" width="24" height="5" rx="2.5" fill="#0d0a16" stroke="#4a4070"/>
+            <text x="158" y="80" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" fill="#857c9e" letter-spacing="1">COIN</text>
+          </g>
+
+          <g id="vm-keypad" fill="#2b2340" stroke="#3a3158" stroke-width=".8">
+            <rect x="140" y="92" width="12" height="10" rx="2"/><rect x="156" y="92" width="12" height="10" rx="2"/>
+            <rect x="140" y="107" width="12" height="10" rx="2"/><rect x="156" y="107" width="12" height="10" rx="2"/>
+            <rect x="140" y="122" width="12" height="10" rx="2"/><rect x="156" y="122" width="12" height="10" rx="2"/>
+          </g>
+
+          <!-- return tray -->
+          <rect x="136" y="150" width="46" height="26" rx="5" fill="#0d0a16" stroke="#3a3158"/>
+          <text x="159" y="166" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" fill="#857c9e" letter-spacing=".5">RETURN</text>
+
+          <!-- dispense tray -->
+          <rect x="18" y="190" width="164" height="52" rx="7" fill="#0d0a16" stroke="#3a3158" stroke-width="1.4"/>
+          <rect x="18" y="190" width="164" height="7" rx="3" fill="#241b36"/>
+          <g id="vm-tray"></g>
+
+          <circle id="vm-coin" cx="158" cy="-20" r="7" fill="#f0a868" stroke="#c98a4e" stroke-width="1.2" opacity="0"/>
+          <rect id="vm-product" x="0" y="0" width="26" height="18" rx="4" fill="#54d6a8" opacity="0"/>
+        </svg>
+
+        <div>
+          <div class="code" aria-label="The contract source, with each condition highlighted as it runs.">
+            <div class="cm">// Snack.sol &mdash; anyone can read this</div>
+            <div><span class="kw">function</span> <span class="fn">buy</span>() <span class="kw">external payable</span> {</div>
+            <div class="req" data-req="0"><span class="mark">&middot;</span><span>&nbsp;&nbsp;require(msg.value &gt;= 0.05 ether);</span></div>
+            <div class="req" data-req="1"><span class="mark">&middot;</span><span>&nbsp;&nbsp;require(stock &gt; 0);</span></div>
+            <div class="req" data-req="2"><span class="mark">&middot;</span><span>&nbsp;&nbsp;require(block.timestamp &lt; closesAt);</span></div>
+            <div>&nbsp;&nbsp;stock -= 1;</div>
+            <div>&nbsp;&nbsp;<span class="fn">_dispense</span>(msg.sender);</div>
+            <div>}</div>
+          </div>
+
+          <div class="picker" role="group" aria-label="How much ether to send">
+            <button class="chip" data-pay="0.02">send 0.02 ETH</button>
+            <button class="chip" data-pay="0.05" aria-pressed="true">send 0.05 ETH</button>
+            <button class="chip" data-pay="0.10">send 0.10 ETH</button>
+          </div>
+          <div class="field">
+            <span>machine state &mdash;</span>
+            <span class="readout"><span>stock</span><strong id="vm-stock">3</strong></span>
+            <button class="chip" data-toggle="closed" aria-pressed="false">sale window: open</button>
+          </div>
+
+          <p class="caption" id="vm-caption"></p>
+          <div class="controls">
+            <button class="btn" data-act="buy">Call buy()</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why this beats a quiz.</b> The learner sets up the failure themselves &mdash; underpay, empty the shelf, or close the window &mdash; and the source they can read predicts exactly which line stops them. Watching the coin come back out of the return tray while <span class="mono">stock</span> stays put is the clearest possible picture of a revert.</span>
+    </div>
+  </article>
+
+  <!-- ============ 3 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 4 &middot; your money, your keys &middot; accounts-and-addresses</p>
+        <h3>The account isn't in your pocket</h3>
+      </div>
+      <p class="claim">Teaches that the account lives on the network and the device is only a window onto it.</p>
+    </div>
+    <div class="bench-body" id="acct-root">
+      <div class="bar">
+        <span class="readout"><span>devices used</span><strong id="ac-count">1</strong></span>
+        <button class="btn link" data-act="reset">reset</button>
+      </div>
+
+      <div class="net-band" id="ac-band">
+        <div>
+          <span class="lbl">on the ethereum network</span>
+          <span class="val" id="ac-addr">0x7a3f&hairsp;&hellip;&hairsp;9c21</span>
+        </div>
+        <div>
+          <span class="lbl">balance</span>
+          <span class="val" id="ac-bal">4.20 ETH</span>
+        </div>
+      </div>
+
+      <svg class="wire" id="ac-wire" viewBox="0 0 400 56" preserveAspectRatio="none" aria-hidden="true">
+        <path id="ac-wire-path" d="M200 0 C200 26 200 30 200 56" fill="none" stroke="#3a3158" stroke-width="2" stroke-dasharray="4 5"/>
+        <circle id="ac-spark" r="3.5" fill="#54d6a8" opacity="0"/>
+      </svg>
+
+      <div class="devices" id="ac-devices"></div>
+
+      <p class="caption" id="ac-caption"></p>
+      <div class="controls" id="ac-controls"></div>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why this beats a quiz.</b> The address in the band never changes, and it is visibly the same string before and after the phone dies. The key types itself back in character by character on the new device, so what actually restores access is unmistakable &mdash; it's the key, not the hardware, and not a support call.</span>
+    </div>
+  </article>
+
+  <!-- ============ 4 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 3 &middot; why not just use a bank? &middot; who-holds-your-money</p>
+        <h3>Run the incident, read the room</h3>
+      </div>
+      <p class="claim">Teaches custody as a trade-off with costs on both sides, not a slogan.</p>
+    </div>
+    <div class="bench-body" id="cust-root">
+      <div class="bar">
+        <span class="readout"><span>incidents run</span><strong id="cu-count">0 of 4</strong></span>
+        <button class="btn link" data-act="reset">reset</button>
+      </div>
+      <div class="vaults" id="cu-vaults"></div>
+      <div class="incidents" id="cu-incidents"></div>
+      <p class="caption" id="cu-caption"></p>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why this beats a quiz.</b> The last incident is the one that makes it honest: self-custody is the only column that loses when you lose the recovery phrase. A learner who runs all four ends up holding a real trade-off instead of a sales pitch, which is exactly the tone the rest of the chapter takes.</span>
+    </div>
+  </article>
+</section>
+
+<section>
+  <div class="section-head">
+    <p class="eyebrow">Second round</p>
+    <h2>Five more, and five different verbs</h2>
+    <p class="note">Ten of the eighteen cards end their copy with <span class="mono">[Interactive/image/game to be added]</span>, so the appetite is already written into the lab. The trap is giving them all the same gesture; sameness is what makes a set of interactions feel thin. Each bench below is a different <em>kind</em> of doing: sorting, searching, noticing, scrubbing, decoding.</p>
+  </div>
+
+  <!-- ============ 5 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 4 &middot; your money, your keys &middot; wallets &middot; <em>sorting</em></p>
+        <h3>What's actually inside the wallet?</h3>
+      </div>
+      <p class="claim">Teaches the card's headline correction: an Ethereum wallet holds your key, not your money.</p>
+    </div>
+    <div class="bench-body" id="wal-root">
+      <div class="bar">
+        <span class="readout"><span>sorted</span><strong id="wal-score">0 of 6</strong></span>
+        <button class="btn link" data-act="reset">reset</button>
+      </div>
+      <div class="tray" id="wal-tray"></div>
+      <div class="zones2" style="margin-top:.7rem">
+        <div class="zone" data-zone="device">
+          <h5><span>on your device</span><span data-n>0</span></h5>
+          <div class="drop"></div>
+        </div>
+        <div class="zone" data-zone="network">
+          <h5><span>on the ethereum network</span><span data-n>0</span></h5>
+          <div class="drop"></div>
+        </div>
+      </div>
+      <p class="caption" id="wal-caption"></p>
+      <p class="wal-legend"><b>Drag a card</b>, or tap it and then tap a column.</p>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why sorting fits here.</b> The misconception is spatial &mdash; people picture ETH sitting inside an app like cash in a billfold. Making them physically place "your ETH" on the network side, and get told why when they put it on the phone, corrects the mental picture in the same shape the picture is wrong in. A wrong drop is refused with a reason rather than just scored.</span>
+    </div>
+  </article>
+
+  <!-- ============ 6 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 3 &middot; why not just use a bank? &middot; the-system-we-grew-up-with &middot; <em>searching</em></p>
+        <h3>Go on, read the terms</h3>
+      </div>
+      <p class="claim">Teaches the card's actual claim &mdash; that checking the rules was never really an option &mdash; by making the learner try.</p>
+    </div>
+    <div class="bench-body" id="hunt-root">
+      <div class="hunt-bar">
+        <span class="doc-label" id="hunt-task">Find the clause that lets them close your account without telling you why.</span>
+        <span class="timer" id="hunt-timer">0.0s</span>
+      </div>
+      <div class="hunt-grid" id="hunt-grid">
+        <div>
+          <div class="doc-label" style="margin-bottom:.4rem">Northgate Savings &mdash; account terms &middot; <span style="color:#6a6183">illustrative example, not a real bank</span></div>
+          <div class="terms" id="hunt-terms"></div>
+        </div>
+        <div class="contract-side" id="hunt-contract" hidden>
+          <div class="doc-label">The same power, written as a smart contract</div>
+          <div class="code" id="hunt-code">
+            <p class="cm">// Vault.sol — the complete rules. All of them.</p>
+            <p data-line="0"><span class="kw">function</span> <span class="fn">deposit</span>() <span class="kw">external payable</span> { balance[msg.sender] += msg.value; }</p>
+            <p data-line="1"><span class="kw">function</span> <span class="fn">withdraw</span>(<span class="kw">uint</span> amt) <span class="kw">external</span> { balance[msg.sender] -= amt; pay(msg.sender, amt); }</p>
+            <p data-line="2"><span class="kw">function</span> <span class="fn">transfer</span>(<span class="kw">address</span> to, <span class="kw">uint</span> amt) <span class="kw">external</span> { ... }</p>
+            <p class="cm" data-line="3">// there is no freeze function, and no owner who could add one</p>
+          </div>
+          <p class="note" style="font-size:var(--step--1)">Find the clause that lets them close your account.</p>
+        </div>
+      </div>
+      <p class="caption" id="hunt-caption"></p>
+      <div class="controls" id="hunt-controls">
+        <button class="btn ghost" data-act="give-up">I give up</button>
+        <button class="btn link" data-act="reset">reset</button>
+      </div>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why searching fits here.</b> The card says nobody reads the rules and you proceed on faith. Told that, a learner nods. Made to hunt for one clause in a wall of six-point serif while a timer runs, they <em>feel</em> it &mdash; and then the same question against four lines of readable code answers itself in a second. The contrast is the argument, and giving up is a legitimate ending.</span>
+    </div>
+  </article>
+
+  <!-- ============ 7 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 3 &middot; why not just use a bank? &middot; rules-can-change-on-you &middot; <em>noticing</em></p>
+        <h3>You agreed to this. Apparently.</h3>
+      </div>
+      <p class="claim">Teaches the difference between a rule that changes quietly overnight and one that can only change in the open.</p>
+    </div>
+    <div class="bench-body" id="diff-root">
+      <div class="side-toggle" role="group" aria-label="Which system's rules to watch">
+        <button data-side="bank" aria-pressed="true">Your bank's terms</button>
+        <button data-side="eth" aria-pressed="false">Ethereum's rules</button>
+      </div>
+      <div class="night" id="diff-night">
+        <div class="doc">
+          <div class="doc-head">
+            <span id="diff-title">Northgate Savings &mdash; agreement</span>
+            <span class="ver" id="diff-ver">v4.2</span>
+          </div>
+          <div class="clauses" id="diff-clauses"></div>
+        </div>
+      </div>
+      <p class="caption" id="diff-caption"></p>
+      <div class="controls" id="diff-controls"></div>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why noticing fits here.</b> No question is asked and no answer is scored. The learner reads four clauses, clicks "go to sleep", and finds two of them quietly rewritten in the morning with a version number they never approved. Discovering a change you were never told about is the entire point of the card, so discovery is the mechanic.</span>
+    </div>
+  </article>
+
+  <!-- ============ 8 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 4 &middot; your money, your keys &middot; ether &middot; <em>scrubbing</em></p>
+        <h3>You don't need a whole one</h3>
+      </div>
+      <p class="claim">Teaches the card's most practically useful line: ETH splits into very small fractions, so you can start with any amount.</p>
+    </div>
+    <div class="bench-body" id="denom-root">
+      <div class="denom">
+        <div class="unit" data-u="eth"><span class="u">ether</span><span class="v" id="d-eth">1</span></div>
+        <div class="unit" data-u="gwei"><span class="u">gwei</span><span class="v" id="d-gwei">1,000,000,000</span></div>
+        <div class="unit" data-u="wei"><span class="u">wei</span><span class="v" id="d-wei">1,000,000,000,000,000,000</span></div>
+      </div>
+
+      <svg class="ruler" id="d-ruler" viewBox="0 0 400 46" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <label class="doc-label" for="d-range">Drag to resize the amount</label>
+      <input type="range" id="d-range" min="0" max="18" step="1" value="18"
+             aria-label="Amount, from one wei up to one ether">
+      <div class="stops"><span>1 wei</span><span>1 gwei</span><span>1 ETH</span></div>
+
+      <p class="caption" id="d-caption"></p>
+
+      <div class="spend">
+        <span class="lbl">if ETH were $3,000, then</span>
+        <button class="chip" data-spend="10">$10</button>
+        <button class="chip" data-spend="50" aria-pressed="true">$50</button>
+        <button class="chip" data-spend="500">$500</button>
+        <span class="lbl">buys</span>
+        <span class="readout"><strong id="d-buys">0.016666 ETH</strong></span>
+      </div>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why scrubbing fits here.</b> "Divisible to eighteen decimal places" is a sentence people skim. A slider they drag from one ETH down to one wei, with all three units counting in step, turns the abstraction into a distance they travelled with their thumb. The dollar row exists because "do I need to buy a whole one?" is the actual question a beginner is holding, and the numbers are exact rather than floating-point approximations.</span>
+    </div>
+  </article>
+
+  <!-- ============ 9 ============ -->
+  <article class="bench">
+    <div class="bench-head">
+      <div>
+        <p class="where">Chapter 6 &middot; making things happen &middot; transactions &middot; <em>decoding</em></p>
+        <h3>The label is not the transaction</h3>
+      </div>
+      <p class="claim">Teaches both of the card's claims at once: a transaction is one signed instruction, and what that instruction <em>does</em> lives in a field most people never look at.</p>
+    </div>
+    <div class="bench-body" id="tx-root">
+      <div class="bar">
+        <span class="readout"><span>read before signing</span><strong id="tx-score">0 of 4</strong></span>
+        <button class="btn link" data-act="reset">reset</button>
+      </div>
+
+      <div class="errands" id="tx-errands" role="group" aria-label="Four things an app is asking you to sign"></div>
+
+      <div class="tx-grid">
+        <div class="envelope" id="tx-env">
+          <div class="env-head"><span>the transaction</span><span id="tx-state">nothing loaded</span></div>
+          <div id="tx-fields"></div>
+        </div>
+        <div class="reveal" id="tx-reveal"></div>
+      </div>
+
+      <div class="outcome" id="tx-outcome" hidden></div>
+      <p class="caption" id="tx-caption"></p>
+      <div class="controls" id="tx-controls"></div>
+    </div>
+    <div class="bench-foot">
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a87dff" stroke-width="1.6"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.6 4.6l2.1 2.1M13.3 13.3l2.1 2.1M15.4 4.6l-2.1 2.1M6.7 13.3l-2.1 2.1"/><circle cx="10" cy="10" r="3.2"/></svg>
+      <span><b>Why decoding fits here.</b> Every other bench teaches a fact; this one teaches a <em>habit</em>, and it is the habit that decides whether someone keeps their money. The four errands are a deliberate ladder &mdash; no data at all, then no data but the recipient is a program, then data that moves value while <span class="mono">value</span> still reads <span class="mono">0</span>, then data that hands over everything. The calldata is really ABI-encoded against genuine selectors (<span class="mono">0xa9059cbb</span>, <span class="mono">0xa22cb465</span>), so a learner who later pastes real hex into a decoder meets the same anatomy. It also finishes a thought <span class="mono">WalletSafety</span> only starts: that card says reject anything unclear, and this one shows you how to make it clear.</span>
+    </div>
+  </article>
+
+</section>
+
+<section>
+  <div class="section-head">
+    <p class="eyebrow">Coverage</p>
+    <h2>Where the other fourteen cards stand</h2>
+    <p class="note">Thirteen of the eighteen cards now have something. The five left need nothing &mdash; covering every card is how a set of interactions ends up thin. Saying no is what buys the quality everywhere else, and it applies to my own work too: the summary card had a bench here until it was pointed out that it sat <em>after</em> the free-text card and gave its own answers away.</p>
+  </div>
+  <div class="road">
+    <article><span class="stat done">shipped</span><p class="card-id">the-world-computer</p><h4>The world computer</h4><p>Already excellent, and the bar the rest of this page is measured against.</p></article>
+    <article><span class="stat done">shipped</span><p class="card-id">the-private-key</p><h4>The private key</h4><p>Spencer's <span class="mono">BruteForce</span> lands the keyspace argument well. Nothing needed.</p></article>
+    <article><span class="stat done">shipped</span><p class="card-id">what-is-safe-to-share</p><h4>What's safe to share?</h4><p><span class="mono">WalletSafety</span> covers it. Worth a second pass for motion polish, not a rebuild.</p></article>
+    <article><span class="stat done">shipped</span><p class="card-id">gas</p><h4>Gas</h4><p><span class="mono">TransactionJourney</span> is the most developed component in the lab at 447 lines.</p></article>
+
+    <article><span class="stat built">on this page</span><p class="card-id">the-blockchain</p><h4>The Blockchain</h4><p>Currently a static <span class="mono">PublicLedger</span> illustration only. The biggest single win available.</p></article>
+    <article><span class="stat built">on this page</span><p class="card-id">smart-contracts</p><h4>Smart contracts</h4><p><span class="mono">VendingMachine</span> exists but is a 15-line static illustration. Making it executable costs little and teaches revert.</p></article>
+    <article><span class="stat built">on this page</span><p class="card-id">accounts-and-addresses</p><h4>Accounts and addresses</h4><p>No asset at all today, and the card carries the lab's least intuitive claim.</p></article>
+    <article><span class="stat built">on this page</span><p class="card-id">who-holds-your-money</p><h4>Who holds your money?</h4><p>No asset today. Anchors the whole banking chapter.</p></article>
+
+    <article><span class="stat built">on this page</span><p class="card-id">wallets</p><h4>Wallets</h4><p>Sorting bench. Attacks the "my ETH is in the app" picture head-on.</p></article>
+    <article><span class="stat built">on this page</span><p class="card-id">the-system-we-grew-up-with</p><h4>The system we all grew up with</h4><p>The legalese hunt. I had this down as prose last round &mdash; the card's own copy ("checking was never really an option") changed my mind.</p></article>
+    <article><span class="stat built">on this page</span><p class="card-id">rules-can-change-on-you</p><h4>And the rules can change on you</h4><p>The overnight diff, plus the Ethereum side where a change has to be published to happen at all.</p></article>
+    <article><span class="stat built">on this page</span><p class="card-id">ether</p><h4>Ether</h4><p>Denomination scrubber. Serves the card's most practical line rather than the token/network distinction, which this card never actually raises.</p></article>
+
+    <article><span class="stat built">on this page</span><p class="card-id">transactions</p><h4>Transactions</h4><p>The decoding bench. Deliberately avoids the lifecycle, which the card's own note moved to the gas card.</p></article>
+
+    <article><span class="stat skip">leave as prose</span><p class="card-id">why-decentralization-matters</p><h4>Why decentralization matters</h4><p>The copy carries an author note saying this card duplicates chapter 3 and may change topic entirely. Building against it now would be building against a card that is about to move.</p></article>
+    <article><span class="stat skip">leave as prose</span><p class="card-id">not-just-a-better-bitcoin</p><h4>Not just a better Bitcoin</h4><p>A short pivot card whose payoff is the smart-contracts bench two cards later. Putting a widget here spends the punchline early.</p></article>
+    <article><span class="stat skip">leave as prose</span><p class="card-id">what-people-build</p><h4>What people build</h4><p>Wants real screenshots of real projects. A simulation here would be less convincing than the actual thing, not more.</p></article>
+    <article><span class="stat skip">already interactive</span><p class="card-id">explain-it-to-a-friend</p><h4>Explain it to a friend</h4><p>A <span class="mono">type: "question"</span> card with a five-point AI rubric and four hints. Asking a learner to write the explanation in their own words is the strongest check in the whole lab. Nothing to add.</p></article>
+    <article><span class="stat skip">leave as prose</span><p class="card-id">summary-what-is-next</p><h4>The big picture</h4><p><b>I had a concept-map bench here and removed it.</b> It sat <em>after</em> the free-text card, so the learner had already been graded on explaining all of this unaided &mdash; and its sentence stems handed over the answers, with the card's own body listing every term directly above. It tested reading, not recall, and it followed a card that tested something real. A recap card should recap and point at the next lab.</p></article>
+  </div>
+</section>
+
+</div>
+
+<script>
+"use strict";
+(function(){
+const RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* --- motion kit: real easing + frame-driven tweening ---------------- */
+const ease = {
+  outCubic:  t => 1 - Math.pow(1 - t, 3),
+  inCubic:   t => t * t * t,
+  inOutCubic:t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2,
+  outBack:   t => 1 + 2.2*Math.pow(t-1,3) + 1.4*Math.pow(t-1,2),
+  outBounce: t => {
+    const n = 7.5625, d = 2.75;
+    if (t < 1/d)   return n*t*t;
+    if (t < 2/d)   return n*(t -= 1.5/d)*t + .75;
+    if (t < 2.5/d) return n*(t -= 2.25/d)*t + .9375;
+    return n*(t -= 2.625/d)*t + .984375;
+  }
+};
+function tween(dur, fn, easing, done){
+  if (RM){ fn(1); done && done(); return; }
+  const t0 = performance.now();
+  (function step(now){
+    const p = Math.min(1, (now - t0)/dur);
+    fn(easing ? easing(p) : p);
+    if (p < 1) requestAnimationFrame(step); else done && done();
+  })(performance.now());
+}
+const wait = ms => new Promise(r => setTimeout(r, RM ? 0 : ms));
+const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+
+/* deterministic 24-bit hash, avalanched so one edited character changes
+   the whole seal — the point the block bench has to make visible */
+function seal(str){
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  h ^= h >>> 13; h = Math.imul(h, 2246822507) >>> 0; h ^= h >>> 16;
+  return (h >>> 0).toString(16).padStart(8, "0").slice(0, 6);
+}
+
+/* ==================================================================
+   1. THE BLOCKCHAIN
+================================================================== */
+(function chainBench(){
+  const root = document.getElementById("chain-root");
+  const host = document.getElementById("ch-chain");
+  const cap  = document.getElementById("ch-caption");
+  const pend = document.getElementById("ch-pending");
+  const btnSeal   = root.querySelector('[data-act="seal"]');
+  const btnReseal = root.querySelector('[data-act="reseal"]');
+
+  const POOL = [
+    ["alice","bob",0.50],["carol","dan",1.25],["erin","frank",0.10],
+    ["gus","hana",2.00],["ivan","jo",0.75],["kim","lee",0.30]
+  ];
+  let blocks, pool, busy;
+
+  const body = b => b.n + "|" + b.txs.map(t => t.from + ">" + t.to + ":" + t.amt.toFixed(2)).join(",") + "|" + b.prev;
+  const mkTx = i => ({ from: POOL[i][0], to: POOL[i][1], amt: POOL[i][2], base: POOL[i][2], edited: false });
+
+  function fresh(){
+    blocks = [{ n:0, txs:[], prev:"000000", hash:"" }];
+    blocks[0].hash = seal(body(blocks[0]));
+    for (let k = 1; k <= 2; k++){
+      const b = { n:k, txs:[mkTx((k-1)*2), mkTx((k-1)*2+1)], prev: blocks[k-1].hash, hash:"" };
+      b.hash = seal(body(b));
+      blocks.push(b);
+    }
+    pool = [mkTx(4), mkTx(5)];
+    busy = false;
+  }
+
+  const firstBreak = () => {
+    for (let i = 1; i < blocks.length; i++) if (blocks[i].prev !== blocks[i-1].hash) return i;
+    return -1;
+  };
+
+  function render(){
+    const brk = firstBreak();
+    host.innerHTML = "";
+    blocks.forEach((b, i) => {
+      if (i > 0){
+        const broken = b.prev !== blocks[i-1].hash;
+        const orphan = brk !== -1 && i > brk;
+        const link = document.createElement("div");
+        link.className = "link" + (broken || orphan ? " broken" : "");
+        const col = broken || orphan ? "#ff7ccb" : "#54d6a8";
+        link.innerHTML =
+          '<svg width="34" height="20" viewBox="0 0 34 20" aria-hidden="true">' +
+            '<path class="seg up" d="M2 10h13" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>' +
+            '<circle class="seg up" cx="15" cy="10" r="3.2" fill="none" stroke="'+col+'" stroke-width="2"/>' +
+            '<circle class="seg dn" cx="19" cy="10" r="3.2" fill="none" stroke="'+col+'" stroke-width="2"/>' +
+            '<path class="seg dn" d="M19 10h13" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>' +
+          '</svg>';
+        host.appendChild(link);
+      }
+
+      const orphan = brk !== -1 && i >= brk;
+      const el = document.createElement("div");
+      el.className = "blk " + (orphan ? "rogue" : "ok");
+      el.dataset.i = i;
+
+      const parentOk = i === 0 || b.prev === blocks[i-1].hash;
+      const txHtml = b.txs.length
+        ? b.txs.map((t, j) =>
+            '<button class="tx'+(t.edited ? " edited" : "")+'" data-b="'+i+'" data-t="'+j+'" ' +
+            'title="Click to rewrite this amount">'+t.amt.toFixed(2)+' ' + t.from + '&rarr;' + t.to + '</button>').join("")
+        : '<span class="tx empty">genesis</span>';
+
+      el.innerHTML =
+        '<div class="n"><span>block #' + b.n + '</span>' + (orphan ? '<span class="tag">invalid</span>' : '') + '</div>' +
+        '<div class="txs">' + txHtml + '</div>' +
+        '<div class="hashes">' +
+          '<div><span class="k">prev</span><span class="v ' + (i === 0 ? "" : parentOk ? "match" : "mismatch") + '">' + b.prev + '</span></div>' +
+          '<div><span class="k">seal</span><span class="v self">' + b.hash + '</span></div>' +
+        '</div>';
+      host.appendChild(el);
+    });
+
+    pend.textContent = pool.length + " tx";
+    btnSeal.disabled = busy || pool.length === 0;
+    btnReseal.disabled = busy || brk === -1;
+  }
+
+  function say(html){ cap.innerHTML = html; }
+
+  host.addEventListener("click", e => {
+    const t = e.target.closest(".tx[data-b]");
+    if (!t || busy) return;
+    const bi = +t.dataset.b, ti = +t.dataset.t;
+    const tx = blocks[bi].txs[ti];
+    tx.edited = !tx.edited;
+    tx.amt = tx.edited ? tx.base * 100 : tx.base;
+    const was = blocks[bi].hash;
+    blocks[bi].hash = seal(body(blocks[bi]));
+    render();
+
+    const el = host.querySelector('.blk[data-i="' + bi + '"]');
+    if (el) replay(el, "shake");
+
+    if (tx.edited){
+      if (bi === blocks.length - 1){
+        // nothing is stacked on top yet, so there is no broken link to show —
+        // say so honestly and point at the fix
+        say('You rewrote an amount in <b>block #' + bi + '</b> and its seal changed to <span class="hl-peach mono">' +
+            blocks[bi].hash + '</span>. Nothing broke yet, because this is the newest block and no one has built on it. ' +
+            '<b>Seal another block</b>, then edit this one again.');
+      } else {
+        say('You rewrote one amount in <b>block #' + bi + '</b>. Its seal went from <span class="mono">' + was +
+            '</span> to <span class="hl-rogue mono">' + blocks[bi].hash + '</span> &mdash; but block #' + (bi+1) +
+            ' still records the old one, so the link snapped. Every block after it is <span class="hl-rogue">invalid</span>.');
+        // walk the invalidation forward, one block at a time
+        for (let i = bi + 1; i < blocks.length; i++){
+          setTimeout(() => {
+            const n = host.querySelector('.blk[data-i="' + i + '"]');
+            if (n) replay(n, "shake");
+          }, RM ? 0 : (i - bi) * 130);
+        }
+      }
+    } else {
+      say('Put back exactly as it was, and the seal returns to <span class="hl-mint mono">' + blocks[bi].hash +
+          '</span>. Nothing else on the chain had to change &mdash; that is what makes an edit detectable.');
+    }
+  });
+
+  btnSeal.addEventListener("click", async () => {
+    if (busy || !pool.length) return;
+    busy = true; render();
+    const prev = blocks[blocks.length - 1];
+    const b = { n: prev.n + 1, txs: pool.splice(0, 2), prev: prev.hash, hash: "" };
+    b.hash = seal(body(b));
+    blocks.push(b);
+    render();
+    const el = host.querySelector('.blk[data-i="' + (blocks.length - 1) + '"]');
+    if (el) replay(el, "pulse");
+    say('Block <b>#' + b.n + '</b> is sealed. Its <span class="mono">prev</span> copies the seal of block #' +
+        (b.n - 1) + ', so the two are now welded together: <span class="hl-mint mono">' + b.prev + '</span>.');
+    await wait(500);
+    busy = false; render();
+  });
+
+  btnReseal.addEventListener("click", async () => {
+    if (busy) return;
+    const brk = firstBreak();
+    if (brk === -1) return;
+    busy = true; render();
+    say('Re-sealing from block #' + brk + ' forward&hellip;');
+    for (let i = brk; i < blocks.length; i++){
+      blocks[i].prev = blocks[i-1].hash;
+      blocks[i].hash = seal(body(blocks[i]));
+      render();
+      const el = host.querySelector('.blk[data-i="' + i + '"]');
+      if (el) replay(el, "pulse");
+      await wait(340);
+    }
+    const redone = blocks.length - brk;
+    busy = false; render();
+    say('The chain agrees again &mdash; but you had to redo <b>' + redone + ' block' + (redone === 1 ? "" : "s") +
+        '</b> to hide one edited amount. On the real network those blocks are being added by thousands of nodes ' +
+        'faster than you could ever catch up, which is why nobody bothers.');
+  });
+
+  root.querySelector('[data-act="reset"]').addEventListener("click", () => {
+    fresh(); render();
+    say('Two blocks are already sealed. <b>Click any amount</b> to rewrite history, or seal a new block from the pending pool first.');
+  });
+
+  fresh(); render();
+  say('Two blocks are already sealed. <b>Click any amount</b> to rewrite history, or seal a new block from the pending pool first.');
+})();
+
+/* ==================================================================
+   2. SMART CONTRACTS — the vending machine that actually executes
+================================================================== */
+(function vendBench(){
+  const root  = document.getElementById("vend-root");
+  const cap   = document.getElementById("vm-caption");
+  const coin  = document.getElementById("vm-coin");
+  const prod  = document.getElementById("vm-product");
+  const tray  = document.getElementById("vm-tray");
+  const shelf = document.getElementById("vm-shelves");
+  const screen= document.getElementById("vm-screen");
+  const elBal = document.getElementById("vm-bal");
+  const elStk = document.getElementById("vm-stock");
+  const btnBuy= root.querySelector('[data-act="buy"]');
+  const reqs  = [...root.querySelectorAll(".req")];
+  const chips = [...root.querySelectorAll("[data-pay]")];
+  const closeBtn = root.querySelector('[data-toggle="closed"]');
+
+  const SHELF_Y = [46, 96, 146];
+  let pay, stock, closed, balance, busy, sold;
+
+  function reset(){
+    pay = 0.05; stock = 3; closed = false; balance = 0; busy = false; sold = 0;
+    chips.forEach(c => c.setAttribute("aria-pressed", String(+c.dataset.pay === pay)));
+    closeBtn.setAttribute("aria-pressed","false");
+    closeBtn.textContent = "sale window: open";
+    tray.innerHTML = "";
+    coin.setAttribute("opacity","0");
+    prod.setAttribute("opacity","0");
+    screen.textContent = "READY"; screen.setAttribute("fill","#54d6a8");
+    reqs.forEach(r => r.className = "req");
+    drawShelves(); sync();
+    say('The contract is on the left and you can read every rule in it. Choose what to send, then <b>call buy()</b>. Try underpaying &mdash; the machine will not improvise.');
+  }
+
+  function drawShelves(){
+    shelf.innerHTML = "";
+    for (let row = 0; row < 3; row++){
+      for (let col = 0; col < 1; col++){
+        const idx = row;
+        if (idx >= stock) continue;
+        const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+        g.innerHTML =
+          '<rect x="34" y="' + SHELF_Y[row] + '" width="26" height="18" rx="4" fill="#54d6a8" opacity=".85"/>' +
+          '<rect x="76" y="' + SHELF_Y[row] + '" width="26" height="18" rx="4" fill="#54d6a8" opacity=".45"/>';
+        shelf.appendChild(g);
+      }
+    }
+  }
+
+  function sync(){
+    elBal.textContent = balance.toFixed(2) + " ETH";
+    elStk.textContent = String(stock);
+    btnBuy.disabled = busy;
+  }
+  const say = h => cap.innerHTML = h;
+
+  chips.forEach(c => c.addEventListener("click", () => {
+    if (busy) return;
+    pay = +c.dataset.pay;
+    chips.forEach(o => o.setAttribute("aria-pressed", String(o === c)));
+    reqs.forEach(r => r.className = "req");
+    say(pay < 0.05
+      ? 'Sending <span class="hl-peach mono">' + pay.toFixed(2) + ' ETH</span>. The price is 0.05 &mdash; watch which line stops you.'
+      : 'Sending <span class="mono">' + pay.toFixed(2) + ' ETH</span>. Anything above the price still works; the contract only checks <span class="mono">&gt;=</span>.');
+  }));
+
+  closeBtn.addEventListener("click", () => {
+    if (busy) return;
+    closed = !closed;
+    closeBtn.setAttribute("aria-pressed", String(closed));
+    closeBtn.textContent = "sale window: " + (closed ? "closed" : "open");
+    reqs.forEach(r => r.className = "req");
+    say(closed
+      ? 'The sale window is closed. Nothing about the machine changed &mdash; only the clock did, and the contract reads the clock too.'
+      : 'The sale window is open again.');
+  });
+
+  async function run(){
+    if (busy) return;
+    busy = true; sync();
+    reqs.forEach(r => r.className = "req dim");
+    screen.textContent = "..."; screen.setAttribute("fill","#f0a868");
+
+    // coin drops into the slot
+    coin.setAttribute("opacity","1");
+    await new Promise(done => tween(520, p => {
+      coin.setAttribute("cy", String(-20 + p * 86));
+      coin.setAttribute("opacity", String(p > .92 ? (1 - (p - .92)/.08) : 1));
+    }, ease.inCubic, done));
+    coin.setAttribute("opacity","0");
+
+    const checks = [
+      { ok: pay >= 0.05, msg: 'You sent <span class="hl-rogue mono">' + pay.toFixed(2) + ' ETH</span> and the price is 0.05. The first <span class="mono">require</span> failed, so execution stopped on line one.' },
+      { ok: stock > 0,   msg: 'The shelf is empty. The payment was fine, but the second <span class="mono">require</span> failed &mdash; and a failure anywhere undoes everything before it.' },
+      { ok: !closed,     msg: 'The sale window has closed. The money and the stock were both fine; the clock was not.' }
+    ];
+
+    let failed = -1;
+    for (let i = 0; i < checks.length; i++){
+      await wait(230);
+      if (checks[i].ok){ reqs[i].className = "req pass"; }
+      else { reqs[i].className = "req fail"; failed = i; break; }
+    }
+
+    if (failed !== -1){
+      screen.textContent = "REVERT"; screen.setAttribute("fill","#ff7ccb");
+      const svg = root.querySelector(".vend-svg");
+      replay(svg, "shake"); svg.classList.add("shake");
+      setTimeout(() => svg.classList.remove("shake"), 600);
+
+      // the coin comes back out of the return tray — the revert, made physical
+      await wait(260);
+      coin.setAttribute("cx","159"); coin.setAttribute("opacity","1");
+      await new Promise(done => tween(680, p => {
+        coin.setAttribute("cy", String(70 + p * 93));
+      }, ease.outBounce, done));
+
+      say(checks[failed].msg + ' Your <span class="hl-peach mono">' + pay.toFixed(2) +
+          ' ETH</span> came straight back and <span class="mono">stock</span> is still <b>' + stock +
+          '</b>. Nothing half-happened.');
+      await wait(140);
+      busy = false; sync();
+      return;
+    }
+
+    // success: coil turns, product falls, state moves
+    screen.textContent = "OK"; screen.setAttribute("fill","#54d6a8");
+    stock -= 1; sold += 1; balance += pay;
+    drawShelves(); sync();
+
+    prod.setAttribute("x","34"); prod.setAttribute("opacity","1");
+    await new Promise(done => tween(760, p => {
+      prod.setAttribute("y", String(SHELF_Y[Math.min(2, stock)] + p * (206 - SHELF_Y[Math.min(2, stock)])));
+    }, ease.outBounce, done));
+    prod.setAttribute("opacity","0");
+
+    const box = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    box.setAttribute("x", String(30 + (sold - 1) * 32)); box.setAttribute("y","206");
+    box.setAttribute("width","26"); box.setAttribute("height","18");
+    box.setAttribute("rx","4"); box.setAttribute("fill","#54d6a8");
+    tray.appendChild(box);
+
+    say('All three conditions passed, so the contract ran to the end: <span class="mono">stock</span> dropped to <b>' +
+        stock + '</b> and the contract now holds <span class="hl-mint mono">' + balance.toFixed(2) +
+        ' ETH</span>. Same input, same result, every time &mdash; no clerk, no discretion.');
+    busy = false; sync();
+  }
+
+  btnBuy.addEventListener("click", run);
+  root.querySelector('[data-act="reset"]').addEventListener("click", reset);
+  reset();
+})();
+
+/* ==================================================================
+   3. ACCOUNTS AND ADDRESSES
+================================================================== */
+(function acctBench(){
+  const root = document.getElementById("acct-root");
+  const cap  = document.getElementById("ac-caption");
+  const band = document.getElementById("ac-band");
+  const devs = document.getElementById("ac-devices");
+  const ctrl = document.getElementById("ac-controls");
+  const count= document.getElementById("ac-count");
+  const spark= document.getElementById("ac-spark");
+  const wire = document.getElementById("ac-wire-path");
+
+  const KEY = "0xc4f9…a17b";
+  const ICONS = {
+    phone: '<svg width="30" height="38" viewBox="0 0 30 38" fill="none"><rect x="4" y="2" width="22" height="34" rx="4" stroke="currentColor" stroke-width="1.8"/><rect x="7" y="6" width="16" height="24" rx="1.5" fill="currentColor" opacity=".18"/><circle cx="15" cy="33" r="1.4" fill="currentColor"/></svg>',
+    laptop:'<svg width="38" height="38" viewBox="0 0 38 38" fill="none"><rect x="7" y="8" width="24" height="17" rx="2.2" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="11" width="18" height="11" rx="1" fill="currentColor" opacity=".18"/><path d="M3 29h32l-2.5 3.5h-27z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    hw:    '<svg width="38" height="38" viewBox="0 0 38 38" fill="none"><rect x="5" y="13" width="28" height="14" rx="4" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="17" width="10" height="6" rx="1" fill="currentColor" opacity=".25"/><circle cx="26" cy="20" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>',
+    crack: '<svg width="30" height="38" viewBox="0 0 30 38" fill="none"><rect x="4" y="2" width="22" height="34" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M9 8l5 7-4 4 6 5-3 5" stroke="#ff7ccb" stroke-width="1.6" stroke-linejoin="round"/><circle cx="15" cy="33" r="1.4" fill="currentColor"/></svg>'
+  };
+
+  let state, list, busy;
+  const fresh = () => { state = "live"; list = [{ id:"phone", name:"your phone", live:true, key:KEY }]; busy = false; };
+  const say = h => cap.innerHTML = h;
+
+  function render(){
+    devs.innerHTML = "";
+    list.forEach((d, i) => {
+      const el = document.createElement("div");
+      el.className = "dev" + (d.live ? " live" : "") + (d.dead ? " dead" : "") + (d.fresh ? " enter" : "");
+      el.style.color = d.live ? "#a87dff" : "#857c9e";
+      el.innerHTML = ICONS[d.dead ? "crack" : d.id] +
+        '<span class="name">' + d.name + '</span>' +
+        '<span class="key">' + (d.key || "") + '</span>';
+      devs.appendChild(el);
+      d.fresh = false;
+    });
+    count.textContent = String(list.length);
+    wire.setAttribute("stroke", list.some(d => d.live) ? "#54d6a8" : "#3a3158");
+    wire.setAttribute("stroke-dasharray", list.some(d => d.live) ? "0" : "4 5");
+    buttons();
+  }
+
+  function buttons(){
+    ctrl.innerHTML = "";
+    const add = (label, cls, fn, dis) => {
+      const b = document.createElement("button");
+      b.className = "btn " + cls; b.textContent = label; b.disabled = !!dis || busy;
+      b.addEventListener("click", fn); ctrl.appendChild(b);
+    };
+    if (state === "live")    add("Smash your phone", "", smash);
+    if (state === "dead")  { add("Restore on a laptop", "", () => restore("laptop","a borrowed laptop"));
+                             add("Restore on a hardware wallet", "ghost", () => restore("hw","a hardware wallet")); }
+    if (state === "restored")add("Smash that one too", "ghost", smash);
+    const r = document.createElement("button");
+    r.className = "btn link"; r.textContent = "reset";
+    r.addEventListener("click", () => { fresh(); render(); intro(); });
+    ctrl.appendChild(r);
+  }
+
+  function pulseWire(){
+    if (RM) return;
+    spark.setAttribute("opacity","1");
+    tween(900, p => {
+      spark.setAttribute("cx","200");
+      spark.setAttribute("cy", String(56 - p * 56));
+      spark.setAttribute("opacity", String(p > .8 ? (1 - p)/.2 : 1));
+    }, ease.outCubic, () => spark.setAttribute("opacity","0"));
+  }
+
+  async function smash(){
+    busy = true; buttons();
+    const target = list.find(d => d.live);
+    target.live = false; target.dead = true; target.key = "";
+    target.name = target.name + " — dead";
+    state = "dead"; render();
+    await wait(420);
+    replay(band, "pulse");
+    say('The device is gone and the key with it. Look at the band above: the address is still <span class="hl-mint mono">0x7a3f…9c21</span> ' +
+        'and the balance is still <span class="hl-mint mono">4.20 ETH</span>. The account was never on the phone &mdash; ' +
+        'it is on the network, and the phone was only a window onto it.');
+    busy = false; buttons();
+  }
+
+  async function restore(id, name){
+    busy = true; buttons();
+    list.push({ id, name, live:false, key:"", fresh:true });
+    render();
+    await wait(420);
+
+    // type the key back in, character by character — this is what restores access
+    const el = devs.lastElementChild.querySelector(".key");
+    const full = KEY;
+    if (RM){ el.textContent = full; }
+    else {
+      for (let i = 1; i <= full.length; i++){ el.textContent = full.slice(0, i); await wait(52); }
+    }
+    list[list.length - 1].live = true;
+    list[list.length - 1].key = full;
+    state = "restored"; render();
+    pulseWire();
+    await wait(320);
+    replay(band, "pulse");
+    say('Same key, new window. <b>' + name.replace(/^a /,"") + '</b> is now looking at the exact same account &mdash; ' +
+        'same address, same 4.20 ETH, no support call and nobody\'s permission. Smash this one too and the account still will not care.');
+    busy = false; buttons();
+  }
+
+  function intro(){
+    say('Your phone is showing an account that lives on the network above it. <b>Break the phone</b> and watch what actually happens to the money.');
+  }
+
+  fresh(); render(); intro();
+})();
+
+/* ==================================================================
+   4. WHO HOLDS YOUR MONEY?
+================================================================== */
+(function custodyBench(){
+  const root = document.getElementById("cust-root");
+  const host = document.getElementById("cu-vaults");
+  const incs = document.getElementById("cu-incidents");
+  const cap  = document.getElementById("cu-caption");
+  const cnt  = document.getElementById("cu-count");
+
+  const COLS = [
+    { id:"bank", title:"Your bank",   who:"the bank holds the key" },
+    { id:"cex",  title:"An exchange", who:"the exchange holds the key" },
+    { id:"self", title:"Self-custody",who:"you hold the key" }
+  ];
+
+  const VAULT = held => // held: 'them' | 'you'
+    '<svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true">' +
+      '<rect x="5" y="9" width="36" height="30" rx="4" stroke="currentColor" stroke-width="1.8"/>' +
+      '<circle cx="23" cy="24" r="8" stroke="currentColor" stroke-width="1.6"/>' +
+      '<circle cx="23" cy="24" r="2.4" fill="currentColor"/>' +
+      '<path d="M23 16v-3M23 35v-3M15 24h-3M34 24h-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' +
+      // the key sits outside the vault when you hold it, inside when they do
+      (held === "you"
+        ? '<g stroke="#54d6a8" stroke-width="1.7" fill="none" stroke-linecap="round">' +
+            '<circle cx="38" cy="38" r="3.4"/><path d="M35.2 40.2 L28 44"/><path d="M31.5 42 l1.6 2.2"/></g>'
+        : '<g stroke="#f0a868" stroke-width="1.7" fill="none" stroke-linecap="round">' +
+            '<circle cx="11.5" cy="14" r="2.8"/><path d="M14.3 14 h6"/><path d="M18.4 14 v2.4"/></g>') +
+    '</svg>';
+
+  const INCIDENTS = [
+    { label:"The bank freezes your account for a compliance review",
+      out:{ bank:["gone","frozen — call us"], cex:["ok","untouched"], self:["ok","untouched"] },
+      note:'A frozen account is not a bug &mdash; it is the system working as designed. Someone else holds the key, so someone else decides when you can use it.' },
+    { label:"The exchange halts withdrawals",
+      out:{ bank:["ok","untouched"], cex:["gone","withdrawals off"], self:["ok","untouched"] },
+      note:'An exchange balance is a promise from a company, not coins in your hand. When the company stops honouring it, the number on the screen stops meaning anything.' },
+    { label:"It's 2am on a bank holiday and you need to pay someone abroad",
+      out:{ bank:["slow","clears tuesday"], cex:["ok","instant"], self:["ok","instant"] },
+      note:'The network does not keep office hours. This is the mundane advantage people notice long before they notice the dramatic ones.' },
+    { label:"You lose your recovery phrase",
+      out:{ bank:["ok","reset at a branch"], cex:["ok","reset your password"], self:["gone","gone for good"] },
+      note:'And here is the price. Self-custody has no support line, no reset, no appeal. Holding your own key means holding the whole responsibility &mdash; that is the honest trade, and it is worth saying plainly before someone learns it the hard way.' }
+  ];
+
+  let done;
+
+  function render(){
+    host.innerHTML = "";
+    COLS.forEach(c => {
+      const el = document.createElement("div");
+      el.className = "vault"; el.dataset.id = c.id;
+      el.style.color = "#b3aac9";
+      el.innerHTML = VAULT(c.id === "self" ? "you" : "them") +
+        '<span class="title">' + c.title + '</span>' +
+        '<span class="who">' + c.who + '</span>' +
+        '<span class="status" data-s>ready</span>';
+      host.appendChild(el);
+    });
+    incs.innerHTML = "";
+    INCIDENTS.forEach((inc, i) => {
+      const b = document.createElement("button");
+      b.className = "inc"; b.dataset.i = i; b.dataset.done = done.has(i) ? "1" : "0";
+      b.innerHTML = '<span class="dot"></span><span>' + inc.label + '</span>';
+      incs.appendChild(b);
+    });
+    cnt.textContent = done.size + " of " + INCIDENTS.length;
+  }
+
+  incs.addEventListener("click", async e => {
+    const b = e.target.closest(".inc"); if (!b) return;
+    const inc = INCIDENTS[+b.dataset.i];
+    done.add(+b.dataset.i);
+    cap.innerHTML = "";
+
+    // resolve the three columns in sequence, so the contrast reads as a comparison
+    for (let k = 0; k < COLS.length; k++){
+      const col = COLS[k];
+      const el = host.querySelector('.vault[data-id="' + col.id + '"]');
+      const [tone, text] = inc.out[col.id];
+      await wait(190);
+      el.className = "vault " + tone;
+      const st = el.querySelector("[data-s]");
+      st.className = "status " + tone;
+      st.textContent = text;
+      replay(st, "enter");
+      if (tone === "gone") replay(el, "hit");
+    }
+    await wait(220);
+    cap.innerHTML = inc.note;
+    render();
+    // keep the resolved states visible after the re-render
+    for (const col of COLS){
+      const el = host.querySelector('.vault[data-id="' + col.id + '"]');
+      const [tone, text] = inc.out[col.id];
+      el.className = "vault " + tone;
+      const st = el.querySelector("[data-s]");
+      st.className = "status " + tone; st.textContent = text;
+    }
+  });
+
+  root.querySelector('[data-act="reset"]').addEventListener("click", () => {
+    done = new Set(); render();
+    cap.innerHTML = 'Same money, three places to keep it. <b>Run an incident</b> and watch which columns still have access.';
+  });
+
+  done = new Set(); render();
+  cap.innerHTML = 'Same money, three places to keep it. <b>Run an incident</b> and watch which columns still have access.';
+})();
+
+/* ==================================================================
+   drag + drop that also works by tapping, and by keyboard
+   (pointer events, so one code path covers mouse, pen and touch)
+================================================================== */
+function dnd(root, opts){
+  let drag = null, ghost = null, sel = null, over = null;
+  const zones = () => [...root.querySelectorAll(opts.zone)];
+  const clearOver = () => { zones().forEach(z => z.classList.remove("over")); over = null; };
+  const pick = el => {
+    if (sel === el){ sel.classList.remove("sel"); sel = null; return; }
+    if (sel) sel.classList.remove("sel");
+    sel = el; el.classList.add("sel");
+  };
+  const zoneAt = (x, y) => {
+    const under = document.elementFromPoint(x, y);
+    return under && under.closest ? under.closest(opts.zone) : null;
+  };
+  const teardown = () => {
+    if (ghost){ ghost.remove(); ghost = null; }
+    if (drag) drag.it.classList.remove("dragging");
+    clearOver(); drag = null;
+  };
+
+  root.addEventListener("pointerdown", e => {
+    const it = e.target.closest(opts.item);
+    if (!it || it.dataset.locked === "1") return;
+    const r = it.getBoundingClientRect();
+    drag = { it, sx:e.clientX, sy:e.clientY, dx:e.clientX - r.left, dy:e.clientY - r.top,
+             w:r.width, moved:false, id:e.pointerId };
+    try { it.setPointerCapture(e.pointerId); } catch (_){}
+  });
+
+  root.addEventListener("pointermove", e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 5) return;
+    if (!drag.moved){
+      drag.moved = true;
+      ghost = drag.it.cloneNode(true);
+      ghost.classList.add("ghost"); ghost.classList.remove("sel");
+      ghost.style.width = drag.w + "px";
+      document.body.appendChild(ghost);
+      drag.it.classList.add("dragging");
+    }
+    e.preventDefault();
+    ghost.style.left = (e.clientX - drag.dx) + "px";
+    ghost.style.top  = (e.clientY - drag.dy) + "px";
+    const z = zoneAt(e.clientX, e.clientY);
+    if (z !== over){ clearOver(); if (z){ z.classList.add("over"); over = z; } }
+  });
+
+  root.addEventListener("pointerup", e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag, moved = d.moved;
+    const z = moved ? zoneAt(e.clientX, e.clientY) : null;
+    teardown();
+    if (moved){ if (z) opts.onDrop(d.it, z); }
+    else pick(d.it);
+  });
+  root.addEventListener("pointercancel", teardown);
+
+  root.addEventListener("click", e => {
+    const z = e.target.closest(opts.zone);
+    if (z && sel){ const s = sel; sel.classList.remove("sel"); sel = null; opts.onDrop(s, z); }
+  });
+  root.addEventListener("keydown", e => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const it = e.target.closest(opts.item), z = e.target.closest(opts.zone);
+    if (it){ e.preventDefault(); pick(it); }
+    else if (z && sel){ e.preventDefault(); const s = sel; sel.classList.remove("sel"); sel = null; opts.onDrop(s, z); }
+  });
+
+  return { reset(){ if (sel){ sel.classList.remove("sel"); sel = null; } } };
+}
+
+const shuffle = a => { const o=[...a]; for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]];} return o; };
+
+/* ==================================================================
+   5. WALLETS — what's on the device, what's on the network
+================================================================== */
+(function walletBench(){
+  const root  = document.getElementById("wal-root");
+  const tray  = document.getElementById("wal-tray");
+  const cap   = document.getElementById("wal-caption");
+  const score = document.getElementById("wal-score");
+
+  const ITEMS = [
+    { id:"key",  t:"Your private key", z:"device",
+      ok:"Correct, and it is the wallet's first job. The key sits on your device and should never leave it.",
+      no:"If your key lived on the network, every node would have a copy &mdash; and anyone who read it would own your account." },
+    { id:"seed", t:"Your recovery phrase", z:"device",
+      ok:"Right. It is your key written as ordinary words, so it gets exactly the same treatment: offline, on your side, never shared.",
+      no:"Never. A recovery phrase is your private key wearing a costume &mdash; same power, same rules." },
+    { id:"eth",  t:"Your ETH", z:"network",
+      ok:"This is the correction the whole card is built on. Your ETH sits in your account on the network. The wallet never holds it.",
+      no:"This is the picture almost everyone starts with, and it is the one to unlearn. Delete the app and your ETH is untouched &mdash; the wallet only ever held the key." },
+    { id:"addr", t:"Your address", z:"network",
+      ok:"Yes. The address names your account on the network. Your wallet displays it, but it does not own it.",
+      no:"Your wallet shows you the address, but the address belongs to the account &mdash; and accounts live on the network." },
+    { id:"hist", t:"Your transaction history", z:"network",
+      ok:"Correct, and it is public by default. Install a fresh wallet on a new phone and the whole history is already there.",
+      no:"The app draws the list, but it does not store it. Reinstall and every past transaction reappears, because the network kept it." },
+    { id:"ui",   t:"The app's buttons and screens", z:"device",
+      ok:"Yes &mdash; and this is the part that is genuinely 'the wallet'. Swap it for a different app and nothing about your account changes.",
+      no:"The interface is just software sitting on your phone. The network has never heard of it." }
+  ];
+
+  let placed, order;
+
+  function render(){
+    tray.innerHTML = "";
+    order.filter(i => !placed.has(i.id)).forEach(i => {
+      const b = document.createElement("button");
+      b.className = "tile"; b.dataset.id = i.id; b.textContent = i.t;
+      tray.appendChild(b);
+    });
+    root.querySelectorAll(".zone").forEach(z => {
+      z.querySelector("[data-n]").textContent =
+        String([...placed.values()].filter(v => v === z.dataset.zone).length);
+    });
+    score.textContent = placed.size + " of " + ITEMS.length;
+  }
+
+  function drop(tile, zone){
+    const item = ITEMS.find(i => i.id === tile.dataset.id);
+    if (!item || placed.has(item.id)) return;
+    if (zone.dataset.zone !== item.z){
+      const live = tray.querySelector('.tile[data-id="' + item.id + '"]');
+      if (live) replay(live, "reject");
+      cap.innerHTML = '<span class="hl-rogue">Not quite.</span> ' + item.no;
+      return;
+    }
+    placed.set(item.id, item.z);
+    const slot = zone.querySelector(".drop");
+    const b = document.createElement("div");
+    b.className = "tile placed land"; b.dataset.locked = "1"; b.textContent = item.t;
+    slot.appendChild(b);
+    render();
+    cap.innerHTML = '<span class="hl-mint">Yes.</span> ' + item.ok;
+    if (placed.size === ITEMS.length){
+      setTimeout(() => {
+        cap.innerHTML = 'All six placed. Notice what ended up on the left: a secret, a backup of that secret, and some software. ' +
+          '<b>None of your money is on your phone.</b> That is why losing the phone is survivable and losing the key is not.';
+      }, RM ? 0 : 900);
+    }
+  }
+
+  dnd(root, { item:".tile", zone:".zone", onDrop:drop });
+
+  function reset(){
+    placed = new Map(); order = shuffle(ITEMS);
+    root.querySelectorAll(".zone .drop").forEach(d => d.innerHTML = "");
+    render();
+    cap.innerHTML = 'Six things a wallet is involved with. Only some of them are actually <em>in</em> it &mdash; put each one where it really lives.';
+  }
+  root.querySelector('[data-act="reset"]').addEventListener("click", reset);
+  reset();
+})();
+
+/* ==================================================================
+   6. THE SYSTEM WE GREW UP WITH — try to read the terms
+================================================================== */
+(function huntBench(){
+  const root = document.getElementById("hunt-root");
+  const box  = document.getElementById("hunt-terms");
+  const cap  = document.getElementById("hunt-caption");
+  const tEl  = document.getElementById("hunt-timer");
+  const grid = document.getElementById("hunt-grid");
+  const side = document.getElementById("hunt-contract");
+  const code = document.getElementById("hunt-code");
+  const ctrl = document.getElementById("hunt-controls");
+
+  // Fictional terms, written to read like the real thing. The target clause is
+  // deliberately buried mid-document and phrased no more loudly than its neighbours.
+  const SECTIONS = [
+    ["1. Definitions", [
+      '"Account" means any deposit, savings, or transaction account maintained by the Customer with the Bank pursuant to these Terms.',
+      '"Business Day" means any day other than a Saturday, Sunday, or public holiday in the jurisdiction of the Branch of Account.',
+      '"Instruction" means any request, order, or authorisation received by the Bank through any Channel, whether or not in writing.',
+      '"Channel" means any medium through which the Bank makes services available, including branches, telephone banking, and digital platforms.'
+    ]],
+    ["2. Operation of the Account", [
+      'The Customer shall maintain such minimum balance as the Bank may prescribe from time to time and notify by any means it considers appropriate.',
+      'The Bank may decline to act upon any Instruction which it reasonably believes to be unclear, incomplete, or inconsistent with the mandate held.',
+      'Where an Instruction is received after the applicable cut-off time, the Bank may treat that Instruction as received on the next Business Day.',
+      'The Customer acknowledges that credits to the Account are provisional until the Bank has received final and irrevocable settlement.',
+      'The Bank may apply, vary, or waive any charge set out in the Tariff, and the Tariff in force from time to time shall be binding on the Customer.'
+    ]],
+    ["3. Instructions and Authority", [
+      'The Bank shall be entitled, but not obliged, to verify the authenticity of any Instruction by such means as it may in its discretion adopt.',
+      'The Customer shall be bound by any Instruction which the Bank has acted upon in good faith, notwithstanding any error, ambiguity, or lack of authority.',
+      'The Bank may record telephone conversations and retain such recordings for such period as it considers appropriate or as required by law.',
+      'The Customer shall notify the Bank promptly of any change to the particulars held, and the Bank may rely on the particulars last recorded by it.'
+    ]],
+    ["4. Suspension, Restriction and Closure", [
+      'The Bank may set, vary, or remove limits on the value or frequency of transactions on the Account without assigning any reason therefor.',
+      'The Bank may close, suspend, or restrict access to the Account at any time, with or without cause, and without prior notice to the Customer.',
+      'Upon closure the Bank shall remit any credit balance, less any sums owing, by such method and to such destination as it considers appropriate.',
+      'The Customer shall remain liable for all obligations incurred prior to closure, notwithstanding the termination of the banking relationship.',
+      'Nothing in this clause shall oblige the Bank to disclose the reasons for any action taken under it, where such disclosure is prohibited or inadvisable.'
+    ]],
+    ["5. Fees, Interest and Set-Off", [
+      'Interest, where payable, shall accrue at such rate and be credited at such intervals as the Bank may determine and publish from time to time.',
+      'The Bank may without notice combine or consolidate any Accounts and set off any credit balance against any liability of the Customer.',
+      'All payments by the Customer shall be made free of any deduction or withholding, save as required by applicable law.',
+      'The Bank may debit the Account with any charge, fee, or expense properly incurred in connection with the services provided.'
+    ]],
+    ["6. Liability and Variation", [
+      'The Bank shall not be liable for any indirect or consequential loss howsoever arising, whether or not foreseeable at the date of these Terms.',
+      'The Bank may vary these Terms at any time by giving notice through any Channel, and continued use of the Account shall constitute acceptance.',
+      'No failure or delay by the Bank in exercising any right shall operate as a waiver of that right or of any other right.',
+      'These Terms shall be governed by the law of the jurisdiction of the Branch of Account, to whose courts the parties submit.'
+    ]]
+  ];
+  const TARGET = "close, suspend, or restrict access";
+
+  let t0 = null, timerId = null, over = false, num = 0;
+
+  function build(){
+    box.innerHTML = ""; num = 0;
+    SECTIONS.forEach(([h, ps]) => {
+      const hh = document.createElement("h6"); hh.textContent = h; box.appendChild(hh);
+      ps.forEach(text => {
+        num++;
+        const p = document.createElement("p");
+        p.dataset.target = String(text.indexOf(TARGET) !== -1);
+        p.innerHTML = '<span class="cl">' + h.split(".")[0] + "." + num + "&nbsp;&nbsp;</span>" + text;
+        box.appendChild(p);
+      });
+    });
+  }
+
+  function tick(){
+    if (t0 === null) return;
+    tEl.textContent = ((performance.now() - t0)/1000).toFixed(1) + "s";
+  }
+  function stopClock(){
+    if (timerId){ clearInterval(timerId); timerId = null; }
+    tEl.classList.add("stopped");
+  }
+  const elapsed = () => t0 === null ? 0 : (performance.now() - t0)/1000;
+
+  function start(){
+    t0 = performance.now(); over = false;
+    tEl.classList.remove("stopped");
+    timerId = setInterval(tick, 100);
+    buttons();
+    cap.innerHTML = 'Clock is running. It is in there, word for word &mdash; clause&nbsp;4.16.';
+  }
+
+  function reveal(found, secs){
+    over = true; stopClock();
+    const p = box.querySelector('p[data-target="true"]');
+    p.classList.add("right");
+    p.scrollIntoView({ block:"center", behavior: RM ? "auto" : "smooth" });
+    side.hidden = false; grid.classList.add("split");
+    buttons();
+    cap.innerHTML = found
+      ? 'Found it in <b>' + secs.toFixed(1) + 's</b> &mdash; and you knew exactly what you were looking for, which no real customer ever does. ' +
+        'That clause was always there, in the same six-point type as everything around it. Now try the same question on the right.'
+      : 'Reasonable. It was clause <b>4.16</b>, in the same six-point type as everything around it, and you had the advantage of being told it existed. ' +
+        'Nobody opening a current account reads this. Now try the same question on the right.';
+  }
+
+  box.addEventListener("click", e => {
+    const p = e.target.closest("p"); if (!p || over || t0 === null) return;
+    if (p.dataset.target === "true") reveal(true, elapsed());
+    else {
+      p.classList.add("wrong");
+      setTimeout(() => p.classList.remove("wrong"), 600);
+      cap.innerHTML = 'Not that one. Keep going &mdash; there are <b>' + num + '</b> clauses.';
+    }
+  });
+
+  code.addEventListener("click", e => {
+    const p = e.target.closest("p[data-line]"); if (!p || side.hidden) return;
+    code.querySelectorAll("p").forEach(x => x.classList.remove("right","wrong"));
+    if (p.dataset.line === "3"){
+      p.classList.add("right");
+      cap.innerHTML = '<span class="hl-mint">There is no such clause.</span> That is the whole difference. ' +
+        'The bank\'s power to close your account is real and enforceable and buried on page eleven; the contract\'s powers are the four lines you just read. ' +
+        'Not because the code is friendlier, but because <b>everything it can do has to be written down where you can see it</b>.';
+    } else {
+      p.classList.add("wrong");
+      cap.innerHTML = 'Not there either &mdash; and you checked the entire rulebook in about four seconds.';
+    }
+  });
+
+  function buttons(){
+    ctrl.innerHTML = "";
+    const mk = (label, cls, fn) => {
+      const b = document.createElement("button");
+      b.className = "btn " + cls; b.textContent = label;
+      b.addEventListener("click", fn); ctrl.appendChild(b);
+    };
+    if (t0 === null) mk("Start the hunt", "", start);
+    else if (!over)  mk("I give up", "ghost", () => reveal(false, elapsed()));
+    mk("reset", "link", reset);
+  }
+
+  function reset(){
+    stopClock(); t0 = null; over = false;
+    tEl.textContent = "0.0s"; tEl.classList.remove("stopped");
+    side.hidden = true; grid.classList.remove("split");
+    code.querySelectorAll("p").forEach(x => x.classList.remove("right","wrong"));
+    build(); buttons();
+    cap.innerHTML = 'These are the terms for a current account &mdash; abridged, at that. Somewhere in here is the clause that lets the bank close your account without telling you why. <b>Start the clock and find it.</b>';
+  }
+  reset();
+})();
+
+/* ==================================================================
+   7. RULES CAN CHANGE ON YOU — the overnight rewrite
+================================================================== */
+(function diffBench(){
+  const root  = document.getElementById("diff-root");
+  const list  = document.getElementById("diff-clauses");
+  const cap   = document.getElementById("diff-caption");
+  const ctrl  = document.getElementById("diff-controls");
+  const night = document.getElementById("diff-night");
+  const title = document.getElementById("diff-title");
+  const ver   = document.getElementById("diff-ver");
+  const tabs  = [...root.querySelectorAll("[data-side]")];
+
+  const BANK = [
+    { t:"Daily transfer limit: <b>$2,500</b>.", was:"$2,500", now:"$500" },
+    { t:"International transfers clear in 1&ndash;2 business days." },
+    { t:"No monthly maintenance fee on balances over <b>$1,000</b>.", was:"$1,000", now:"$5,000" },
+    { t:"We may update these terms at any time. Continued use constitutes acceptance.", key:true }
+  ];
+  const ETH = [
+    { t:"Anyone can create an account. No permission, no paperwork." },
+    { t:"Only the private key can move an account's ETH." },
+    { t:"Every transaction pays a gas fee." },
+    { t:"Rule changes must be published in the open, and each node chooses whether to run them.", key:true }
+  ];
+
+  let side = "bank", changed = false;
+
+  function render(anim){
+    list.innerHTML = "";
+    const src = side === "bank" ? BANK : ETH;
+    src.forEach((c, i) => {
+      const el = document.createElement("div");
+      el.className = "clause";
+      let html = c.t;
+      if (side === "bank" && changed && c.was){
+        html = c.t.replace("<b>" + c.was + "</b>",
+          '<span class="was">' + c.was + '</span> <span class="now">' + c.now + '</span>');
+        el.classList.add("changed");
+        if (anim) el.classList.add("enter");
+        el.style.animationDelay = (i * 90) + "ms";
+      }
+      if (side === "bank" && changed && c.key) el.classList.add("enabler");
+      if (side === "eth" && changed && c.key) el.classList.add("pub");
+      el.innerHTML = html;
+      list.appendChild(el);
+    });
+    title.textContent = side === "bank" ? "Northgate Savings — agreement" : "Ethereum — protocol rules";
+    ver.textContent = side === "bank" ? (changed ? "v4.3" : "v4.2") : (changed ? "proposal open" : "in force");
+    buttons();
+  }
+
+  function buttons(){
+    ctrl.innerHTML = "";
+    const mk = (label, cls, fn) => {
+      const b = document.createElement("button");
+      b.className = "btn " + cls; b.textContent = label;
+      b.addEventListener("click", fn); ctrl.appendChild(b);
+    };
+    if (side === "bank" && !changed) mk("Go to sleep", "", sleep);
+    if (side === "eth"  && !changed) mk("Try to change a rule overnight", "", propose);
+    const r = document.createElement("button");
+    r.className = "btn link"; r.textContent = "reset";
+    r.addEventListener("click", () => { changed = false; render(false); intro(); });
+    ctrl.appendChild(r);
+  }
+
+  async function sleep(){
+    ctrl.innerHTML = "";
+    night.classList.add("asleep");
+    cap.innerHTML = "&hellip;";
+    await wait(1100);
+    changed = true;
+    night.classList.remove("asleep");
+    render(true);
+    await wait(520);
+    cap.innerHTML = 'Good morning. Your daily limit is now <span class="hl-rogue">$500</span> and the fee-free threshold moved to ' +
+      '<span class="hl-rogue">$5,000</span>, so you are paying a monthly fee you did not have yesterday. ' +
+      'You were not asked and you did not agree &mdash; <b>the fourth clause is the one that made it legal</b>, and you accepted that clause on the day you opened the account.';
+  }
+
+  async function propose(){
+    ctrl.innerHTML = "";
+    night.classList.add("asleep");
+    cap.innerHTML = "&hellip;";
+    await wait(900);
+    changed = true;
+    night.classList.remove("asleep");
+    render(true);
+    await wait(420);
+    cap.innerHTML = 'Nothing changed. A rule change here cannot be slipped in overnight: it has to be <span class="hl-mint">published as a proposal</span>, ' +
+      'read by anyone who cares to, and then <b>each node operator decides whether to run it</b>. ' +
+      'A change nobody adopts simply does not happen. That is what "the rules only change in the open" actually means in practice &mdash; not a promise, a procedure.';
+  }
+
+  tabs.forEach(b => b.addEventListener("click", () => {
+    side = b.dataset.side; changed = false;
+    tabs.forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+    render(false); intro();
+  }));
+
+  function intro(){
+    cap.innerHTML = side === "bank"
+      ? 'Four clauses you agreed to. Read them, then <b>go to sleep</b>.'
+      : 'Four rules of the network. Try to get one of them quietly changed while everyone is asleep.';
+  }
+  render(false); intro();
+})();
+
+/* ==================================================================
+   8. ETHER — you don't need a whole one
+================================================================== */
+(function denomBench(){
+  const root  = document.getElementById("denom-root");
+  const range = document.getElementById("d-range");
+  const ruler = document.getElementById("d-ruler");
+  const cap   = document.getElementById("d-caption");
+  const outs  = { eth:document.getElementById("d-eth"), gwei:document.getElementById("d-gwei"), wei:document.getElementById("d-wei") };
+  const units = { eth:root.querySelector('[data-u="eth"]'), gwei:root.querySelector('[data-u="gwei"]'), wei:root.querySelector('[data-u="wei"]') };
+  const buys  = document.getElementById("d-buys");
+  const chips = [...root.querySelectorAll("[data-spend]")];
+
+  // exact decimal strings — no floating point anywhere near these numbers
+  const pow10 = k => k >= 0 ? "1" + "0".repeat(k) : "0." + "0".repeat(-k - 1) + "1";
+  const group = s => s.indexOf(".") !== -1 ? s : s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  const NOTES = {
+    18:'One whole ETH. Plenty of people who use Ethereum every week have never owned one of these.',
+    15:'<b>0.001 ETH.</b> A completely ordinary amount to hold, and to send. This is the number to remember when someone tells you Ethereum is only for people with money.',
+    12:'A millionth of an ETH. Still a perfectly valid amount &mdash; the network does not round it away.',
+    9 :'<b>One gwei.</b> Gas prices are quoted in these, which is why you will see the word long before you need the maths.',
+    0 :'<b>One wei.</b> The smallest unit there is. Nothing on Ethereum is ever split finer than this, and every balance is really just a count of them.'
+  };
+
+  function drawRuler(e){
+    let s = "";
+    for (let i = 0; i <= 18; i++){
+      const x = 6 + (i/18) * 388;
+      const big = i === 0 || i === 9 || i === 18;
+      const on = i <= e;
+      s += '<line x1="' + x.toFixed(1) + '" y1="' + (big ? 8 : 14) + '" x2="' + x.toFixed(1) + '" y2="30" ' +
+           'stroke="' + (on ? "#a87dff" : "#3a3158") + '" stroke-width="' + (big ? 2 : 1) + '" ' +
+           'opacity="' + (on ? 1 : .6) + '"/>';
+    }
+    const mx = 6 + (e/18) * 388;
+    s += '<circle cx="' + mx.toFixed(1) + '" cy="30" r="4.5" fill="#a87dff"/>';
+    s += '<text x="' + mx.toFixed(1) + '" y="44" text-anchor="middle" font-family="ui-monospace,monospace" ' +
+         'font-size="9" fill="#b3aac9">10^' + e + ' wei</text>';
+    ruler.innerHTML = s;
+  }
+
+  function sync(){
+    const e = +range.value;
+    outs.wei.textContent  = group(pow10(e));
+    outs.gwei.textContent = group(pow10(e - 9));
+    outs.eth.textContent  = group(pow10(e - 18));
+    const lead = e >= 18 ? "eth" : e >= 9 ? "gwei" : "wei";
+    Object.keys(units).forEach(k => units[k].classList.toggle("lead", k === lead));
+    drawRuler(e);
+    cap.innerHTML = NOTES[e] ||
+      'That is <span class="mono">' + group(pow10(e - 18)) + ' ETH</span> &mdash; exactly, not rounded. ' +
+      'Every one of these is a real amount you could hold or send.';
+  }
+
+  range.addEventListener("input", sync);
+
+  chips.forEach(c => c.addEventListener("click", () => {
+    chips.forEach(o => o.setAttribute("aria-pressed", String(o === c)));
+    const usd = +c.dataset.spend;
+    buys.textContent = "≈ " + (usd / 3000).toFixed(6).replace(/0+$/,"").replace(/\.$/,"") + " ETH";
+  }));
+
+  buys.textContent = "≈ 0.016667 ETH";
+  sync();
+})();
+
+/* ==================================================================
+   9. TRANSACTIONS — the label is not the transaction
+   Calldata is genuinely ABI-encoded against real selectors, so the hex
+   a learner reads here has the same anatomy as hex in a real wallet.
+================================================================== */
+(function txBench(){
+  const root  = document.getElementById("tx-root");
+  const elErr = document.getElementById("tx-errands");
+  const elFld = document.getElementById("tx-fields");
+  const elRev = document.getElementById("tx-reveal");
+  const elOut = document.getElementById("tx-outcome");
+  const elCap = document.getElementById("tx-caption");
+  const elCtl = document.getElementById("tx-controls");
+  const elSt  = document.getElementById("tx-state");
+  const elEnv = document.getElementById("tx-env");
+  const elScr = document.getElementById("tx-score");
+
+  const pad = h => h.padStart(64, "0");
+  const SHOP = "4b0897b0513fdc7c541b6d9d7e929c4e5364d2db";
+  const ATTACKER = "9f2ca3c4d1e8b7a06f5d2c9e8b1a4f7c3d6e0a29";
+  const GOLD_25 = "15af1d78b58c40000"; // 25 * 10^18
+
+  // A deliberate ladder: no data → no data but `to` is a program → data that
+  // moves value while `value` reads 0 → data that hands over control.
+  const ERRANDS = [
+    { id:"ana", app:"Send Ana 0.1 ETH", src:"your wallet",
+      to:"0x2d81…4c07", toSub:"Ana's account", value:"0.1 ETH", gas:"21,000", data:null,
+      plain:"There is no data at all — the field is empty. This is the simplest transaction that exists: the network moves ETH from one account to another, and nothing else runs.",
+      out:{ tone:"good", text:"<b>Done.</b> 0.1 ETH left your account and landed in Ana's. Nothing else happened, because nothing else was asked for." } },
+
+    { id:"fund", app:"Chip in 0.05 to the fundraiser", src:"fundraiser.eth",
+      to:"0xc3a7…81b4", toSub:"a contract, not a person", value:"0.05 ETH", gas:"64,200", data:null,
+      plain:"Still no data. But look at <b>to</b> — this is a contract, not a person. ETH arriving is itself something a contract can react to, so its code runs and records you as a backer.",
+      out:{ tone:"good", text:"<b>Done.</b> 0.05 ETH went to the fundraiser and the contract logged you as a backer. Identical envelope to Ana's transfer — the only difference was who sat on the other end." } },
+
+    { id:"sword", app:"Buy the sword — 25 GOLD", src:"dragonquest.xyz",
+      to:"0x8e14…77a2", toSub:"the GOLD token contract", value:"0 ETH", gas:"51,800",
+      data:{ sel:"a9059cbb", words:[pad(SHOP), pad(GOLD_25)], fn:"transfer",
+             args:[["to","0x4b08…d2db  (the game shop)"], ["amount","25 GOLD"]] },
+      plain:"Look at <b>value</b>: it reads 0. You are paying, just not with ETH — the payment is 25 GOLD and it happens entirely inside <b>data</b>. This is what \"transactions do more than move ETH\" actually looks like.",
+      out:{ tone:"good", text:"<b>Done.</b> 25 GOLD moved to the shop and the sword is in your inventory. Your ETH balance never changed — only the gas fee came out of it." } },
+
+    { id:"drop", app:"Claim your free airdrop", src:"a link in your DMs",
+      to:"0x5fd2…b0e9", toSub:"an NFT collection you own", value:"0 ETH", gas:"46,100",
+      data:{ sel:"a22cb465", words:[pad(ATTACKER), pad("1")], fn:"setApprovalForAll",
+             args:[["operator","0x9f2c…0a29  (nobody you know)"], ["approved","true"]] },
+      danger:true,
+      plain:"This is not a claim. It gives <b>0x9f2c…0a29 permission to move every NFT in this collection out of your account</b> — at any time, until you revoke it. Nothing is being sent to you at all.",
+      out:null } // decided by whether they read it first
+  ];
+
+  let cur = null, decoded = false, resolved = false, busy = false;
+  let read = new Set();
+
+  const say = h => elCap.innerHTML = h;
+
+  const calldata = d => d
+    ? '<span class="calldata"><span class="sel">0x' + d.sel + '</span>' +
+      d.words.map(w => '<span class="w">' + w + '</span>').join("") +
+      '<span class="scanbar" id="tx-scan"></span></span>'
+    : '<span class="calldata"><span class="empty">0x</span> <span class="sub">— empty</span></span>';
+
+  function errands(){
+    elErr.innerHTML = "";
+    ERRANDS.forEach(e => {
+      const b = document.createElement("button");
+      b.className = "errand"; b.dataset.id = e.id;
+      b.setAttribute("aria-pressed", String(cur && cur.id === e.id));
+      b.innerHTML = '<span class="app">' + e.app + '</span>' +
+                    '<span class="src">via ' + e.src + '</span>' +
+                    (read.has(e.id) ? '<span class="seen">✓ you read this one</span>' : '');
+      elErr.appendChild(b);
+    });
+    elScr.textContent = read.size + " of " + ERRANDS.length;
+  }
+
+  function fields(anim){
+    if (!cur){ elFld.innerHTML = '<div class="fld"><span class="k">—</span><span class="v sub">pick one above</span></div>'; return; }
+    const rows = [
+      ["from",  '0x7a3f…9c21 <span class="sub">(you)</span>'],
+      ["to",    cur.to + ' <span class="sub">(' + cur.toSub + ')</span>'],
+      ["value", cur.value],
+      ["data",  calldata(cur.data)],
+      ["nonce", "7"],
+      ["gas",   cur.gas]
+    ];
+    elFld.innerHTML = rows.map(([k, v], i) =>
+      '<div class="fld' + (anim ? " swap" : "") + '" style="animation-delay:' + (i * 55) + 'ms">' +
+      '<span class="k">' + k + '</span><span class="v">' + v + '</span></div>').join("");
+  }
+
+  function buttons(){
+    elCtl.innerHTML = "";
+    const mk = (label, cls, fn, dis) => {
+      const b = document.createElement("button");
+      b.className = "btn " + cls; b.textContent = label; b.disabled = !!dis || busy;
+      b.addEventListener("click", fn); elCtl.appendChild(b);
+    };
+    if (cur && !resolved){
+      mk(decoded ? "Decoded" : "Decode the data", decoded ? "ghost" : "", decode, decoded);
+      mk("Sign it", "ghost", () => finish(true));
+      mk("Reject", "ghost", () => finish(false));
+    }
+    const r = document.createElement("button");
+    r.className = "btn link"; r.textContent = "reset";
+    r.addEventListener("click", reset); elCtl.appendChild(r);
+  }
+
+  function pick(e){
+    cur = e; decoded = false; resolved = false;
+    elEnv.classList.remove("sealed");
+    elSt.textContent = "unsigned";
+    elOut.hidden = true; elOut.className = "outcome";
+    elRev.className = "reveal";
+    elRev.innerHTML = '<p class="hint">Your wallet shows you the label at the top. The network only ever reads what is in <b>data</b>. Press <b>Decode</b> before you decide.</p>';
+    errands(); fields(true); buttons();
+    say('<b>' + e.app + '</b> — that is what the app says it will do. Everything the network will <em>actually</em> do is in the envelope on the left.');
+  }
+
+  async function decode(){
+    if (!cur || decoded || busy) return;
+    busy = true; buttons();
+    const bar = document.getElementById("tx-scan");
+    if (bar){
+      bar.style.opacity = "1";
+      await new Promise(done => tween(620, p => { bar.style.left = (-38 + p * 138) + "%"; }, ease.inOutCubic, done));
+      bar.style.opacity = "0";
+    } else await wait(240);
+
+    decoded = true; read.add(cur.id);
+    elRev.className = "reveal on" + (cur.danger ? " danger" : "");
+    const d = cur.data;
+    elRev.innerHTML =
+      (d
+        ? '<div class="call"><span class="fn">' + d.fn + '</span>(' +
+          d.args.map(([n, v], i) =>
+            '<div class="arg enter" style="animation-delay:' + (i * 110) + 'ms">' +
+            '<span class="an">' + n + '</span><span class="av">' + v + '</span></div>').join("") + ')</div>'
+        : '<div class="call"><span class="fn">no function call</span></div>') +
+      '<p class="plain">' + cur.plain + '</p>';
+    errands(); buttons();
+    say(cur.danger
+      ? '<span class="hl-rogue">Read that again.</span> The label and the data are describing two completely different events. Only one of them is binding.'
+      : 'That is the whole instruction, in plain terms. Same six fields as every other transaction — only <b>data</b> changed.');
+    busy = false; buttons();
+  }
+
+  async function finish(signed){
+    if (!cur || resolved || busy) return;
+    busy = true; resolved = true;
+
+    if (signed){
+      elEnv.classList.add("sealed");
+      elSt.textContent = "signed";
+      await wait(300);
+      const sig = document.createElement("div");
+      sig.className = "sigline";
+      sig.innerHTML = '<span class="sig">sig r: 0x4c1f…a08e &nbsp; s: 0x7b23…dd41 &nbsp; v: 27</span>' +
+        '<span class="keynote">🔑 your key stayed on the device — only this signature left it</span>';
+      elRev.appendChild(sig);
+      await wait(280);
+    } else {
+      elSt.textContent = "rejected";
+      await wait(220);
+    }
+
+    let out;
+    if (cur.id === "drop"){
+      if (!signed) out = { tone:"good", text:'<b>Rejected, and it cost you nothing.</b> The label said "claim"; the data said "hand over everything". Twenty seconds of reading was the entire defence.' };
+      else if (decoded) out = { tone:"bad", text:'<b>You read it and signed anyway.</b> Same result: the network carries out what the data says, never what you meant. Your collection is gone.' };
+      else out = { tone:"bad", text:'<b>There was no airdrop.</b> You signed a permission slip, and 0x9f2c…0a29 emptied your collection nine minutes later. Nothing was hacked — the signature was valid, because you made it.' };
+    } else if (!signed){
+      out = { tone:"", text:'Rejected, so nothing happened at all. Refusing costs you nothing but time — there is no penalty for reading first and signing second.' };
+    } else out = cur.out;
+
+    elOut.hidden = false;
+    elOut.className = "outcome " + out.tone;
+    elOut.innerHTML = out.text;
+    replay(elOut, "enter");
+
+    busy = false; buttons();
+    if (read.size === ERRANDS.length){
+      await wait(500);
+      say('All four read. Notice what never changed: six fields, one signature, one fee. The only thing that varied was <b>data</b> — and it was the difference between buying a sword and losing a collection. ' +
+          '<b>That is the whole card:</b> a transaction is one signed instruction, and the instruction is the part nobody reads.');
+    }
+  }
+
+  elErr.addEventListener("click", e => {
+    const b = e.target.closest(".errand"); if (!b || busy) return;
+    pick(ERRANDS.find(x => x.id === b.dataset.id));
+  });
+
+  function reset(){
+    cur = null; decoded = false; resolved = false; busy = false; read = new Set();
+    elEnv.classList.remove("sealed");
+    elSt.textContent = "nothing loaded";
+    elOut.hidden = true;
+    elRev.className = "reveal";
+    elRev.innerHTML = '<p class="hint">Four apps are each asking you to sign something. Load one and the exact instruction appears on the left.</p>';
+    errands(); fields(false); buttons();
+    say('Four things an app wants you to sign. Every one of them shows you a friendly label — <b>load one and read what it actually says</b>.');
+  }
+  root.querySelector('[data-act="reset"]').addEventListener("click", reset);
+  reset();
+})();
+
+})();
+</script>
