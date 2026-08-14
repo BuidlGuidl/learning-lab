@@ -13,9 +13,7 @@ export const registry: Record<string, LabEntry> = {
     title: "Ethereum 101",
     load: () => import("./ethereum-101/lab"),
   },
-  // Skeleton of the PR #63 restructure — the OUTLINE.md flow made walkable,
-  // info-level drafts instead of final copy. Unlinked tinkering slot,
-  // reachable at /labs/ethereum-101-v2.
+  // Under construction, intentionally not linked from home until it replaces ethereum-101.
   "ethereum-101-v2": {
     title: "Ethereum 101 V2",
     load: () => import("./ethereum-101-v2/lab"),
