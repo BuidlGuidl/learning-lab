@@ -1,15 +1,14 @@
 "use client";
 
 // The vending machine from the card's illustration, but running. The contract's
-// three `require` lines are printed next to the machine, and the learner sets up
-// the conditions themselves:
+// two `require` lines are printed next to the machine, and the learner sets up
+// the failure themselves:
 //   • underpay        → the first require stops it on line one
 //   • empty the shelf → the second one stops it, after the payment was fine
-//   • close the window → the third one stops it, on nothing but the clock
-// Whichever line fails, the coin drops back out of the return tray and `stock`
-// hasn't moved: a revert undoes everything, including the payment. Pass all
-// three and the item drops, stock falls, and the contract keeps the ETH — same
-// input, same result, no clerk deciding whether to serve you.
+// Either way the coin drops back out of the return tray and `stock` hasn't
+// moved: a revert undoes everything, including the payment. Pass both and the
+// item drops, stock falls, and the contract keeps the ETH — same input, same
+// result, no clerk deciding whether to serve you.
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { LightBulbIcon } from "@heroicons/react/24/outline";
@@ -39,7 +38,7 @@ const COLOR = {
 
 type Mark = "idle" | "dim" | "pass" | "fail";
 
-const REQUIRES = ["require(msg.value >= 0.05 ether);", "require(stock > 0);", "require(block.timestamp < closesAt);"];
+const REQUIRES = ["require(msg.value >= 0.05 ether);", "require(stock > 0);"];
 
 const MARK_GLYPH: Record<Mark, string> = { idle: "·", dim: "·", pass: "✓", fail: "✗" };
 
@@ -81,17 +80,15 @@ const failReason = (index: number): ReactNode =>
       The shelf is empty. The payment was fine, but the second <Mono>require</Mono> failed — and a failure anywhere
       undoes everything before it.
     </>,
-    <>The sale window has closed. The money and the stock were both fine; the clock was not.</>,
   ][index];
 
 export const VendingContract = () => {
   const [pay, setPay] = useState(PRICE);
   const [stock, setStock] = useState(START_STOCK);
-  const [closed, setClosed] = useState(false);
   const [balance, setBalance] = useState(0);
   const [dispensed, setDispensed] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [marks, setMarks] = useState<Mark[]>(["idle", "idle", "idle"]);
+  const [marks, setMarks] = useState<Mark[]>(["idle", "idle"]);
   const [screen, setScreen] = useState({ text: "READY", tone: COLOR.mint });
   const [caption, setCaption] = useState<ReactNode>(INTRO);
 
@@ -133,7 +130,7 @@ export const VendingContract = () => {
       timer.current = setTimeout(resolve, ms);
     });
 
-  const clearMarks = () => setMarks(["idle", "idle", "idle"]);
+  const clearMarks = () => setMarks(["idle", "idle"]);
 
   const choose = (amount: number) => {
     if (busy) return;
@@ -154,28 +151,10 @@ export const VendingContract = () => {
     );
   };
 
-  const toggleWindow = () => {
-    if (busy) return;
-    const next = !closed;
-    setClosed(next);
-    clearMarks();
-    setCaption(
-      next ? (
-        <>
-          The sale window is closed. Nothing about the machine changed — only the clock did, and the contract reads the
-          clock too.
-        </>
-      ) : (
-        <>The sale window is open again.</>
-      ),
-    );
-  };
-
   const reset = () => {
     stop();
     setPay(PRICE);
     setStock(START_STOCK);
-    setClosed(false);
     setBalance(0);
     setDispensed(0);
     setBusy(false);
@@ -193,7 +172,7 @@ export const VendingContract = () => {
     const alive = () => id === runId.current;
 
     setBusy(true);
-    setMarks(["dim", "dim", "dim"]);
+    setMarks(["dim", "dim"]);
     setScreen({ text: "...", tone: COLOR.peach });
 
     // the coin drops into the slot
@@ -202,7 +181,7 @@ export const VendingContract = () => {
     if (!alive()) return;
     setCoin(c => ({ ...c, shown: false }));
 
-    const passes = [pay >= PRICE, stock > 0, !closed];
+    const passes = [pay >= PRICE, stock > 0];
     let failed = -1;
     for (let i = 0; i < passes.length; i++) {
       await wait(CHECK_STEP);
@@ -260,7 +239,7 @@ export const VendingContract = () => {
 
     setCaption(
       <>
-        All three conditions passed, so the contract ran to the end: <Mono>stock</Mono> dropped to{" "}
+        Both conditions passed, so the contract ran to the end: <Mono>stock</Mono> dropped to{" "}
         <strong>{nextStock}</strong> and the contract now holds{" "}
         <Mono className="text-mint-bright">{eth(nextBalance)}</Mono>. Same input, same result, every time — no clerk, no
         discretion.
@@ -446,18 +425,6 @@ export const VendingContract = () => {
           <span>stock</span>
           <strong className="font-semibold text-dark-text">{stock}</strong>
         </span>
-        <button
-          type="button"
-          onClick={toggleWindow}
-          aria-pressed={closed}
-          className={`cursor-pointer rounded-lg border px-3 py-1.5 transition-colors ${
-            closed
-              ? "border-violet-bright bg-lab-code-panel-tint font-semibold text-dark-text"
-              : "border-dark-border bg-dark-surface text-dark-text-muted hover:border-violet-bright hover:text-dark-text"
-          }`}
-        >
-          sale window: {closed ? "closed" : "open"}
-        </button>
       </div>
 
       <p className="m-0 min-h-[3.5rem] text-sm leading-relaxed text-dark-text-muted">{caption}</p>
@@ -465,8 +432,8 @@ export const VendingContract = () => {
       <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-dark-text-muted">
         <LightBulbIcon className="h-4 w-4 shrink-0 text-violet-bright" />
         <span>
-          <strong className="font-semibold text-dark-text">Tip</strong>: buy all three snacks, or close the sale window,
-          to make a different line fail.
+          <strong className="font-semibold text-dark-text">Tip</strong>: buy all three snacks, then call{" "}
+          <Mono>buy()</Mono> again to make the second line fail.
         </span>
       </div>
     </div>
