@@ -15,6 +15,22 @@ export const StateNetwork = makeIllustration({
   alt: "A globe of many equal nodes connected in a mesh, each node holding the same copy of account state — balance, ownership, contract code — with no center and no node larger than the others.",
 });
 
+// Ch2 · What people build — examples of applications connected by Ethereum.
+export const EthereumUseCases = makeIllustration({
+  src: "/ethereum-use-cases-ch2-3.webp",
+  width: 1200,
+  height: 675,
+  alt: "An Ethereum diamond connected to six application examples: payments, loans, a video game item, a digital ticket, identity, and a community treasury with voting.",
+});
+
+// Ch3 · Who holds your money — bank custody compared with self-custody.
+export const CustodyComparison = makeIllustration({
+  src: "/bank-vs-self-custody-ch3-3.webp",
+  width: 1200,
+  height: 675,
+  alt: "A side-by-side comparison of bank custody and Ethereum self-custody: the bank controls access to customer records on one side, while a user holds the key to their Ethereum assets on the other.",
+});
+
 // Ch5 · Transactions — a transaction's life from signature to permanence.
 export const TransactionLifecycle = makeIllustration({
   src: "/transaction-flow-ch1-2.png",
