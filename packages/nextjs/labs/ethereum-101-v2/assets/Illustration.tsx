@@ -8,7 +8,7 @@
 import { useRef } from "react";
 import type { ReactNode } from "react";
 import Image from "next/image";
-import { ArrowDownTrayIcon, ArrowsPointingOutIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowsPointingOutIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 type IllustrationConfig = {
   src: string;
@@ -17,7 +17,6 @@ type IllustrationConfig = {
   height: number;
   unoptimized?: boolean;
   loading?: "eager" | "lazy";
-  downloadName?: string;
 };
 
 export const makeIllustration = ({
@@ -27,12 +26,31 @@ export const makeIllustration = ({
   height,
   unoptimized = false,
   loading = "lazy",
-  downloadName,
 }: IllustrationConfig) => {
   // children, when present, are pinned as an overlay over the image — that's
   // where ConceptCard parks the "open interactive" button.
   const Illustration = ({ children }: { children?: ReactNode }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
+    const inlineImage = (
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className="h-auto w-full rounded-xl border border-lab-border"
+        unoptimized={unoptimized}
+        loading={loading}
+      />
+    );
+
+    if (children != null) {
+      return (
+        <figure className="relative m-0 w-full">
+          {inlineImage}
+          {children}
+        </figure>
+      );
+    }
 
     return (
       <figure className="relative m-0 w-full">
@@ -42,15 +60,7 @@ export const makeIllustration = ({
           onClick={() => dialogRef.current?.showModal()}
           aria-label={`Open full-size image: ${alt}`}
         >
-          <Image
-            src={src}
-            alt={alt}
-            width={width}
-            height={height}
-            className="h-auto w-full rounded-xl border border-lab-border"
-            unoptimized={unoptimized}
-            loading={loading}
-          />
+          {inlineImage}
           <span
             aria-hidden="true"
             className="pointer-events-none absolute bottom-2 right-2 grid h-10 w-10 place-items-center rounded-full border border-lab-border bg-lab-surface/90 text-lab-text opacity-90 shadow-md transition-transform group-hover:scale-105 group-focus-visible:scale-105 sm:bottom-3 sm:right-3"
@@ -58,8 +68,6 @@ export const makeIllustration = ({
             <ArrowsPointingOutIcon className="h-5 w-5" />
           </span>
         </button>
-
-        {children}
 
         <dialog
           ref={dialogRef}
@@ -81,16 +89,6 @@ export const makeIllustration = ({
         >
           <div className="modal-box flex h-auto max-h-none w-auto max-w-none flex-col items-end gap-2 overflow-visible bg-transparent p-0 shadow-none">
             <div className="z-10 flex w-full items-center justify-end gap-2">
-              {downloadName && (
-                <a
-                  href={src}
-                  download={downloadName}
-                  className="btn h-11 min-h-11 border-lab-border bg-lab-surface/95 px-3 text-lab-text shadow-lg hover:border-lab-violet hover:text-lab-violet sm:px-4"
-                >
-                  <ArrowDownTrayIcon className="h-5 w-5 shrink-0" />
-                  <span>Download cheat sheet</span>
-                </a>
-              )}
               <button
                 type="button"
                 className="btn btn-circle h-11 min-h-11 w-11 border-lab-border bg-lab-surface/95 text-lab-text shadow-lg hover:border-lab-violet hover:text-lab-violet"

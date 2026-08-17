@@ -38,7 +38,6 @@ export const WalletSafetyInfographic = makeIllustration({
   height: 941,
   unoptimized: true,
   loading: "eager",
-  downloadName: "ethereum-wallet-safety-cheat-sheet.webp",
   alt: "An infographic titled Public vs Secret: an Ethereum address is safe to share, a private key and recovery phrase must stay secret, every signature should be reviewed, and restoring a wallet is different from sharing its secrets. It also shows common phishing warning signs.",
 });
 
