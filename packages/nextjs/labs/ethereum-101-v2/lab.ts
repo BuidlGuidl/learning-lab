@@ -1,7 +1,6 @@
 import { BruteForce } from "./assets/BruteForce";
 import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingMachine } from "./assets/VendingMachine";
-import { WalletSafety } from "./assets/WalletSafety";
 import { WorldComputer } from "./assets/WorldComputer";
 import {
   CustodyComparison,
@@ -9,6 +8,7 @@ import {
   PublicLedger,
   StateNetwork,
   TransactionLifecycle,
+  WalletSafetyInfographic,
 } from "./assets/illustrations";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
@@ -149,8 +149,8 @@ export const lab = defineLab({
           id: "what-is-safe-to-share",
           label: "CONCEPT",
           title: "What's safe to share?",
-          interactive: WalletSafety,
-          body: "The rule is short.\n\nYour **address**? Public by design. Share it freely.\n\nYour **private key** or **recovery phrase**? Never. No real app, support agent, or moderator will ever need them. Anyone who asks is trying to rob you.\n\nOne more edge to know about: a wallet signature can authorize an action without revealing your key. Signatures keep the key safe, but they still do things. Read what you're approving, and if it's unclear, reject it.\n\nProve it to yourself below: which of the three is safe to share?",
+          illustrations: [WalletSafetyInfographic],
+          body: "The rule is short. Your **address**? Public by design. Share it freely.\n\nYour **private key** or **recovery phrase**? Never. No real app, support agent, or moderator will ever need them. Anyone who asks is trying to rob you.\n\nOne more edge to know about: a wallet signature can authorize an action without revealing your key. Signatures keep the key safe, but they still do things. Read what you're approving, and if it's unclear, reject it.\n\nKeep this cheat sheet handy. You can download a copy and open it whenever a person, website, or wallet asks you to share information or approve something.",
         },
       ],
     },

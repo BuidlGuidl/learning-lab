@@ -31,6 +31,17 @@ export const CustodyComparison = makeIllustration({
   alt: "A side-by-side comparison of bank custody and Ethereum self-custody: the bank controls access to customer records on one side, while a user holds the key to their Ethereum assets on the other.",
 });
 
+// Ch4 · What's safe to share — a high-detail wallet safety infographic.
+export const WalletSafetyInfographic = makeIllustration({
+  src: "/wallet-safety-infographic-ch4-5.webp",
+  width: 1672,
+  height: 941,
+  unoptimized: true,
+  loading: "eager",
+  downloadName: "ethereum-wallet-safety-cheat-sheet.webp",
+  alt: "An infographic titled Public vs Secret: an Ethereum address is safe to share, a private key and recovery phrase must stay secret, every signature should be reviewed, and restoring a wallet is different from sharing its secrets. It also shows common phishing warning signs.",
+});
+
 // Ch5 · Transactions — a transaction's life from signature to permanence.
 export const TransactionLifecycle = makeIllustration({
   src: "/transaction-flow-ch1-2.png",
