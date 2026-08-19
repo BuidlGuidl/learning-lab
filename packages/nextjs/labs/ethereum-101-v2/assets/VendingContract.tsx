@@ -61,8 +61,8 @@ const eth = (n: number) => `${n.toFixed(2)} ETH`;
 
 const INTRO = (
   <>
-    The machine&apos;s rules are public and unchangeable. Anyone can read them, and no one can quietly rewrite them. The
-    price is <strong>0.05 ETH</strong>. Click an amount to insert it.
+    The machine&apos;s rules are public and unchangeable. If both rules pass, a snack drops and the machine keeps your
+    ETH. Your ETH comes back if either rule fails. The price is <strong>0.05 ETH</strong>. Click an amount to insert it.
   </>
 );
 
@@ -375,16 +375,13 @@ export const VendingContract = () => {
         className="rounded-xl border border-dark-border bg-dark-bg/60 p-3 text-xs leading-relaxed"
         aria-label="The machine's rules, with each one checked as it runs."
       >
-        <div className="text-dark-text-faint">The vending machine&apos;s rules</div>
+        <div className="text-dark-text-faint">The vending machine&apos;s rules:</div>
         {RULES.map((rule, i) => (
           <div key={rule} className={`-mx-1 flex items-center gap-2 rounded px-1 ${markClass[marks[i]]}`}>
             <span className={`w-3 shrink-0 text-center font-bold ${glyphClass[marks[i]]}`}>{MARK_GLYPH[marks[i]]}</span>
             <span>{rule}</span>
           </div>
         ))}
-        <div className="pl-5 text-dark-text-muted">
-          If both rules pass, a snack drops and the machine keeps your ETH. If either rule fails, your ETH comes back.
-        </div>
       </div>
 
       {/* one segmented control, so it reads as a single choice rather than three
