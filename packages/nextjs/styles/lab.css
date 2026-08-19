@@ -32,6 +32,26 @@
   --color-lab-code-panel-stub: rgb(200 179 248 / 0.78);
   --color-lab-code-panel-stub-border: rgb(123 97 191 / 0.72);
   --color-lab-code-panel-stub-text: #1a102c;
+
+  /* Interactive captions: a soft rise-and-fade when the message changes, so new
+     info below the controls registers without being flashy. */
+  --animate-caption-in: caption-in 360ms ease-out;
+  @keyframes caption-in {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-caption-in {
+    animation: none;
+  }
 }
 
 .lab,
