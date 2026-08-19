@@ -1,14 +1,14 @@
 "use client";
 
-// The vending machine from the card's illustration, but running. The contract's
-// two `require` lines are printed next to the machine, and the learner sets up
-// the failure themselves:
-//   • underpay        → the first require stops it on line one
+// The vending machine from the card's illustration, but running. The machine's
+// two rules are printed next to it in plain English (no code — this card is for
+// non-coders), and the learner sets up the failure themselves:
+//   • underpay        → the first rule stops it
 //   • empty the shelf → the second one stops it, after the payment was fine
-// Either way the coin drops back out of the return tray and `stock` hasn't
-// moved: a revert undoes everything, including the payment. Pass both and the
-// item drops, stock falls, and the contract keeps the ETH — same input, same
-// result, no clerk deciding whether to serve you.
+// Either way the coin drops back out of the return tray and the stock count
+// hasn't moved: a failed rule undoes everything, including the payment. Pass
+// both and the item drops, stock falls, and the contract keeps the ETH — same
+// input, same result, no clerk deciding whether to serve you.
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { LightBulbIcon } from "@heroicons/react/24/outline";
@@ -21,7 +21,7 @@ const SNACK_X = 57; // centred in the glass window, and the column the snack fal
 const TRAY_Y = 206;
 const TRAY_X = 152; // the first bought snack slides all the way to the right of the tray
 const TRAY_STEP = 32; // each later one stops one slot short, queueing leftwards
-const CHECK_STEP = 230; // ms between require lines resolving, so they read one at a time
+const CHECK_STEP = 230; // ms between rules resolving, so they read one at a time
 
 // dark-panel palette (the rail is dark in both themes), aligned to the lab tokens
 const COLOR = {
@@ -39,7 +39,7 @@ const COLOR = {
 
 type Mark = "idle" | "dim" | "pass" | "fail";
 
-const REQUIRES = ["require(msg.value >= 0.05 ether);", "require(stock > 0);"];
+const RULES = ["Payment is at least 0.05 ETH", "There is a snack in stock"];
 
 const MARK_GLYPH: Record<Mark, string> = { idle: "·", dim: "·", pass: "✓", fail: "✗" };
 
@@ -57,29 +57,26 @@ function easeOutBounce(t: number): number {
   return n * (t -= 2.625 / d) * t + 0.984375;
 }
 
-const Mono = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
-  <span className={`font-mono ${className}`}>{children}</span>
-);
-
 const eth = (n: number) => `${n.toFixed(2)} ETH`;
 
 const INTRO = (
   <>
-    Every rule the machine follows is printed next to it. Choose what to send, then <strong>call buy()</strong>. Try
-    underpaying — the machine will not improvise.
+    The machine&apos;s rules are public and unchangeable. Anyone can read them, and no one can quietly rewrite them. The
+    price is <strong>0.05 ETH</strong>. Click an amount to insert it.
   </>
 );
 
-// Why each require stopped execution. The learner set the condition up, so the
-// message names the line rather than the outcome.
-const failReason = (index: number): ReactNode =>
+// The full caption for each way the machine can refuse.
+const failCaption = (index: number, amount: number): ReactNode =>
   [
     <>
-      The price is <Mono>0.05</Mono>, so the first <Mono>require</Mono> failed and execution stopped on line one.
+      You sent <strong className="text-peach-bright">{eth(amount)}</strong> but the minimum price is{" "}
+      <strong>0.05 ETH</strong>. So your money was never sent and the vending machine stock remains the same.
     </>,
     <>
-      The shelf is empty. The payment was fine, but the second <Mono>require</Mono> failed — and a failure anywhere
-      undoes everything before it.
+      You sent <strong className="text-peach-bright">{eth(amount)}</strong> but the machine is out of stock. Your
+      payment was fine, but the second rule failed, and a failed rule undoes everything. Your money came straight back
+      and the vending machine stock remains the same.
     </>,
   ][index];
 
@@ -91,7 +88,14 @@ export const VendingContract = () => {
   const [busy, setBusy] = useState(false);
   const [marks, setMarks] = useState<Mark[]>(["idle", "idle"]);
   const [screen, setScreen] = useState({ text: "READY", tone: COLOR.mint });
-  const [caption, setCaption] = useState<ReactNode>(INTRO);
+  const [caption, setCaptionNode] = useState<ReactNode>(INTRO);
+  // remounting the caption <p> (via key) replays its entrance animation, so a
+  // changed message gets a visible nudge
+  const [captionKey, setCaptionKey] = useState(0);
+  const setCaption = (node: ReactNode) => {
+    setCaptionNode(node);
+    setCaptionKey(k => k + 1);
+  };
 
   const [coin, setCoin] = useState({ x: 158, y: -20, shown: false });
   const [snack, setSnack] = useState({ x: SNACK_X, y: 0, shown: false });
@@ -133,25 +137,6 @@ export const VendingContract = () => {
 
   const clearMarks = () => setMarks(["idle", "idle"]);
 
-  const choose = (amount: number) => {
-    if (busy) return;
-    setPay(amount);
-    clearMarks();
-    setCaption(
-      amount < PRICE ? (
-        <>
-          Sending <Mono className="text-peach-bright">{eth(amount)}</Mono>. The price is 0.05 — watch which line stops
-          you.
-        </>
-      ) : (
-        <>
-          Sending <Mono>{eth(amount)}</Mono>. Anything above the price still works; the contract only checks{" "}
-          <Mono>{">="}</Mono>.
-        </>
-      ),
-    );
-  };
-
   const reset = () => {
     stop();
     setPay(PRICE);
@@ -167,11 +152,13 @@ export const VendingContract = () => {
     setCaption(INTRO);
   };
 
-  const buy = async () => {
+  // tapping an amount is the whole transaction: it becomes the coin that drops in
+  const buy = async (amount: number) => {
     if (busy) return;
     const id = ++runId.current;
     const alive = () => id === runId.current;
 
+    setPay(amount);
     setBusy(true);
     setMarks(["dim", "dim"]);
     setScreen({ text: "...", tone: COLOR.peach });
@@ -182,7 +169,7 @@ export const VendingContract = () => {
     if (!alive()) return;
     setCoin(c => ({ ...c, shown: false }));
 
-    const passes = [pay >= PRICE, stock > 0];
+    const passes = [amount >= PRICE, stock > 0];
     let failed = -1;
     for (let i = 0; i < passes.length; i++) {
       await wait(CHECK_STEP);
@@ -195,7 +182,7 @@ export const VendingContract = () => {
     }
 
     if (failed !== -1) {
-      setScreen({ text: "REVERT", tone: COLOR.magenta });
+      setScreen({ text: "NO SALE", tone: COLOR.magenta });
       await tween(
         480,
         t => t,
@@ -209,19 +196,14 @@ export const VendingContract = () => {
       await tween(680, easeOutBounce, p => setCoin({ x: 159, y: 84 + p * 79, shown: true }));
       if (!alive()) return;
 
-      setCaption(
-        <>
-          You sent <Mono className="text-peach-bright">{eth(pay)}</Mono>. {failReason(failed)} It came straight back and{" "}
-          <Mono>stock</Mono> is still <strong>{stock}</strong>. Nothing half-happened.
-        </>,
-      );
+      setCaption(failCaption(failed, amount));
       setBusy(false);
       return;
     }
 
     // every condition held, so the contract ran to the end and the state moved
     const nextStock = stock - 1;
-    const nextBalance = balance + pay;
+    const nextBalance = balance + amount;
     setScreen({ text: "OK", tone: COLOR.mint });
     setStock(nextStock);
     setBalance(nextBalance);
@@ -239,12 +221,19 @@ export const VendingContract = () => {
     setDispensed(d => d + 1);
 
     setCaption(
-      <>
-        Both conditions passed, so the contract ran to the end: <Mono>stock</Mono> dropped to{" "}
-        <strong>{nextStock}</strong> and the contract now holds{" "}
-        <Mono className="text-mint-bright">{eth(nextBalance)}</Mono>. Same input, same result, every time — no clerk, no
-        discretion.
-      </>,
+      amount > PRICE ? (
+        <>
+          Both rules passed, so the machine finished the job: stock dropped to <strong>{nextStock}</strong> and the
+          contract now holds <strong className="text-mint-bright">{eth(nextBalance)}</strong>. Notice it kept your whole{" "}
+          <strong>{eth(amount)}</strong>. The rule only says pay <strong>at least 0.05 ETH</strong>, and the machine
+          gives no change.
+        </>
+      ) : (
+        <>
+          Both rules passed, so the machine finished the job: stock dropped to <strong>{nextStock}</strong> and the
+          contract now holds <strong className="text-mint-bright">{eth(nextBalance)}</strong>.
+        </>
+      ),
     );
     setBusy(false);
   };
@@ -351,7 +340,8 @@ export const VendingContract = () => {
         </g>
 
         <rect x={136} y={150} width={46} height={26} rx={5} fill={COLOR.inset} stroke={COLOR.line} />
-        <text x={159} y={166} textAnchor="middle" fontFamily="monospace" fontSize={6.5} fill={COLOR.faint}>
+        {/* label sits below the tray so the refunded coin never covers it */}
+        <text x={159} y={184} textAnchor="middle" fontFamily="monospace" fontSize={6.5} fill={COLOR.faint}>
           RETURN
         </text>
 
@@ -362,74 +352,71 @@ export const VendingContract = () => {
         ))}
 
         {coin.shown && (
-          <circle cx={coin.x} cy={coin.y} r={7} fill={COLOR.peach} stroke={COLOR.inset} strokeWidth={1.2} />
+          <>
+            <circle cx={coin.x} cy={coin.y} r={7} fill={COLOR.peach} stroke={COLOR.inset} strokeWidth={1.2} />
+            {/* the amount is stamped on the coin itself, so it never overlaps the machine */}
+            <text
+              x={coin.x}
+              y={coin.y + 1.8}
+              textAnchor="middle"
+              fontFamily="monospace"
+              fontSize={5}
+              fontWeight="bold"
+              fill={COLOR.inset}
+            >
+              {pay.toFixed(2).slice(1)}
+            </text>
+          </>
         )}
         {snack.shown && <rect x={snack.x} y={snack.y} width={26} height={18} rx={4} fill={COLOR.mint} />}
       </svg>
 
       <div
-        className="rounded-xl border border-dark-border bg-dark-bg/60 p-3 font-mono text-xs leading-relaxed"
-        aria-label="The contract source, with each condition highlighted as it runs."
+        className="rounded-xl border border-dark-border bg-dark-bg/60 p-3 text-xs leading-relaxed"
+        aria-label="The machine's rules, with each one checked as it runs."
       >
-        <div className="text-dark-text-faint">{"// Snack.sol — anyone can read this"}</div>
-        <div>
-          <span className="text-violet-bright">function</span> buy(){" "}
-          <span className="text-violet-bright">external</span> <span className="text-violet-bright">payable</span> {"{"}
-        </div>
-        {REQUIRES.map((source, i) => (
-          <div key={source} className={`-mx-1 flex items-center gap-2 rounded px-1 ${markClass[marks[i]]}`}>
+        <div className="text-dark-text-faint">The vending machine&apos;s rules</div>
+        {RULES.map((rule, i) => (
+          <div key={rule} className={`-mx-1 flex items-center gap-2 rounded px-1 ${markClass[marks[i]]}`}>
             <span className={`w-3 shrink-0 text-center font-bold ${glyphClass[marks[i]]}`}>{MARK_GLYPH[marks[i]]}</span>
-            <span className="whitespace-nowrap">{source}</span>
+            <span>{rule}</span>
           </div>
         ))}
-        <div className="pl-5">stock -= 1;</div>
-        <div className="pl-5">_dispense(msg.sender);</div>
-        <div>{"}"}</div>
+        <div className="pl-5 text-dark-text-muted">
+          If both rules pass, a snack drops and the machine keeps your ETH. If either rule fails, your ETH comes back.
+        </div>
       </div>
 
       {/* one segmented control, so it reads as a single choice rather than three
           independent buttons, with the call that spends it sitting beside it */}
+      {/* one tap = one payment: each button inserts that amount straight into
+          the machine, no separate confirm step */}
       <div className="flex flex-wrap items-center gap-3">
-        <div
-          role="radiogroup"
-          aria-label="How much ether to send"
-          className="inline-flex divide-x divide-dark-border overflow-hidden rounded-lg border border-dark-border bg-dark-surface"
-        >
-          {AMOUNTS.map(amount => (
-            <button
-              key={amount}
-              type="button"
-              role="radio"
-              aria-checked={pay === amount}
-              onClick={() => choose(amount)}
-              className={`cursor-pointer px-3 py-2 font-mono text-xs transition-colors ${
-                pay === amount
-                  ? "bg-lab-code-panel-tint font-semibold text-dark-text"
-                  : "text-dark-text-muted hover:text-dark-text"
-              }`}
-            >
-              send {amount.toFixed(2)} ETH
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={buy}
-          disabled={busy}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {busy ? "running…" : "Call buy()"}
-        </button>
+        {AMOUNTS.map(amount => (
+          <button
+            key={amount}
+            type="button"
+            onClick={() => buy(amount)}
+            disabled={busy}
+            className="cursor-pointer rounded-lg bg-violet-bright px-4 py-2 font-mono text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Insert {eth(amount)}
+          </button>
+        ))}
       </div>
 
-      <p className="m-0 min-h-[3.5rem] text-sm leading-relaxed text-dark-text-muted">{caption}</p>
+      <p
+        key={captionKey}
+        className="m-0 min-h-[3.5rem] animate-caption-in text-sm leading-relaxed text-dark-text-muted"
+      >
+        {caption}
+      </p>
 
       <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-dark-text-muted">
         <LightBulbIcon className="h-4 w-4 shrink-0 text-violet-bright" />
         <span>
-          <strong className="font-semibold text-dark-text">Tip</strong>: buy all three snacks, then call{" "}
-          <Mono>buy()</Mono> again to make the second line fail.
+          <strong className="font-semibold text-dark-text">Tip</strong>: try underpaying, overpaying, and buying when
+          the machine is empty to see how it responds.
         </span>
       </div>
     </div>
