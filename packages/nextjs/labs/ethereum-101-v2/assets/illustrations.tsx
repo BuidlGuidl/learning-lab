@@ -33,7 +33,7 @@ export const CustodyComparison = makeIllustration({
 
 // Ch4 · What's safe to share — a high-detail wallet safety infographic.
 export const WalletSafetyInfographic = makeIllustration({
-  src: "/wallet-safety-infographic-ch4-5-balanced-v13.webp",
+  src: "/wallet-safety-infographic-ch4-5-balanced-v14.webp",
   width: 1672,
   height: 941,
   unoptimized: true,
