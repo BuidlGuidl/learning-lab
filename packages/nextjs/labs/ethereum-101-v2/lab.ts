@@ -2,9 +2,15 @@ import { BruteForce } from "./assets/BruteForce";
 import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingContract } from "./assets/VendingContract";
 import { VendingMachine } from "./assets/VendingMachine";
-import { WalletSafety } from "./assets/WalletSafety";
 import { WorldComputer } from "./assets/WorldComputer";
-import { PublicLedger, StateNetwork, TransactionLifecycle } from "./assets/illustrations";
+import {
+  CustodyComparison,
+  EthereumUseCases,
+  PublicLedger,
+  StateNetwork,
+  TransactionLifecycle,
+  WalletSafetyInfographic,
+} from "./assets/illustrations";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
@@ -74,6 +80,7 @@ export const lab = defineLab({
           id: "what-people-build",
           label: "CONCEPT",
           title: "What people build",
+          illustrations: [EthereumUseCases],
           body: "Ethereum already has a storied history of people coding inventive ways of solving real-world problems. Here are some types of Ethereum solutions that go beyond holding and transferring money:\n\n- **DeFi** (Decentralized Finance): borrowing, lending, and trading run by programs instead of firms.\n- **Stablecoins**: tokens that match the value of a fiat currency like the dollar.\n- **NFTs** (Non-Fungible Tokens): unique digital objects you truly own: art, game items, tickets, memberships.\n- **DAOs** (Decentralized Autonomous Organizations): internet-native co-ops where every member has a vote on how the organization runs.\n- Plus games, identity solutions, and plenty of other exciting things being invented every day!\n\nNot every app needs Ethereum. It shines when strangers need shared rules and shared records without handing one company control.\n\nThe most familiar one-company-in-control system of all is the one holding your paycheck.",
         },
       ],
@@ -101,6 +108,7 @@ export const lab = defineLab({
           id: "who-holds-your-money",
           label: "CONCEPT",
           title: "Who holds your money?",
+          illustrations: [CustodyComparison],
           body: 'At a bank, "your" account is an entry in the bank\'s ledger. The bank holds the money on your behalf, and you have a legal claim to it. Both you and the bank agree that the institution will do what you request with "your" money that they control. That arrangement is called **third-party custody**.\n\nEthereum is a **self-custody** system, meaning you hold the keys to your own money. Having direct control of your own money is real freedom, but that freedom comes with more responsibility.\n\nThe next section is all about the concepts, skills, and tools you will need to learn to safely keep self-custody of your own money.',
         },
       ],
@@ -143,8 +151,8 @@ export const lab = defineLab({
           id: "what-is-safe-to-share",
           label: "CONCEPT",
           title: "What's safe to share?",
-          interactive: WalletSafety,
-          body: "The rule is short.\n\nYour **address**? Public by design. Share it freely.\n\nYour **private key** or **recovery phrase**? Never. No real app, support agent, or moderator will ever need them. Anyone who asks is trying to rob you.\n\nOne more edge to know about: a wallet signature can authorize an action without revealing your key. Signatures keep the key safe, but they still do things. Read what you're approving, and if it's unclear, reject it.\n\nProve it to yourself below: which of the three is safe to share?",
+          illustrations: [WalletSafetyInfographic],
+          body: "The rule is short. Your **address**? Public by design. Share it freely.\n\nYour **private key** or **recovery phrase**? Never. No real app, support agent, or moderator will ever need them. Anyone who asks is trying to rob you.\n\nOne more edge to know about: a wallet signature can authorize an action without revealing your key. Signatures keep the key safe, but they still do things. Read what you're approving, and if it's unclear, reject it.\n\nKeep this cheat sheet handy. You can download a copy and open it whenever a person, website, or wallet asks you to share information or approve something.",
         },
       ],
     },

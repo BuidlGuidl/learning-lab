@@ -233,8 +233,8 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 
 ### 4.5 What's safe to share?
 
-- **The one new idea:** the practical sharing rule, drilled.
-- **Info to cover (minimal text — the WalletSafety interactive is the card):**
+- **The one new idea:** the practical sharing rule, kept as a reusable cheat sheet.
+- **Info to cover (minimal text — the infographic cheat sheet is the card):**
   - Address: public by design. Private key and recovery phrase: never — no real
     app, support agent, or moderator needs them.
   - A wallet signature can authorize an action without revealing your key — so
@@ -343,4 +343,3 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
 - Mempool · staking/validators/consensus · L2s · how to buy ETH · PoS mechanics
   beyond the one energy sentence · seed/recovery-phrase handling beyond 4.4's
   one-clause definition · token standards · any single-app deep dive.
-
