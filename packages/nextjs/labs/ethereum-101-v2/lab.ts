@@ -6,6 +6,7 @@ import { WorldComputer } from "./assets/WorldComputer";
 import {
   CustodyComparison,
   EthereumUseCases,
+  PrivateKeyKeyspace,
   PublicLedger,
   StateNetwork,
   TransactionLifecycle,
@@ -136,6 +137,7 @@ export const lab = defineLab({
           id: "the-private-key",
           label: "CONCEPT",
           title: "The private key",
+          illustrations: [PrivateKeyKeyspace],
           interactive: BruteForce,
           body: "Every account has a **private key**: a very large secret number. That secret is the **entire** proof of ownership. There's no manager to help you, no password reset, no ID check. No one is holding this account for you. Whoever knows the key controls the account.\n\nThat cuts both ways. No bureaucracy can ever lock you out but anyone who knows your key can take everything your account holds. **Never share your key with anyone, under any circumstance!**\n\nCould someone just guess your key? Try it yourself: crack a short key below, then see how far you get against a real one.",
         },
