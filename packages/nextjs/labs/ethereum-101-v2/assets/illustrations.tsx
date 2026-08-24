@@ -31,6 +31,14 @@ export const CustodyComparison = makeIllustration({
   alt: "A side-by-side comparison of bank custody and Ethereum self-custody: the bank controls access to customer records on one side, while a user holds the key to their Ethereum assets on the other.",
 });
 
+// Ch4 · The private key — one valid key hidden in a vast key space.
+export const PrivateKeyKeyspace = makeIllustration({
+  src: "/private-key-ch4-3.webp",
+  width: 1200,
+  height: 675,
+  alt: "A learner searches a vast field of hexadecimal private keys while an Ethereum account stays locked, showing that one valid key is hidden among 2^256 possibilities.",
+});
+
 // Ch4 · What's safe to share — a high-detail wallet safety infographic.
 export const WalletSafetyInfographic = makeIllustration({
   src: "/wallet-safety-infographic-ch4-5.webp",
@@ -43,7 +51,7 @@ export const WalletSafetyInfographic = makeIllustration({
 
 // Ch5 · Transactions — a transaction's life from signature to permanence.
 export const TransactionLifecycle = makeIllustration({
-  src: "/transaction-flow-ch1-2.png",
+  src: "/transaction-flow-ch5-1.png",
   width: 1200,
   height: 675,
   alt: "A transaction's lifecycle in four steps: you sign it with your key, it is broadcast to the network, a validator includes it in a block, and it becomes a permanent on-chain record.",

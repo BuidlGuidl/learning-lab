@@ -6,6 +6,7 @@ import { WorldComputer } from "./assets/WorldComputer";
 import {
   CustodyComparison,
   EthereumUseCases,
+  PrivateKeyKeyspace,
   PublicLedger,
   StateNetwork,
   TransactionLifecycle,
@@ -136,6 +137,7 @@ export const lab = defineLab({
           id: "the-private-key",
           label: "CONCEPT",
           title: "The private key",
+          illustrations: [PrivateKeyKeyspace],
           interactive: BruteForce,
           body: "Every account has a **private key**: a very large secret number. That secret is the **entire** proof of ownership. There's no manager to help you, no password reset, no ID check. No one is holding this account for you. Whoever knows the key controls the account.\n\nThat cuts both ways. No bureaucracy can ever lock you out but anyone who knows your key can take everything your account holds. **Never share your key with anyone, under any circumstance!**\n\nCould someone just guess your key? Try it yourself: crack a short key below, then see how far you get against a real one.",
         },
@@ -165,6 +167,8 @@ export const lab = defineLab({
           id: "transactions",
           label: "CONCEPT",
           title: "Transactions",
+          illustrations: [TransactionLifecycle],
+          interactive: TransactionJourney,
           body: "So how do you actually make something happen on the network?\n\nEverything you do on Ethereum starts as a **transaction**: an instruction signed with your key that asks the network to act. The simplest kind sends ETH from your address to another (just like a banking transaction).\n\nTransactions can do so much more than transfer ETH. They're the interaction that allows you to vote on a proposal, buy a game item, join a fundraiser, or do anything else that smart contracts allow.\n\nThe flow never changes: your wallet signs the instruction with your private key and broadcasts it to the network. Nodes then check it against the rules. If it passes, your requested instructions are carried out.\n\nThousands of machines are performing real work to execute your transaction, and that has a price.",
         },
         {
@@ -172,8 +176,6 @@ export const lab = defineLab({
           id: "gas",
           label: "CONCEPT",
           title: "Gas",
-          illustrations: [TransactionLifecycle],
-          interactive: TransactionJourney,
           body: "You must pay a small fee in ETH, called **gas**, to have the network carry out your transaction.\n\nNodes are physical machines that consume electricity and bandwidth on every action, so using the network can't be free. Gas compensates nodes for the costs they accrue running the network.\n\nThe gas fee also protects the network from spam. It's just not worth it to flood the network with junk if a bad actor has to pay for every bad transaction.\n\nThe gas fee is not a fixed amount. A simple transaction will cost pocket change, but bigger actions cost more. The gas price also fluctuates with network activity. More activity means more competition for the nodes' labor.\n\nGas fees are charged even if your transaction fails, because the network still did the work of checking it. That's one more reason to understand exactly what your transaction is doing before you sign it.\n\nEthereum's energy use fell by about 99% in 2022, when it switched to a system called proof of stake, but that's a story for a later lab.",
         },
         {
