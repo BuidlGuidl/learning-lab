@@ -51,7 +51,7 @@ export const WalletSafetyInfographic = makeIllustration({
 
 // Ch5 · Transactions — a transaction's life from signature to permanence.
 export const TransactionLifecycle = makeIllustration({
-  src: "/transaction-flow-ch1-2.png",
+  src: "/transaction-flow-ch5-1.png",
   width: 1200,
   height: 675,
   alt: "A transaction's lifecycle in four steps: you sign it with your key, it is broadcast to the network, a validator includes it in a block, and it becomes a permanent on-chain record.",
