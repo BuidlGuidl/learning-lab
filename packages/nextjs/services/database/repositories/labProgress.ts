@@ -22,13 +22,15 @@ export async function upsertLabProgress({
   userId,
   labId,
   snapshot,
-}: Pick<LabProgressInsert, "userId" | "labId" | "snapshot">) {
+  cardsCleared,
+  totalCards,
+}: Pick<LabProgressInsert, "userId" | "labId" | "snapshot" | "cardsCleared" | "totalCards">) {
   const [row] = await db
     .insert(labProgress)
-    .values({ userId, labId, snapshot })
+    .values({ userId, labId, snapshot, cardsCleared, totalCards })
     .onConflictDoUpdate({
       target: [labProgress.userId, labProgress.labId],
-      set: { snapshot, updatedAt: sql`now()` },
+      set: { snapshot, cardsCleared, totalCards, updatedAt: sql`now()` },
     })
     .returning();
 
