@@ -38,6 +38,8 @@ async function main() {
     .values({
       userId: "seed-user",
       labId: "ethereum-101",
+      cardsCleared: 1,
+      totalCards: 23,
       snapshot,
     })
     .onConflictDoNothing();
