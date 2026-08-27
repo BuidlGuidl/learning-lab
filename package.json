@@ -12,9 +12,12 @@
     "account:generate": "yarn workspace @se-2/hardhat account:generate",
     "account:import": "yarn workspace @se-2/hardhat account:import",
     "account:reveal-pk": "yarn workspace @se-2/hardhat account:reveal-pk",
+    "auth:generate": "yarn workspace @se-2/nextjs auth:generate",
     "chain": "yarn hardhat:chain",
     "compile": "yarn hardhat:compile",
+    "db:seed": "yarn workspace @se-2/nextjs db:seed",
     "deploy": "yarn hardhat:deploy",
+    "drizzle-kit": "yarn workspace @se-2/nextjs drizzle-kit",
     "fork": "yarn hardhat:fork",
     "format": "yarn next:format && yarn hardhat:format",
     "generate": "yarn account:generate",
@@ -58,6 +61,6 @@
   },
   "packageManager": "yarn@4.13.0",
   "engines": {
-    "node": ">=20.18.3"
+    "node": ">=22"
   }
 }
