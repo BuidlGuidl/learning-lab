@@ -18,4 +18,9 @@ export const registry: Record<string, LabEntry> = {
     title: "Ethereum 101 V2",
     load: () => import("./ethereum-101-v2/lab"),
   },
+  // Under construction, intentionally not linked from home.
+  wallets: {
+    title: "Wallets",
+    load: () => import("./wallets/lab"),
+  },
 };
