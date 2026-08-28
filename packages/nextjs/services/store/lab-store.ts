@@ -1,13 +1,15 @@
-import { type LabSnapshot, saveSnapshot } from "./lab-persistence";
+import { saveSnapshot } from "./lab-persistence";
 import { create } from "zustand";
 // type-only — no runtime dependency on these modules
 import type { ConsoleEntry } from "~~/components/lab/cards/Console";
 import type { GradingEvent, LearningTranscript } from "~~/lib/grader/transcript";
 import { isCardCleared, nextAttempt } from "~~/lib/grader/transcript";
+import { isGradable } from "~~/lib/lab/gradable";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 import type { ExperimentBoot } from "~~/lib/lab/learner-world";
 import type { Region, Segment } from "~~/lib/lab/regions";
 import type { RunProgress, RunReport } from "~~/lib/lab/run";
+import type { LabSnapshot } from "~~/lib/lab/snapshot";
 import type { Card, Lab } from "~~/lib/lab/types";
 
 type ProgressEntry = {
@@ -47,6 +49,7 @@ export const isPositionAfter = (a: Position, b: Position) =>
 
 type LabState = {
   currentLabId: string | null;
+  isSignedIn: boolean;
   chapterIndex: number;
   cardIndex: number;
   // Furthest the learner has legitimately walked via next(). goTo (free-jump) does
@@ -76,6 +79,7 @@ type LabState = {
 type LabActions = {
   init: (lab: Lab) => void;
   hydrate: (snapshot: LabSnapshot) => void;
+  setSignedIn: (value: boolean) => void;
   next: (lab: Lab) => void;
   prev: (lab: Lab) => void;
   goTo: (chapterIndex: number, cardIndex: number) => void;
@@ -97,6 +101,7 @@ const emptyTranscript: LearningTranscript = { labId: "", events: [] };
 
 const initialState: LabState = {
   currentLabId: null,
+  isSignedIn: false,
   chapterIndex: 0,
   cardIndex: 0,
   maxReached: { chapterIndex: 0, cardIndex: 0 },
@@ -108,6 +113,34 @@ const initialState: LabState = {
   transcript: emptyTranscript,
   worlds: {},
   interactiveOpen: false,
+};
+
+const buildSnapshot = (state: LabState): LabSnapshot => ({
+  chapterIndex: state.chapterIndex,
+  cardIndex: state.cardIndex,
+  maxReached: state.maxReached,
+  progress: state.progress,
+  transcript: state.transcript,
+});
+
+// The server only hears about milestones: a card advanced (next) or graded (any verdict).
+// Drafts stay in localStorage via the subscriber below. Fire-and-forget, last write wins.
+const saveIfSignedIn = (state: LabState) => {
+  if (!state.isSignedIn || !state.currentLabId) return;
+  void fetch(`/api/progress/${state.currentLabId}`, {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(buildSnapshot(state)),
+  }).catch(error => console.warn("Failed to save lab progress", error));
+};
+
+// Append a grading event and save it. Every verdict goes to the server, fails included: it already
+// cost a grading call, and the verdict must live next to the answer it judged or a reload shows
+// one card's answer with another attempt's verdict.
+const withEvent = (s: LabState, event: GradingEvent, extra: Partial<LabState> = {}): LabState => {
+  const nextState = { ...s, ...extra, transcript: { ...s.transcript, events: [...s.transcript.events, event] } };
+  saveIfSignedIn(nextState);
+  return nextState;
 };
 
 // region id -> the learner's latest submitted text (a skip writes the
@@ -124,9 +157,6 @@ export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string,
 export const canonicalFills = (regions: Record<string, Region>): Record<string, string> =>
   Object.fromEntries(Object.entries(regions).map(([id, r]) => [id, r.canonical]));
 
-// Gradable cards gate forward nav; read-only types advance freely.
-const isGradable = (card: Card) => card.type === "code-exercise" || card.type === "question";
-
 export const useLabStore = create<LabState & LabActions>(set => ({
   ...initialState,
   init: lab =>
@@ -136,6 +166,7 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       if (s.currentLabId === lab.id) return s;
       return {
         ...initialState,
+        isSignedIn: s.isSignedIn,
         currentLabId: lab.id,
         files: lab.files,
         regions: lab.regions,
@@ -156,6 +187,7 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         transcript: snapshot.transcript,
       };
     }),
+  setSignedIn: value => set({ isSignedIn: value }),
   // Gate-aware forward nav: a gradable card blocks until cleared (pass or skip), prev stays
   // free. A successful sequential advance also bumps the maxReached watermark the sidebar
   // locks against — so the gate stopping here is exactly what keeps later cards locked.
@@ -169,7 +201,14 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       if (s.cardIndex < chapter.cards.length - 1) to = { chapterIndex: s.chapterIndex, cardIndex: s.cardIndex + 1 };
       else if (s.chapterIndex < lab.chapters.length - 1) to = { chapterIndex: s.chapterIndex + 1, cardIndex: 0 };
       else return s;
-      return { ...to, maxReached: isPositionAfter(to, s.maxReached) ? to : s.maxReached, interactiveOpen: false };
+      const nextState = {
+        ...s,
+        ...to,
+        maxReached: isPositionAfter(to, s.maxReached) ? to : s.maxReached,
+        interactiveOpen: false,
+      };
+      saveIfSignedIn(nextState);
+      return nextState;
     }),
   // Free-jump from the sidebar. Moves position only — the watermark stays put, so
   // jumping ahead is a peek, not progress, and those cards keep their lock.
@@ -203,11 +242,11 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         testResults: report.stage === "tests" ? report.results : undefined,
         happenedAt: Date.now(),
       };
-      return { transcript: { ...s.transcript, events: [...s.transcript.events, event] } };
+      return withEvent(s, event);
     }),
   // Record a grade. The gate reads clearance back out of the transcript, so a pass here is
   // what opens next().
-  appendGradingEvent: event => set(s => ({ transcript: { ...s.transcript, events: [...s.transcript.events, event] } })),
+  appendGradingEvent: event => set(s => withEvent(s, event)),
   // Dev-only escape hatch. Writes a "skipped" event (captures where learners bail) and fills
   // the region with its canonical — only on a deliberate skip, never a fail — so later reveal
   // cards show real code instead of a placeholder.
@@ -221,10 +260,7 @@ export const useLabStore = create<LabState & LabActions>(set => ({
         const canonical = s.regions[card.region]?.canonical ?? "";
         progress = { ...s.progress, [card.id]: { learnerInput: canonical, region: card.region } };
       }
-      return {
-        transcript: { ...s.transcript, events: [...s.transcript.events, event] },
-        progress,
-      };
+      return withEvent(s, event, { progress });
     }),
   // Deploy lifecycle for one world: startDeploy clears the last result and goes
   // live; setDeployProgress narrates the checks; finishDeploy lands the boot and
@@ -297,12 +333,6 @@ if (typeof window !== "undefined") {
       s.chapterIndex === prev.chapterIndex &&
       s.cardIndex === prev.cardIndex;
     if (unchanged) return;
-    saveSnapshot(s.currentLabId, {
-      chapterIndex: s.chapterIndex,
-      cardIndex: s.cardIndex,
-      maxReached: s.maxReached,
-      progress: s.progress,
-      transcript: s.transcript,
-    });
+    saveSnapshot(s.currentLabId, buildSnapshot(s));
   });
 }

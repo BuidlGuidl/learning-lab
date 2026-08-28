@@ -3,13 +3,19 @@
 import { useEffect, useState } from "react";
 import { Lab } from "~~/components/lab/Lab";
 import { registry } from "~~/labs/registry";
+import type { LabSnapshot } from "~~/lib/lab/snapshot";
 import type { Lab as LabType } from "~~/lib/lab/types";
 
 // Labs carry functions (deploy, per-region tests) that can't cross the RSC
 // serialization boundary, and everything about a lab renders client-side
 // anyway (store, solc worker, tevm). So the dynamic import happens here, on
 // the client — the registry's per-lab chunking is preserved.
-export const LabLoader = ({ id }: { id: string }) => {
+type Props = {
+  id: string;
+  initialSnapshot?: LabSnapshot | null;
+};
+
+export const LabLoader = ({ id, initialSnapshot }: Props) => {
   const [lab, setLab] = useState<LabType | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
@@ -45,5 +51,5 @@ export const LabLoader = ({ id }: { id: string }) => {
       </div>
     );
   }
-  return <Lab lab={lab} />;
+  return <Lab lab={lab} initialSnapshot={initialSnapshot} />;
 };
