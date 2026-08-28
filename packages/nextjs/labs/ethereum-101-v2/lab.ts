@@ -78,7 +78,7 @@ export const lab = defineLab({
           title: "Smart contracts",
           illustrations: [VendingMachine],
           interactive: VendingContract,
-          body: "A **smart contract** is a program that runs on the Ethereum network. You can think of a smart contract as a sort of digital vending machine. You insert the coin, press a button, and get the item you paid for. There's no person behind the counter deciding whether to serve you. The machine just follows its rules.\n\nA smart contract's coded rules are public so every user can read the code and understand exactly what the smart contract does. Because smart contracts run on a shared, decentralized network, no one can change the rules without showing everyone that something is different. [needs a follow up about why that's good] \n\nSo what do people actually build with a computer like this?",
+          body: "A **smart contract** is a program that runs on the Ethereum network. You can think of a smart contract as a sort of digital vending machine. You insert the coin, press a button, and get the item you paid for. There's no person behind the counter deciding whether to serve you. The machine just follows its rules.\n\nA smart contract's coded rules are public so every user can read the code and understand exactly what the smart contract does. Because smart contracts run on a shared, decentralized network, no one can change the rules without showing everyone that something is different. That’s especially important when money is involved. You can check the rules instead of simply trusting the app. \n\nSo what do people actually build with a computer like this?",
         },
         {
           type: "concept",
