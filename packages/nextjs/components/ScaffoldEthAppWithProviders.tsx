@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { WagmiProvider } from "wagmi";
 import { Header } from "~~/components/Header";
+import { ProgressSync } from "~~/components/ProgressSync";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
@@ -48,6 +49,7 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
           theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
         >
           <ProgressBar height="3px" color="#2299dd" />
+          <ProgressSync />
           <ScaffoldEthApp>{children}</ScaffoldEthApp>
         </RainbowKitProvider>
       </QueryClientProvider>
