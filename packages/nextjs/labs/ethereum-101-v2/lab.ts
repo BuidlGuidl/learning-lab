@@ -1,15 +1,19 @@
 import { BruteForce } from "./assets/BruteForce";
+import { GasOutcomes } from "./assets/GasOutcomes";
 import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingContract } from "./assets/VendingContract";
 import { VendingMachine } from "./assets/VendingMachine";
+import { WalletSort } from "./assets/WalletSort";
 import { WorldComputer } from "./assets/WorldComputer";
 import {
   CustodyComparison,
   EthereumUseCases,
+  GasIncludedRevert,
   PrivateKeyKeyspace,
   PublicLedger,
   StateNetwork,
   TransactionLifecycle,
+  WalletKeyNotMoney,
   WalletSafetyInfographic,
 } from "./assets/illustrations";
 import { defineLab } from "~~/lib/lab/define";
@@ -18,7 +22,7 @@ import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 // Ethereum 101 V2 — the non-technical rebuild agreed in issue #59 / PR #63.
 //
 // OUTLINE.md next to this file is the structural source of truth: 6 sections,
-// 18 cards, one home per concept, later mentions are one-line callbacks only.
+// 20 cards, one home per concept, later mentions are one-line callbacks only.
 // Copy style follows the original Ethereum 101 lab and ethereum.org/learn:
 // short sentences, second person, honest tone, each term bolded and defined
 // once at its home card.
@@ -112,6 +116,26 @@ export const lab = defineLab({
           illustrations: [CustodyComparison],
           body: 'At a bank, "your" account is an entry in the bank\'s ledger. The bank holds the money on your behalf, and you have a legal claim to it. Both you and the bank agree that the institution will do what you request with "your" money that they control. That arrangement is called **third-party custody**.\n\nEthereum is a **self-custody** system, meaning you hold the keys to your own money. Having direct control of your own money is real freedom, but that freedom comes with more responsibility.\n\nThe next section is all about the concepts, skills, and tools you will need to learn to safely keep self-custody of your own money.',
         },
+        {
+          type: "question",
+          id: "choose-a-custody-model",
+          label: "QUESTION",
+          title: "What would you recommend?",
+          question:
+            "Alex wants to recover access if they lose a password. Sam's priority is that no company can freeze or delay their funds. Which custody model would you recommend to each person, and what risk would each have to accept?",
+          rubricConcepts: [
+            "Alex may prefer third-party custody because an institution can usually restore account access",
+            "Alex accepts gatekeeper and counterparty risk: the institution can delay, freeze, or fail",
+            "Sam may prefer self-custody because control comes directly from their key rather than a company's permission",
+            "Sam accepts personal recovery and security responsibility: losing or exposing the key can be irreversible",
+            "there is no universally best custody model; the choice trades recovery and convenience against direct control",
+          ],
+          hints: [
+            "Who has a password-reset process, and who does not?",
+            "For each person, name both the benefit and the new risk.",
+            "A strong answer does not call either model risk-free.",
+          ],
+        },
       ],
     },
     {
@@ -146,6 +170,8 @@ export const lab = defineLab({
           id: "wallets",
           label: "CONCEPT",
           title: "Wallets",
+          illustrations: [WalletKeyNotMoney],
+          interactive: WalletSort,
           body: "Nobody types a giant secret number by hand. That's what a **wallet** is for. It's an app on your device with two jobs: keep your private key secret, and put it to work safely when you use the network.\n\nAn Ethereum wallet differs from a physical wallet in an important way: Ethereum wallets hold your key (the thing that securely allows you to control your money) not your money (ETH) itself. Your ETH stays on the network, with the rest of your account.\n\nYour wallet also hands you a **recovery phrase**: your key's backup, written as a short list of ordinary words. Your recovery phrase holds just as much power as your private key so carefully guard both.\n\nThere's a whole lab on wallets coming next. Before that, learn what's safe to reveal.",
         },
         {
@@ -176,7 +202,29 @@ export const lab = defineLab({
           id: "gas",
           label: "CONCEPT",
           title: "Gas",
+          illustrations: [GasIncludedRevert],
+          interactive: GasOutcomes,
           body: "You must pay a small fee in ETH, called **gas**, to have the network carry out your transaction.\n\nNodes are physical machines that consume electricity and bandwidth on every action, so using the network can't be free. Gas compensates nodes for the costs they accrue running the network.\n\nThe gas fee also protects the network from spam. It's just not worth it to flood the network with junk if a bad actor has to pay for every bad transaction.\n\nThe gas fee is not a fixed amount. A simple transaction will cost pocket change, but bigger actions cost more. The gas price also fluctuates with network activity. More activity means more competition for the nodes' labor.\n\nGas fees are charged even if your transaction fails, because the network still did the work of checking it. That's one more reason to understand exactly what your transaction is doing before you sign it.\n\nEthereum's energy use fell by about 99% in 2022, when it switched to a system called proof of stake, but that's a story for a later lab.",
+        },
+        {
+          type: "question",
+          id: "why-failed-transactions-cost",
+          label: "QUESTION",
+          title: "It failed. Why did it still cost gas?",
+          question:
+            "A smart-contract purchase failed. The payment came back, but the wallet balance is slightly lower. A friend says Ethereum charged for doing nothing. Explain what work the network performed, what was reverted, and what was still paid.",
+          rubricConcepts: [
+            "the transaction was included in a block and executed before the smart contract reverted",
+            "nodes performed computation and the transaction used block space, so the network did real work",
+            "the contract's state changes and purchase payment were reverted",
+            "the gas fee paid for execution and was not reverted",
+            "this differs from a transaction rejected before inclusion, which does not consume gas",
+          ],
+          hints: [
+            "Separate the purchase amount from the gas fee.",
+            "At what point did the contract discover the problem?",
+            "Compare this with an instruction that never reaches a block.",
+          ],
         },
         {
           type: "concept",
