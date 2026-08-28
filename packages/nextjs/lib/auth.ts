@@ -4,6 +4,7 @@ import { db } from "~~/services/database/config/postgresClient";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg" }),
+  session: { cookieCache: { enabled: true, maxAge: 5 * 60 } },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
