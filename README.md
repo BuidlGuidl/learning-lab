@@ -55,7 +55,7 @@ Sign-in is Google and GitHub only, handled by [Better Auth](https://www.better-a
 
 **Google**: [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials) → Create credentials → OAuth client ID, type "Web application". Add `http://localhost:3000` under authorized JavaScript origins and `http://localhost:3000/api/auth/callback/google` under authorized redirect URIs. If the project has no consent screen yet, Google asks you to set one up first (External, add your own email as a test user). Put the client ID and secret in `.env.local` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 
-Restart `yarn start` after editing `.env.local`. `/db-demo` shows the sign-in buttons and, once signed in, the users in the database.
+Restart `yarn start` after editing `.env.local`. Signed-in progress shows on `/profile`.
 
 ### Database
 
