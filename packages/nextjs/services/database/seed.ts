@@ -1,8 +1,8 @@
 import * as dotenv from "dotenv";
 import path from "path";
+import type { LabSnapshot } from "~~/lib/lab/snapshot";
 import { db } from "~~/services/database/config/postgresClient";
 import { labProgress, user } from "~~/services/database/config/schema";
-import type { LabSnapshot } from "~~/services/store/lab-persistence";
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env.development"), quiet: true });
 
