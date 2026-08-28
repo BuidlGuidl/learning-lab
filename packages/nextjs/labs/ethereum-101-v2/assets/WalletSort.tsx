@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, type PointerEvent, useRef, useState } from "react";
+import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from "react";
 
 type Zone = "yours" | "network";
 
@@ -10,6 +10,48 @@ type SortItem = {
   feedback: string;
 };
 
+type ZoneHit = {
+  zone: Zone;
+  element: HTMLElement;
+};
+
+type PointerDrag = {
+  itemIndex: number;
+  startX: number;
+  startY: number;
+  lastX: number;
+  lastY: number;
+  moved: boolean;
+  originElement: HTMLButtonElement;
+  width: number;
+  height: number;
+  grabOffsetX: number;
+  grabOffsetY: number;
+  liftY: number;
+  scrollContainer: HTMLElement | null;
+};
+
+const DRAG_START_THRESHOLD = 6;
+const TOUCH_PREVIEW_LIFT = 56;
+const AUTO_SCROLL_EDGE = 72;
+const AUTO_SCROLL_MAX_SPEED = 14;
+const DROP_SETTLE_MS = 200;
+
+const findScrollableAncestor = (element: HTMLElement) => {
+  let parent = element.parentElement;
+
+  while (parent) {
+    const overflowY = window.getComputedStyle(parent).overflowY;
+    if (/auto|scroll/.test(overflowY) && parent.scrollHeight > parent.clientHeight) return parent;
+    parent = parent.parentElement;
+  }
+
+  return document.scrollingElement as HTMLElement | null;
+};
+
+const getPreviewTransform = (drag: PointerDrag, clientX: number, clientY: number, scale: number, rotation: number) =>
+  `translate3d(${clientX - drag.grabOffsetX}px, ${clientY - drag.grabOffsetY - drag.liftY}px, 0) rotate(${rotation}deg) scale(${scale})`;
+
 const ITEMS: SortItem[] = [
   {
     label: "Private key",
@@ -17,9 +59,9 @@ const ITEMS: SortItem[] = [
     feedback: "It stays with you. If it lived on Ethereum, everyone could copy it.",
   },
   {
-    label: "Wallet app",
+    label: "Wallet password / PIN",
     zone: "yours",
-    feedback: "The app is your interface. Ethereum keeps working if you replace the app.",
+    feedback: "It only unlocks this wallet on this device. Ethereum never sees it, and it cannot recover your keys.",
   },
   {
     label: "Recovery phrase backup",
@@ -40,7 +82,7 @@ const ITEMS: SortItem[] = [
 ];
 
 const ZONES: Array<{ id: Zone; title: string; detail: string }> = [
-  { id: "yours", title: "Held by you / your wallet", detail: "Private tools, app, and backups" },
+  { id: "yours", title: "Held by you / your wallet", detail: "Keys, local access, and backups" },
   { id: "network", title: "Recorded on Ethereum", detail: "Public shared state" },
 ];
 
@@ -50,10 +92,27 @@ export const WalletSort = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [activeZone, setActiveZone] = useState<Zone | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
-  const pointerDrag = useRef<{ itemIndex: number; startX: number; startY: number; moved: boolean } | null>(null);
+  const pointerDrag = useRef<PointerDrag | null>(null);
+  const dragPreviewElement = useRef<HTMLButtonElement | null>(null);
+  const pendingPreviewPosition = useRef<{ clientX: number; clientY: number } | null>(null);
+  const previewFrame = useRef<number | null>(null);
+  const autoScrollFrame = useRef<number | null>(null);
+  const settleTimer = useRef<number | null>(null);
+  const suppressClickTimer = useRef<number | null>(null);
   const suppressClick = useRef(false);
   const sortedCount = Object.keys(placed).length;
   const complete = sortedCount === ITEMS.length;
+
+  useEffect(
+    () => () => {
+      if (previewFrame.current !== null) window.cancelAnimationFrame(previewFrame.current);
+      if (autoScrollFrame.current !== null) window.cancelAnimationFrame(autoScrollFrame.current);
+      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+      if (suppressClickTimer.current !== null) window.clearTimeout(suppressClickTimer.current);
+      dragPreviewElement.current?.remove();
+    },
+    [],
+  );
 
   const place = (itemIndex: number, zone: Zone) => {
     const item = ITEMS[itemIndex];
@@ -79,16 +138,128 @@ export const WalletSort = () => {
     chooseZone(zone);
   };
 
-  const zoneAtPoint = (x: number, y: number) => {
+  const zoneAtPoint = (x: number, y: number): ZoneHit | null => {
     const element = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-wallet-zone]");
     const zone = element?.dataset.walletZone;
-    return zone === "yours" || zone === "network" ? zone : null;
+    return element && (zone === "yours" || zone === "network") ? { zone, element } : null;
+  };
+
+  const removeDragPreview = () => {
+    dragPreviewElement.current?.remove();
+    dragPreviewElement.current = null;
+  };
+
+  const stopPreviewFrame = () => {
+    if (previewFrame.current !== null) window.cancelAnimationFrame(previewFrame.current);
+    previewFrame.current = null;
+    pendingPreviewPosition.current = null;
+  };
+
+  const createDragPreview = (drag: PointerDrag, clientX: number, clientY: number) => {
+    removeDragPreview();
+    const preview = drag.originElement.cloneNode(true) as HTMLButtonElement;
+    preview.removeAttribute("aria-describedby");
+    preview.removeAttribute("aria-pressed");
+    preview.setAttribute("aria-hidden", "true");
+    preview.setAttribute("data-wallet-drag-preview", "");
+    preview.tabIndex = -1;
+    preview.className =
+      "pointer-events-none fixed left-0 top-0 z-[1000] inline-flex select-none items-center gap-2 rounded-lg border border-violet-bright/80 bg-dark-bg/95 px-3 py-2 text-left text-xs font-semibold text-dark-text shadow-2xl shadow-violet-bright/25 ring-2 ring-violet-bright/25 backdrop-blur-sm will-change-transform";
+    preview.style.width = `${drag.width}px`;
+    preview.style.minHeight = `${drag.height}px`;
+    preview.style.opacity = "1";
+    preview.style.transform = getPreviewTransform(drag, clientX, clientY, 1.04, -1.5);
+    preview.style.transformOrigin = "center";
+    preview.style.transition = "none";
+    document.body.appendChild(preview);
+    dragPreviewElement.current = preview;
+  };
+
+  const stopAutoScroll = () => {
+    if (autoScrollFrame.current !== null) window.cancelAnimationFrame(autoScrollFrame.current);
+    autoScrollFrame.current = null;
+  };
+
+  const queuePreviewPosition = (clientX: number, clientY: number) => {
+    pendingPreviewPosition.current = { clientX, clientY };
+    if (previewFrame.current !== null) return;
+
+    previewFrame.current = window.requestAnimationFrame(() => {
+      const position = pendingPreviewPosition.current;
+      const preview = dragPreviewElement.current;
+      const drag = pointerDrag.current;
+      previewFrame.current = null;
+      pendingPreviewPosition.current = null;
+      if (!position || !preview || !drag) return;
+
+      preview.style.transform = getPreviewTransform(drag, position.clientX, position.clientY, 1.04, -1.5);
+    });
+  };
+
+  const startAutoScroll = () => {
+    if (autoScrollFrame.current !== null) return;
+
+    const tick = () => {
+      const drag = pointerDrag.current;
+      if (!drag?.moved || !drag.scrollContainer) {
+        autoScrollFrame.current = null;
+        return;
+      }
+
+      const isDocumentScroller =
+        drag.scrollContainer === document.scrollingElement ||
+        drag.scrollContainer === document.documentElement ||
+        drag.scrollContainer === document.body;
+      const bounds = isDocumentScroller
+        ? { top: 0, bottom: window.innerHeight, height: window.innerHeight }
+        : drag.scrollContainer.getBoundingClientRect();
+      const edge = Math.min(AUTO_SCROLL_EDGE, bounds.height / 4);
+      let scrollDelta = 0;
+
+      if (drag.lastY < bounds.top + edge) {
+        scrollDelta = -Math.ceil(((bounds.top + edge - drag.lastY) / edge) * AUTO_SCROLL_MAX_SPEED);
+      } else if (drag.lastY > bounds.bottom - edge) {
+        scrollDelta = Math.ceil(((drag.lastY - (bounds.bottom - edge)) / edge) * AUTO_SCROLL_MAX_SPEED);
+      }
+
+      if (scrollDelta !== 0) {
+        if (isDocumentScroller) window.scrollBy({ top: scrollDelta });
+        else drag.scrollContainer.scrollTop += scrollDelta;
+        setActiveZone(zoneAtPoint(drag.lastX, drag.lastY)?.zone ?? null);
+      }
+
+      autoScrollFrame.current = window.requestAnimationFrame(tick);
+    };
+
+    autoScrollFrame.current = window.requestAnimationFrame(tick);
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLButtonElement>, itemIndex: number) => {
     if (event.button !== 0) return;
+    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    settleTimer.current = null;
+
+    removeDragPreview();
+    setDraggedIndex(null);
     event.currentTarget.setPointerCapture(event.pointerId);
-    pointerDrag.current = { itemIndex, startX: event.clientX, startY: event.clientY, moved: false };
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const requestedLift = event.pointerType === "touch" ? TOUCH_PREVIEW_LIFT : 0;
+
+    pointerDrag.current = {
+      itemIndex,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      moved: false,
+      originElement: event.currentTarget,
+      width: bounds.width,
+      height: bounds.height,
+      grabOffsetX: event.clientX - bounds.left,
+      grabOffsetY: event.clientY - bounds.top,
+      liftY: Math.min(requestedLift, Math.max(0, event.clientY - bounds.height - 12)),
+      scrollContainer: findScrollableAncestor(event.currentTarget),
+    };
     suppressClick.current = false;
   };
 
@@ -96,14 +267,56 @@ export const WalletSort = () => {
     const drag = pointerDrag.current;
     if (!drag) return;
 
-    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 6) {
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+
+    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > DRAG_START_THRESHOLD) {
       drag.moved = true;
       setDraggedIndex(drag.itemIndex);
       setSelectedIndex(drag.itemIndex);
       setFeedback(null);
+      createDragPreview(drag, event.clientX, event.clientY);
+      startAutoScroll();
     }
 
-    if (drag.moved) setActiveZone(zoneAtPoint(event.clientX, event.clientY));
+    if (drag.moved) {
+      event.preventDefault();
+      queuePreviewPosition(event.clientX, event.clientY);
+      setActiveZone(zoneAtPoint(event.clientX, event.clientY)?.zone ?? null);
+    }
+  };
+
+  const settleDrag = (drag: PointerDrag, hit: ZoneHit | null, isCorrectDrop: boolean) => {
+    const preview = dragPreviewElement.current;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion || !preview) {
+      removeDragPreview();
+      setDraggedIndex(null);
+      return;
+    }
+
+    const originBounds = drag.originElement.getBoundingClientRect();
+    let clientX = originBounds.left + drag.grabOffsetX;
+    let clientY = originBounds.top + drag.grabOffsetY + drag.liftY;
+    let scale = 1;
+
+    if (hit && isCorrectDrop) {
+      const bounds = hit.element.getBoundingClientRect();
+      clientX = bounds.left + bounds.width / 2 - drag.width / 2 + drag.grabOffsetX;
+      clientY = bounds.top + bounds.height / 2 - drag.height / 2 + drag.grabOffsetY + drag.liftY;
+      scale = 0.78;
+    }
+
+    preview.style.transition = `transform ${DROP_SETTLE_MS}ms cubic-bezier(0.22, 1, 0.36, 1), opacity ${
+      DROP_SETTLE_MS - 40
+    }ms ease-out`;
+    preview.style.opacity = "0";
+    preview.style.transform = getPreviewTransform(drag, clientX, clientY, scale, 0);
+    settleTimer.current = window.setTimeout(() => {
+      removeDragPreview();
+      setDraggedIndex(null);
+      settleTimer.current = null;
+    }, DROP_SETTLE_MS);
   };
 
   const finishPointerDrag = (event: PointerEvent<HTMLDivElement>) => {
@@ -112,25 +325,43 @@ export const WalletSort = () => {
 
     if (drag.moved) {
       suppressClick.current = true;
-      const zone = zoneAtPoint(event.clientX, event.clientY);
-      if (zone) place(drag.itemIndex, zone);
+      if (suppressClickTimer.current !== null) window.clearTimeout(suppressClickTimer.current);
+      suppressClickTimer.current = window.setTimeout(() => {
+        suppressClick.current = false;
+        suppressClickTimer.current = null;
+      }, 0);
+
+      const hit = zoneAtPoint(event.clientX, event.clientY);
+      const isCorrectDrop = hit?.zone === ITEMS[drag.itemIndex].zone;
+      if (hit) place(drag.itemIndex, hit.zone);
+      settleDrag(drag, hit, isCorrectDrop);
     }
 
     pointerDrag.current = null;
-    setDraggedIndex(null);
+    stopPreviewFrame();
+    stopAutoScroll();
     setActiveZone(null);
   };
 
   const cancelPointerDrag = () => {
     pointerDrag.current = null;
+    stopPreviewFrame();
+    stopAutoScroll();
+    removeDragPreview();
     setDraggedIndex(null);
     setActiveZone(null);
   };
 
   const reset = () => {
+    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    settleTimer.current = null;
+    pointerDrag.current = null;
+    stopPreviewFrame();
+    stopAutoScroll();
     setPlaced({});
     setSelectedIndex(null);
     setDraggedIndex(null);
+    removeDragPreview();
     setActiveZone(null);
     setFeedback(null);
   };
@@ -181,14 +412,25 @@ export const WalletSort = () => {
                   setFeedback(null);
                 }}
                 onPointerDown={event => handlePointerDown(event, itemIndex)}
+                onDragStart={event => event.preventDefault()}
+                draggable={false}
                 aria-pressed={selectedIndex === itemIndex}
-                className={`touch-none cursor-grab rounded-lg border px-3 py-2 text-left text-xs font-semibold transition active:cursor-grabbing ${
+                aria-describedby="wallet-sort-instructions"
+                className={`group inline-flex min-h-11 touch-none select-none items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs font-semibold transition-[color,background-color,border-color,box-shadow,opacity,transform] active:cursor-grabbing active:scale-[0.98] ${
                   selectedIndex === itemIndex
-                    ? "border-violet-bright bg-violet-bright/15 text-violet-bright ring-2 ring-violet-bright/20"
-                    : "border-dark-border bg-dark-bg text-dark-text hover:border-violet-bright/70"
-                } ${draggedIndex === itemIndex ? "opacity-50" : ""}`}
+                    ? "cursor-grab border-violet-bright bg-violet-bright/15 text-violet-bright ring-2 ring-violet-bright/20"
+                    : "cursor-grab border-dark-border bg-dark-bg text-dark-text hover:border-violet-bright/70 hover:bg-dark-surface"
+                } ${draggedIndex === itemIndex ? "scale-[0.97] border-dashed opacity-25" : ""}`}
               >
-                {item.label}
+                <span
+                  className="grid h-4 w-3 shrink-0 grid-cols-2 place-content-center gap-0.5 opacity-45 transition-opacity group-hover:opacity-80"
+                  aria-hidden
+                >
+                  {[0, 1, 2, 3, 4, 5].map(dot => (
+                    <span key={dot} className="h-0.5 w-0.5 rounded-full bg-current" />
+                  ))}
+                </span>
+                <span>{item.label}</span>
               </button>
             ) : null,
           )}
@@ -196,7 +438,14 @@ export const WalletSort = () => {
         </div>
       </div>
 
-      <p className="m-0 text-xs text-dark-text-faint">Drag a card, or select it and then choose a destination.</p>
+      <p id="wallet-sort-instructions" className="m-0 text-xs text-dark-text-faint">
+        Drag a card to a destination, or tap to select it and then tap a destination.
+      </p>
+      <p className="sr-only" aria-live="assertive">
+        {draggedIndex !== null
+          ? `Dragging ${ITEMS[draggedIndex].label}. Move to a destination and release to place it.`
+          : ""}
+      </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {ZONES.map(zone => {
@@ -217,9 +466,9 @@ export const WalletSort = () => {
               aria-label={`${zone.title}. ${zoneItems.length} item${zoneItems.length === 1 ? "" : "s"} placed.${
                 isReady ? " Activate to place the selected item here." : ""
               }`}
-              className={`min-h-36 rounded-xl border border-dashed p-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-bright ${
+              className={`relative min-h-36 w-full rounded-xl border border-dashed p-4 text-left transition-[border-color,background-color,box-shadow,transform] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-bright ${
                 isActive
-                  ? "border-violet-bright bg-violet-bright/15"
+                  ? "scale-[1.01] border-violet-bright bg-violet-bright/15 shadow-lg shadow-violet-bright/10 ring-1 ring-violet-bright/30"
                   : isReady
                     ? "cursor-pointer border-violet-bright/60 bg-lab-code-panel-tint"
                     : "border-dark-border bg-dark-surface"
@@ -232,7 +481,15 @@ export const WalletSort = () => {
                   </span>
                   <span className="mt-1 block text-[11px] text-dark-text-muted">{zone.detail}</span>
                 </div>
-                <span className="font-mono text-xs text-dark-text-faint">{zoneItems.length}</span>
+                <span
+                  className={`rounded-full border px-2 py-1 font-mono text-[10px] uppercase tracking-wide transition-colors ${
+                    isActive
+                      ? "border-violet-bright/60 bg-violet-bright/20 text-violet-bright"
+                      : "border-dark-border text-dark-text-faint"
+                  }`}
+                >
+                  {isActive ? "release" : zoneItems.length}
+                </span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 {zoneItems.map(({ item }) => (
@@ -244,7 +501,9 @@ export const WalletSort = () => {
                   </span>
                 ))}
                 {zoneItems.length === 0 && (
-                  <span className="text-xs text-dark-text-faint">Drop or place items here</span>
+                  <span className={`text-xs ${isActive ? "font-semibold text-violet-bright" : "text-dark-text-faint"}`}>
+                    {isActive ? "Release to place here" : "Drop or place items here"}
+                  </span>
                 )}
               </div>
             </div>
@@ -271,8 +530,8 @@ export const WalletSort = () => {
         >
           <strong className="text-dark-text">Wallet sort complete</strong>
           <p className="mb-0 mt-2">
-            Your wallet manages your keys, backups, and interface. Ethereum records your address, ETH balance, and
-            transaction history. Your wallet holds your key, not your money.
+            Your wallet manages your keys, local password or PIN, and recovery backup. Ethereum records your address,
+            ETH balance, and transaction history. Your wallet holds your key, not your money.
           </p>
         </div>
       )}
