@@ -59,7 +59,7 @@ Restart `yarn start` after editing `.env.local`. Signed-in progress shows on `/p
 
 ### Database
 
-Drizzle + Postgres, same layout as [SpeedRunEthereum](https://github.com/BuidlGuidl/SpeedRunEthereum-v2): schemas in `packages/nextjs/services/database/config/`, queries in `repositories/`. Run `drizzle-kit` from the root with `yarn drizzle-kit`.
+Drizzle + Postgres: schemas in `packages/nextjs/services/database/config/`, queries in `repositories/`. Run `drizzle-kit` from the root with `yarn drizzle-kit`.
 
 - Our tables live in `schema.ts`. After editing it, `yarn drizzle-kit push` applies the change (no migrations yet).
 - `auth-schema.ts` is generated from `packages/nextjs/lib/auth.ts` by `yarn workspace @se-2/nextjs auth:generate`. Don't edit it by hand.
