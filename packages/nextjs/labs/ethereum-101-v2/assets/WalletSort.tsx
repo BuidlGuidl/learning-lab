@@ -81,9 +81,9 @@ const ITEMS: SortItem[] = [
   },
 ];
 
-const ZONES: Array<{ id: Zone; title: string; detail: string }> = [
-  { id: "yours", title: "Held by you / your wallet", detail: "Keys, local access, and backups" },
-  { id: "network", title: "Recorded on Ethereum", detail: "Public shared state" },
+const ZONES: Array<{ id: Zone; title: string }> = [
+  { id: "yours", title: "Held by you / your wallet" },
+  { id: "network", title: "Recorded on Ethereum" },
 ];
 
 export const WalletSort = () => {
@@ -479,7 +479,6 @@ export const WalletSort = () => {
                   <span className="block text-xs font-semibold uppercase tracking-wide text-violet-bright">
                     {zone.title}
                   </span>
-                  <span className="mt-1 block text-[11px] text-dark-text-muted">{zone.detail}</span>
                 </div>
                 <span
                   className={`rounded-full border px-2 py-1 font-mono text-[10px] uppercase tracking-wide transition-colors ${

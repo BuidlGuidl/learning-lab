@@ -86,6 +86,8 @@ export const GasOutcomes = () => {
         </button>
       </div>
 
+      <p className="m-0 text-sm leading-relaxed text-dark-text-muted">Read each case and decide whether gas is paid.</p>
+
       <div className="rounded-xl border border-dark-border bg-dark-surface p-4">
         <span className="text-sm font-semibold text-dark-text">{scenario.title}</span>
         <p className="mb-0 mt-2 text-sm leading-relaxed text-dark-text-muted">{scenario.setup}</p>
