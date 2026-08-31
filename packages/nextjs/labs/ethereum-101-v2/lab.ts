@@ -1,15 +1,19 @@
 import { BruteForce } from "./assets/BruteForce";
+import { GasOutcomes } from "./assets/GasOutcomes";
 import { TransactionJourney } from "./assets/TransactionJourney";
 import { VendingContract } from "./assets/VendingContract";
 import { VendingMachine } from "./assets/VendingMachine";
+import { WalletSort } from "./assets/WalletSort";
 import { WorldComputer } from "./assets/WorldComputer";
 import {
   CustodyComparison,
   EthereumUseCases,
+  GasIncludedRevert,
   PrivateKeyKeyspace,
   PublicLedger,
   StateNetwork,
   TransactionLifecycle,
+  WalletKeyNotMoney,
   WalletSafetyInfographic,
 } from "./assets/illustrations";
 import { defineLab } from "~~/lib/lab/define";
@@ -18,7 +22,7 @@ import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 // Ethereum 101 V2 — the non-technical rebuild agreed in issue #59 / PR #63.
 //
 // OUTLINE.md next to this file is the structural source of truth: 6 sections,
-// 18 cards, one home per concept, later mentions are one-line callbacks only.
+// 20 cards, one home per concept, later mentions are one-line callbacks only.
 // Copy style follows the original Ethereum 101 lab and ethereum.org/learn:
 // short sentences, second person, honest tone, each term bolded and defined
 // once at its home card.
@@ -74,7 +78,7 @@ export const lab = defineLab({
           title: "Smart contracts",
           illustrations: [VendingMachine],
           interactive: VendingContract,
-          body: "A **smart contract** is a program that runs on the Ethereum network. You can think of a smart contract as a sort of digital vending machine. You insert the coin, press a button, and get the item you paid for. There's no person behind the counter deciding whether to serve you. The machine just follows its rules.\n\nA smart contract's coded rules are public so every user can read the code and understand exactly what the smart contract does. Because smart contracts run on a shared, decentralized network, no one can change the rules without showing everyone that something is different. [needs a follow up about why that's good] \n\nSo what do people actually build with a computer like this?",
+          body: "A **smart contract** is a program that runs on the Ethereum network. You can think of a smart contract as a sort of digital vending machine. You insert the coin, press a button, and get the item you paid for. There's no person behind the counter deciding whether to serve you. The machine just follows its rules.\n\nA smart contract's coded rules are public so every user can read the code and understand exactly what the smart contract does. Because smart contracts run on a shared, decentralized network, no one can change the rules without showing everyone that something is different. That’s especially important when money is involved. You can check the rules instead of simply trusting the app.\n\nSo what do people actually build with a computer like this?",
         },
         {
           type: "concept",
@@ -112,6 +116,26 @@ export const lab = defineLab({
           illustrations: [CustodyComparison],
           body: 'At a bank, "your" account is an entry in the bank\'s ledger. The bank holds the money on your behalf, and you have a legal claim to it. Both you and the bank agree that the institution will do what you request with "your" money that they control. That arrangement is called **third-party custody**.\n\nEthereum is a **self-custody** system, meaning you hold the keys to your own money. Having direct control of your own money is real freedom, but that freedom comes with more responsibility.\n\nThe next section is all about the concepts, skills, and tools you will need to learn to safely keep self-custody of your own money.',
         },
+        {
+          type: "question",
+          id: "choose-a-custody-model",
+          label: "QUESTION",
+          title: "What would you recommend?",
+          question:
+            "Alex wants to recover access if they lose a password. Sam's priority is that no company can freeze or delay their funds. Which custody model would you recommend to each person, and what risk would each have to accept?",
+          rubricConcepts: [
+            "Alex may prefer third-party custody because an institution can usually restore account access",
+            "Alex accepts gatekeeper risk: the institution can delay, freeze, or fail",
+            "Sam may prefer self-custody because access is theirs alone, not granted by a company",
+            "Sam accepts full responsibility: there is no reset, and a loss or leak can be permanent",
+            "there is no universally best custody model; the choice trades recovery and convenience against direct control",
+          ],
+          hints: [
+            "What does each person have to trust, and what do they have to protect?",
+            "For each person, name both the benefit and the new risk.",
+            "A strong answer does not call either model risk-free.",
+          ],
+        },
       ],
     },
     {
@@ -146,7 +170,9 @@ export const lab = defineLab({
           id: "wallets",
           label: "CONCEPT",
           title: "Wallets",
-          body: "Nobody types a giant secret number by hand. That's what a **wallet** is for. It's an app on your device with two jobs: keep your private key secret, and put it to work safely when you use the network.\n\nAn Ethereum wallet differs from a physical wallet in an important way: Ethereum wallets hold your key (the thing that securely allows you to control your money) not your money (ETH) itself. Your ETH stays on the network, with the rest of your account.\n\nYour wallet also hands you a **recovery phrase**: your key's backup, written as a short list of ordinary words. Your recovery phrase holds just as much power as your private key so carefully guard both.\n\nThere's a whole lab on wallets coming next. Before that, learn what's safe to reveal.",
+          illustrations: [WalletKeyNotMoney],
+          interactive: WalletSort,
+          body: "Nobody types a giant secret number by hand. That's what a **wallet** is for. It's an app on your device with two jobs: keep your private key secret, and put it to work safely when you use the network.\n\nAn Ethereum wallet differs from a physical wallet in an important way: Ethereum wallets hold your key (the thing that securely allows you to control your money) not your money (ETH) itself. Your ETH stays on the network, with the rest of your account.\n\nYour wallet also hands you a **recovery phrase**: your key's backup, written as a short list of ordinary words. Your recovery phrase holds just as much power as your private key so carefully guard both.\n\nMost wallets also ask you for a password or PIN. That only unlocks the app on your device.\n\nThere's a whole lab on wallets coming next. Before that, learn what's safe to reveal.",
         },
         {
           type: "concept",
@@ -176,7 +202,9 @@ export const lab = defineLab({
           id: "gas",
           label: "CONCEPT",
           title: "Gas",
-          body: "You must pay a small fee in ETH, called **gas**, to have the network carry out your transaction.\n\nNodes are physical machines that consume electricity and bandwidth on every action, so using the network can't be free. Gas compensates nodes for the costs they accrue running the network.\n\nThe gas fee also protects the network from spam. It's just not worth it to flood the network with junk if a bad actor has to pay for every bad transaction.\n\nThe gas fee is not a fixed amount. A simple transaction will cost pocket change, but bigger actions cost more. The gas price also fluctuates with network activity. More activity means more competition for the nodes' labor.\n\nGas fees are charged even if your transaction fails, because the network still did the work of checking it. That's one more reason to understand exactly what your transaction is doing before you sign it.\n\nEthereum's energy use fell by about 99% in 2022, when it switched to a system called proof of stake, but that's a story for a later lab.",
+          illustrations: [GasIncludedRevert],
+          interactive: GasOutcomes,
+          body: "You must pay a small fee in ETH, called **gas**, to have the network carry out your transaction.\n\nNodes are physical machines that consume electricity and bandwidth on every action, so using the network can't be free. Gas makes every action cover its own cost. Ethereum's energy use fell by about 99% in 2022, when it switched to a system called proof of stake, but that's a story for a later lab.\n\nThe gas fee also protects the network from spam. It's just not worth it to flood the network with junk if a bad actor has to pay for every bad transaction.\n\nThe gas fee is not a fixed amount. A simple transaction will cost pocket change, but bigger actions cost more. The gas price also fluctuates with network activity. More activity means more competition for the nodes' labor.\n\nGas is charged even if your transaction fails, because the network still did the work of running it. That's one more reason to understand exactly what your transaction is doing before you sign it.",
         },
         {
           type: "concept",
@@ -185,6 +213,28 @@ export const lab = defineLab({
           title: "The Blockchain",
           illustrations: [PublicLedger],
           body: "Confirmed transactions are bundled into **blocks**, and each block is added after the last, forming a single chain: the **blockchain**. That's the shared history every node keeps, the record you met in the very first card.\n\nThe design of the blockchain has two important implications for users.\n\nFirst: activity is public by default. Anyone who knows your address can see your account balance and its entire history.\n\nSecond: confirmed actions are forever. There's no chargeback line, no undo, and no one to appeal to. The permanence that stops anyone from rewriting history is the same permanence that makes your mistakes stick.",
+        },
+        {
+          type: "question",
+          id: "one-wrong-character",
+          label: "QUESTION",
+          title: "One wrong character",
+          question:
+            "You send 0.1 ETH to a friend. The wallet says it went through, but your friend keeps refreshing and nothing arrives. Looking closer, you typed one character of their address wrong. Where is the ETH now and what did the mistake cost you? Is there any way to fix it, and what could you have done differently?",
+          rubricConcepts: [
+            "the transaction was valid, so the network carried it out: the ETH now sits in the mistyped address",
+            "the transfer is recorded in a block for good; there is no administrator or support desk who can reverse it",
+            "the ETH is gone unless whoever controls that address chooses to send it back, and most mistyped addresses belong to no one",
+            "gas was paid as well, because the network did the work",
+            "addresses are meant to be copied and pasted, never typed by hand",
+            "the address is public and visible before signing, so checking it before you confirm (or sending a tiny test amount first) is the final protection",
+          ],
+          hints: [
+            "Did the network do anything wrong here?",
+            "Is there anyone you could ask to reverse it?",
+            "Which of the two amounts you lost is bigger, and which was avoidable?",
+            "How did the wrong character get into the address field in the first place?",
+          ],
         },
       ],
     },
