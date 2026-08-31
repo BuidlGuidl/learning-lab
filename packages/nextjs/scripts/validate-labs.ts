@@ -21,7 +21,7 @@ import { OZ_SOURCES } from "../lib/solc/oz-sources";
 import { resolveSources } from "../lib/solc/resolve-imports";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import solc from "solc";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -74,8 +74,11 @@ async function validateLab(labId: string) {
     .readdirSync(contractsDir)
     .filter(f => f.endsWith(".sol"))
     .sort();
-  const fromDisk = Object.fromEntries(solFiles.map(f => [f, fs.readFileSync(path.join(contractsDir, f), "utf8")]));
-  const { contracts } = (await import(path.join(labDir, "contracts.gen.ts"))) as {
+  // CRLF-normalized like gen-lab-sources, so a Windows checkout doesn't read as stale
+  const fromDisk = Object.fromEntries(
+    solFiles.map(f => [f, fs.readFileSync(path.join(contractsDir, f), "utf8").replace(/\r\n/g, "\n")]),
+  );
+  const { contracts } = (await import(pathToFileURL(path.join(labDir, "contracts.gen.ts")).href)) as {
     contracts: Record<string, string>;
   };
   const stale =
@@ -89,7 +92,7 @@ async function validateLab(labId: string) {
   console.log(`  ✓ ${regionIds.length} region(s): ${regionIds.join(", ")}`);
 
   // 3. region ↔ card cross-check
-  const { lab } = (await import(path.join(labDir, "lab.ts"))) as { lab: Lab };
+  const { lab } = (await import(pathToFileURL(path.join(labDir, "lab.ts")).href)) as { lab: Lab };
   const exerciseRegions = lab.chapters
     .flatMap(c => c.cards)
     .filter((c): c is CodeExerciseCard => c.type === "code-exercise")
