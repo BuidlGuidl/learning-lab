@@ -2,7 +2,7 @@
 
 import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from "react";
 
-type Zone = "yours" | "network";
+type Zone = "yours" | "network" | "nowhere";
 
 type SortItem = {
   label: string;
@@ -59,14 +59,9 @@ const ITEMS: SortItem[] = [
     feedback: "It stays with you. If it lived on Ethereum, everyone could copy it.",
   },
   {
-    label: "Wallet password / PIN",
-    zone: "yours",
-    feedback: "It only unlocks this wallet on this device. Ethereum never sees it, and it cannot recover your keys.",
-  },
-  {
     label: "Recovery phrase backup",
     zone: "yours",
-    feedback: "It recreates your keys. Keep it private and preferably offline.",
+    feedback: "It recreates your key. Keep it private and preferably offline.",
   },
   { label: "Account address", zone: "network", feedback: "The public address identifies the account on Ethereum." },
   {
@@ -79,11 +74,24 @@ const ITEMS: SortItem[] = [
     zone: "network",
     feedback: "Past transactions are part of the shared public history.",
   },
+  {
+    label: "“Undo” button for the ETH you just sent",
+    zone: "nowhere",
+    feedback:
+      "Once the network carries out a transaction, it is done: the wallet cannot pull it back, and there is no one to ask. Check the address before you sign.",
+  },
+  {
+    label: "“Forgot your key?” reset feature",
+    zone: "nowhere",
+    feedback:
+      "No wallet and no node can hand your key back: nobody else ever had it. That is exactly what the recovery phrase is for.",
+  },
 ];
 
 const ZONES: Array<{ id: Zone; title: string }> = [
   { id: "yours", title: "Held by you / your wallet" },
   { id: "network", title: "Recorded on Ethereum" },
+  { id: "nowhere", title: "Nowhere: it doesn't exist" },
 ];
 
 export const WalletSort = () => {
@@ -92,6 +100,7 @@ export const WalletSort = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [activeZone, setActiveZone] = useState<Zone | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
+  const [mistakes, setMistakes] = useState(0);
   const pointerDrag = useRef<PointerDrag | null>(null);
   const dragPreviewElement = useRef<HTMLButtonElement | null>(null);
   const pendingPreviewPosition = useRef<{ clientX: number; clientY: number } | null>(null);
@@ -118,6 +127,7 @@ export const WalletSort = () => {
     const item = ITEMS[itemIndex];
 
     if (item.zone !== zone) {
+      setMistakes(count => count + 1);
       setSelectedIndex(itemIndex);
       setFeedback({ correct: false, message: item.feedback });
       return;
@@ -141,7 +151,7 @@ export const WalletSort = () => {
   const zoneAtPoint = (x: number, y: number): ZoneHit | null => {
     const element = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-wallet-zone]");
     const zone = element?.dataset.walletZone;
-    return element && (zone === "yours" || zone === "network") ? { zone, element } : null;
+    return element && (zone === "yours" || zone === "network" || zone === "nowhere") ? { zone, element } : null;
   };
 
   const removeDragPreview = () => {
@@ -359,6 +369,7 @@ export const WalletSort = () => {
     stopPreviewFrame();
     stopAutoScroll();
     setPlaced({});
+    setMistakes(0);
     setSelectedIndex(null);
     setDraggedIndex(null);
     removeDragPreview();
@@ -376,6 +387,7 @@ export const WalletSort = () => {
       <div className="flex items-center justify-between gap-3">
         <span className="font-mono text-xs text-dark-text-muted">
           wallet sort · {sortedCount}/{ITEMS.length} sorted
+          {mistakes > 0 && ` · ${mistakes} miss${mistakes === 1 ? "" : "es"}`}
         </span>
         <button
           type="button"
@@ -389,7 +401,7 @@ export const WalletSort = () => {
       <div>
         <h3 className="m-0 text-lg font-semibold text-dark-text">What&apos;s actually inside the wallet?</h3>
         <p className="mb-0 mt-1 text-sm leading-relaxed text-dark-text-muted">
-          Sort each item by where it actually lives.
+          Sort each item by where it actually lives. Careful: some of these things exist nowhere at all.
         </p>
       </div>
 
@@ -447,7 +459,7 @@ export const WalletSort = () => {
           : ""}
       </p>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         {ZONES.map(zone => {
           const zoneItems = ITEMS.map((item, itemIndex) => ({ item, itemIndex })).filter(
             ({ itemIndex }) => placed[itemIndex] === zone.id,
@@ -516,7 +528,7 @@ export const WalletSort = () => {
           aria-live="polite"
         >
           <strong className={feedback.correct ? "text-mint-bright" : "text-peach-bright"}>
-            {feedback.correct ? "Correct." : "Try the other destination."}
+            {feedback.correct ? "Correct." : "Not there."}
           </strong>{" "}
           <span className="text-dark-text-muted">{feedback.message}</span>
         </div>
@@ -529,8 +541,10 @@ export const WalletSort = () => {
         >
           <strong className="text-dark-text">Wallet sort complete</strong>
           <p className="mb-0 mt-2">
-            Your wallet manages your keys, local password or PIN, and recovery backup. Ethereum records your address,
-            ETH balance, and transaction history. Your wallet holds your key, not your money.
+            Your wallet guards your key and its recovery backup. Ethereum records your address, ETH balance, and
+            transaction history. And two things exist nowhere: a copy of your recovery phrase held by someone else, and
+            a way to reset your key. Your wallet holds your key, not your money
+            {mistakes === 0 ? ". Sorted with no misses." : "."}
           </p>
         </div>
       )}
