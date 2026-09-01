@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useRef } from "react";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { useOutsideClick } from "~~/hooks/scaffold-eth";
-import { signIn } from "~~/lib/auth-client";
+import { useState } from "react";
+import { SignInModal } from "~~/components/SignInModal";
 
 // The lab's own chrome, not daisyUI's: thin border, small radius, violet on hover. Deliberately not
 // `btn` — base.css gives every .btn a 9999rem pill from outside a cascade layer, so no radius utility
@@ -22,38 +20,23 @@ type Props = {
 };
 
 /**
- * "Sign in" dropdown with Google and GitHub as equal items. Shared by the header and the in-lab
- * nudge so the two providers are never ranked against each other.
- * TODO: Google's sign-in branding rules want their logo/button shape; handle when the button is final.
+ * "Sign in" button that opens the provider modal. Shared by the header and the in-lab nudge so both
+ * entry points get the same dialog and the two providers are never ranked against each other.
+ * The provider buttons follow Google's sign-in branding rules; see SignInModal.
  */
 export const SignInMenu = ({ callbackURL, summaryClassName = "" }: Props) => {
-  const dropdownRef = useRef<HTMLDetailsElement>(null);
-  const closeDropdown = useCallback(() => dropdownRef.current?.removeAttribute("open"), []);
-  useOutsideClick(dropdownRef, closeDropdown);
-
-  const handleSocialSignIn = (provider: "google" | "github") => {
-    closeDropdown();
-    void signIn.social({ provider, callbackURL });
-  };
+  const [open, setOpen] = useState(false);
 
   return (
-    <details ref={dropdownRef} className="dropdown dropdown-end">
-      <summary className={`${SUMMARY} h-8 gap-1 px-3 font-medium ${summaryClassName}`}>
+    <>
+      <button
+        type="button"
+        className={`${SUMMARY} h-8 px-3 font-medium ${summaryClassName}`}
+        onClick={() => setOpen(true)}
+      >
         Sign in
-        <ChevronDownIcon className="h-4 w-4" />
-      </summary>
-      <ul className={MENU}>
-        <li>
-          <button type="button" className={MENU_ITEM} onClick={() => handleSocialSignIn("google")}>
-            Continue with Google
-          </button>
-        </li>
-        <li>
-          <button type="button" className={MENU_ITEM} onClick={() => handleSocialSignIn("github")}>
-            Continue with GitHub
-          </button>
-        </li>
-      </ul>
-    </details>
+      </button>
+      <SignInModal open={open} onClose={() => setOpen(false)} callbackURL={callbackURL} />
+    </>
   );
 };
