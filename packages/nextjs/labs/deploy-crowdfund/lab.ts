@@ -27,7 +27,7 @@ export const lab = defineLab({
           id: "you-watched-one-work",
           label: "CONCEPT",
           title: "You've watched one of these work",
-          body: "In Ethereum 101 you met smart contracts from the outside. A vending machine took the right coin and refused the wrong one. And in the gas lab, a fundraiser filled up a moment before your contribution landed, so the contract undid it: money returned, rules upheld, gas paid.\n\nThose rules were a program, written in a language called **Solidity**, and programs are written by people. In this lab, that person is you. You'll build that kind of fundraiser yourself, rule by rule, and then use it like an app.\n\nEverything happens inside this page. Your code compiles and deploys to a small Ethereum-like machine living in this browser tab, so there's no wallet to set up and nothing leaves your machine. The code, the deployment, and the transactions are all real.",
+          body: "In Ethereum 101 you met smart contracts from the outside. A vending machine took the right coin and refused the wrong one. And in the gas lab, a fundraiser filled up a moment before your contribution landed, so the contract undid your contribution and still charged the gas.\n\nThose rules were a program, written in a language called **Solidity**, and somebody had to write it. This time it's you. You'll build that kind of fundraiser yourself, rule by rule, and then use it like an app.\n\nEverything happens inside this page. Your code compiles and deploys to a small Ethereum-like machine living in this browser tab, so there's no wallet to set up and nothing leaves your machine, but the contract and the transactions are real.",
         },
         {
           type: "concept",
@@ -262,7 +262,7 @@ export const lab = defineLab({
           id: "what-you-did",
           label: "SUMMARY",
           title: "You shipped a real contract",
-          body: "The fundraiser you once watched from the outside is now a program you wrote yourself. Along the way: state and mappings, `payable` functions and `msg.value`, `require` and deadlines, events, the call pattern contracts use to pay people, and the reentrancy discipline that separates working Solidity from safe Solidity.\n\nThe crowdfund you built holds real value and enforces its own rules, no referee needed.\n\nFrom here the road leads outward: real networks and testnets, deploying with a wallet signature instead of a browser sandbox, and contracts that hold more than one campaign.",
+          body: "The fundraiser you once watched from the outside is now a program you wrote yourself. Along the way: state and mappings, `payable` functions and `msg.value`, `require` and deadlines, events, the call pattern contracts use to pay people, and the reentrancy discipline that separates working Solidity from safe Solidity.\n\nThe crowdfund you built holds real value and enforces its own rules, no referee needed.\n\nNext up: real networks and testnets, deploying with a wallet signature instead of a browser sandbox, and contracts that hold more than one campaign.",
         },
       ],
     },

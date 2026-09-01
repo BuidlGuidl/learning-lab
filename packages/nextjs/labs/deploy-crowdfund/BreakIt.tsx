@@ -25,12 +25,12 @@ const REVERTS: Record<string, { line: string; lesson: string }> = {
   "funding still open": {
     line: 'require(block.timestamp >= deadline, "funding still open");',
     lesson:
-      "Your deadline rule fired. The window is still open, so the deal says the money stays in until it closes. The whole transaction rolled back, and the gas for the attempt was still paid: the network ran your rule, and running rules is work.",
+      "Your deadline rule fired. The window is still open, so the deal says the money stays in until it closes. The whole transaction rolled back, and the gas for the attempt was still paid.",
   },
   "nothing to refund": {
     line: 'require(amount > 0, "nothing to refund");',
     lesson:
-      "Your ledger rule fired. The first refund zeroed this contributor's row, so the second ask found nothing under their name. That zero-first habit is exactly what makes the double-refund impossible.",
+      "Your ledger rule fired. The first refund zeroed this contributor's row, so the second ask found nothing under their name. Zeroing the row before the money moves is what makes a double refund impossible.",
   },
 };
 
@@ -226,7 +226,7 @@ export const BreakIt = ({ world }: Props) => {
           activeStep={step}
           busy={busy}
           icon={ForwardIcon}
-          text="No admin can bend the rule, but time satisfies it. Fast-forward the chain past the deadline."
+          text="Nobody can waive the rule, but the rule is about time. Fast-forward the chain past the deadline."
           action={passDeadline}
           actionLabel="mine ~8 days"
           tag="clock"
@@ -243,7 +243,7 @@ export const BreakIt = ({ world }: Props) => {
           actionLabel="refund"
           tag="refund"
           done={refunded}
-          doneNote="Your 1 ETH came back. Nobody approved it; the conditions were simply met."
+          doneNote="Your 1 ETH came back. Nobody approved it; the conditions were met."
         />
         <Step
           n={5}
