@@ -48,7 +48,10 @@ const PROVIDER_BUTTON =
 // Hover is their 8% state layer resolved against each background.
 const GOOGLE_BUTTON =
   "border-[#747775] bg-[#FFFFFF] text-[#1F1F1F] hover:bg-[#EBEEF0] dark:border-[#8E918F] dark:bg-[#131314] dark:text-[#E3E3E3] dark:hover:bg-[#232324]";
-const GITHUB_BUTTON = "border-lab-border bg-lab-surface text-lab-text hover:bg-lab-inset";
+// Same fills as the Google button (its three sanctioned backgrounds are a hard rule, ours is not),
+// so the pair reads as one set. GitHub only forbids recoloring the mark, which stays black/white.
+const GITHUB_BUTTON =
+  "border-[#747775] bg-[#FFFFFF] text-[#1F1F1F] hover:bg-[#EBEEF0] dark:border-[#8E918F] dark:bg-[#131314] dark:text-[#E3E3E3] dark:hover:bg-[#232324]";
 
 type Props = {
   open: boolean;
