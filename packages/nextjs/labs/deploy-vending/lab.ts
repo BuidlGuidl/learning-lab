@@ -77,7 +77,7 @@ export const lab = defineLab({
           title: "Set the price",
           region: "price",
           prompt:
-            "> Hit the `</> code` button or press `c` any time to see the whole file, your lines filled in and the faded gaps still to come.\n\nEvery machine shows its price. Declare a constant named `PRICE` set to `1 ether`. The shape is `type visibility constant NAME = value;`: use `uint256`, mark it `public`, and `constant` because the price is baked into the machine for good. Solidity understands `ether` as a unit, so `1 ether` means exactly what it says.",
+            "> Hit the `</> code` button or press `c` any time to see the whole file, your lines filled in and the faded gaps still to come.\n>\n> The faded line already in the editor is an example in the same shape as the one you'll write, borrowed from another contract. It's not the answer, and it disappears as soon as you start typing.\n\nEvery machine shows its price. Declare a constant named `PRICE` set to `1 ether`. The shape is `type visibility constant NAME = value;`: use `uint256`, mark it `public`, and `constant` because the price is baked into the machine for good. Solidity understands `ether` as a unit, so `1 ether` means exactly what it says.",
           placeholder: "uint256 public constant FEE = 2 ether;",
           hints: [
             "Follow the placeholder's shape; only the name and the value change.",
