@@ -29,7 +29,7 @@ const REVERTS: Record<string, { line: string; lesson: string }> = {
   "sold out": {
     line: 'require(stock > 0, "sold out");',
     lesson:
-      "The shelf is empty, so the machine refuses the coin instead of taking money it can't honour. The owner can restock it.",
+      "The shelf is empty, so the machine refuses the coin instead of taking money for a snack it doesn't have. The owner can restock it.",
   },
   "only the owner": {
     line: 'require(msg.sender == owner, "only the owner");',

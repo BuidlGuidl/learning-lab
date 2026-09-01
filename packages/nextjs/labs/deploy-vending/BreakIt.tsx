@@ -16,12 +16,12 @@ const REVERTS: Record<string, { line: string; lesson: string }> = {
   "wrong coin": {
     line: 'require(msg.value == PRICE, "wrong coin");',
     lesson:
-      "Your first rule fired. The machine takes exactly the price, nothing less and nothing more, and the whole transaction rolled back as if it never ran. The buyer keeps their ETH, minus the gas: the network still ran your rule, and running rules is work.",
+      "Your first rule fired. The machine takes exactly the price, nothing less and nothing more, and the whole transaction rolled back as if it never ran. The buyer keeps their ETH, minus the gas for the attempt.",
   },
   "sold out": {
     line: 'require(stock > 0, "sold out");',
     lesson:
-      "Your second rule fired. The shelf is empty, so the machine refuses the coin instead of taking money it can't honour. The buyer's ETH bounced back with the revert; the gas for the attempt did not.",
+      "Your second rule fired. The shelf is empty, so the machine refuses the coin instead of taking money for a snack it doesn't have. The buyer's ETH bounced back with the revert; the gas did not.",
   },
 };
 

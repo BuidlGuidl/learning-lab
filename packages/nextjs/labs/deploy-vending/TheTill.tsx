@@ -156,7 +156,7 @@ export const TheTill = ({ world }: Props) => {
           doneNote={
             stealReason
               ? "Refused. The contract checked msg.sender against owner and turned the customer away."
-              : "That went through, which means your owner check is missing. Check your withdraw() lines."
+              : "That went through, which means the owner rule is missing. Look at your withdraw() lines."
           }
         />
         <Step

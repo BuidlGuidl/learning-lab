@@ -28,7 +28,7 @@ export const lab = defineLab({
           id: "you-have-used-one",
           label: "CONCEPT",
           title: "You've used one of these",
-          body: "In Ethereum 101 you met the vending machine: put in the right coin, press the button, and the machine follows its rules with nobody behind the counter. You pressed its buttons and watched it say yes and no.\n\nHere's the part we saved: those rules were a program, a **smart contract**, and programs are written by people. In this lab, that person is you. You'll write the machine's rules in real Solidity, deploy them to a real Ethereum-style machine, and then sell snacks to real accounts.\n\nEverything happens inside this page. Your code compiles and runs on a small Ethereum-like computer living in this browser tab, so there's no wallet to set up and nothing leaves your machine. The code, the deployment, and the transactions are all real.",
+          body: "In Ethereum 101 you met the vending machine: put in the right coin, press the button, and it follows its rules with nobody behind the counter.\n\nHere's the part we skipped: those rules are a program, a **smart contract**, and somebody had to write it. This time it's you. You'll write the machine's rules in Solidity, deploy them, and sell snacks to real accounts.\n\nEverything happens inside this page. Your code compiles and runs on a small Ethereum-like computer living in this browser tab, so there's no wallet to set up and nothing leaves your machine, but the contract and the transactions are real.",
         },
         {
           type: "concept",
@@ -141,7 +141,7 @@ export const lab = defineLab({
           title: "Write the rules",
           region: "buy-guards",
           prompt:
-            'A coin has just arrived in `buy()`. Before anything is handed out, the machine checks its two rules, in order:\n\n1. the payment must be exactly the price: `msg.value` (the ETH sent with the call) must equal `PRICE`. Refuse with the reason `"wrong coin"`.\n2. there must be a snack left: `stock` must be more than zero. Refuse with the reason `"sold out"`.\n\nOne `require(condition, "reason")` per rule, with those exact reason texts. These two lines are the machine\'s entire security system. There is no shopkeeper behind this counter.',
+            'A coin has just arrived in `buy()`. Before anything is handed out, the machine checks its two rules, in order:\n\n1. the payment must be exactly the price: `msg.value` (the ETH sent with the call) must equal `PRICE`. Refuse with the reason `"wrong coin"`.\n2. there must be a snack left: `stock` must be more than zero. Refuse with the reason `"sold out"`.\n\nOne `require(condition, "reason")` per rule, with those exact reason texts. These two lines are the machine\'s whole security system.',
           placeholder: 'require(msg.sender == judge, "not the judge");',
           hints: [
             "Each rule is one require line: the condition that must be true first, the refusal text second.",
@@ -235,7 +235,7 @@ export const lab = defineLab({
           id: "code-is-forever",
           label: "CONCEPT",
           title: "Code is forever",
-          body: "One habit to take from this chapter. When a contract sends ETH, the receiver can be a contract too, with code that runs the moment the money arrives. If your function sends before it has finished its own bookkeeping, that code can call straight back in and catch your contract mid-thought. That's a **reentrancy** attack. It drained TheDAO of millions in 2016, and it still catches new contracts today.\n\nThe defense is a rule of order: finish updating your own state before any ETH leaves.\n\nYour `withdraw()` is safe as written, because it sends the entire balance to one fixed owner. But the reason the habit is non-negotiable is the other thing you've learned about this network: deployed code can't be patched. The chain keeps running exactly what you shipped, mistakes included.",
+          body: "One habit to take from this chapter. When a contract sends ETH, the receiver can be a contract too, with code that runs the moment the money arrives. If your function sends before it has finished its own bookkeeping, that code can call straight back in and catch your contract mid-thought. That's a **reentrancy** attack. It drained TheDAO of millions in 2016, and it still bites new contracts today.\n\nThe defense is a rule of order: finish updating your own state before any ETH leaves.\n\nYour `withdraw()` is safe as written, because it sends the entire balance to one fixed owner. But the reason the habit is non-negotiable is the other thing you've learned about this network: deployed code can't be patched. The chain keeps running exactly what you shipped, mistakes included.",
         },
         {
           type: "experiment",
@@ -259,7 +259,7 @@ export const lab = defineLab({
           label: "CODE",
           title: "The finished machine",
           file: "VendingMachine.sol",
-          note: "The full reveal, every learner line in place, plus restock(amount): an owner-only top-up so the machine can live past its first five snacks. A fixed price, a public shelf, rules with nobody behind the counter, receipts for every buyer, and a till only the owner can empty.",
+          note: "The full reveal, every learner line in place, plus restock(amount): an owner-only top-up so the machine can live past its first five snacks. A fixed price, a public shelf, receipts for every buyer, and a till only the owner can empty. A snack shop that runs itself.",
         },
         {
           type: "experiment",
@@ -277,7 +277,7 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Run your machine",
           scenario:
-            "This is your machine from the outside: an app. Sell snacks to three customers, watch the shelf and the till move with every coin, sell it empty, then collect the takings and restock as the owner.\n\nEvery button presses your code. Nobody is behind the counter, and nothing asks your permission except the rules you wrote.",
+            "This is your machine from the outside: an app. Sell snacks to three customers, watch the shelf and the till move with every coin, sell it empty, then collect the takings and restock as the owner.\n\nEvery button presses your code, and the only rules in play are the ones you wrote.",
           component: RunTheMachine,
           reusesWorld: "ship-final",
           console: "closed",
@@ -287,7 +287,7 @@ export const lab = defineLab({
           id: "you-built-a-real-one",
           label: "SUMMARY",
           title: "You built a real machine",
-          body: "The vending machine you met as a metaphor is now a program you wrote yourself. Along the way: state and constants, `payable` and `msg.value`, `require` and reverts, mappings, events, a constructor that fixes the owner for good, the call pattern contracts use to pay people, and the bookkeeping-before-money habit that keeps them safe.\n\nYour machine enforces its own rules, takes real value, and answers to nobody but its code. That's a smart contract.\n\nFrom here the road leads outward: real networks and testnets, deploying with a wallet signature instead of a browser sandbox, and machines that sell more interesting things than snacks.",
+          body: "The vending machine you met as a metaphor is now a program you wrote yourself. Along the way: state and constants, `payable` and `msg.value`, `require` and reverts, mappings, events, a constructor that fixes the owner for good, the call pattern contracts use to pay people, and the bookkeeping-before-money habit that keeps them safe.\n\nIt takes real money and enforces its own rules, with nobody watching over it. That's a smart contract.\n\nNext up: real networks and testnets, deploying with a wallet signature instead of a browser sandbox, and machines that sell more interesting things than snacks.",
         },
       ],
     },
