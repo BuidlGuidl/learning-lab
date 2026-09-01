@@ -1,3 +1,4 @@
+import { isNeonUrl, requireDatabaseUrl } from "./databaseUrl";
 import * as schema from "./schema";
 import { Pool as NeonPool } from "@neondatabase/serverless";
 import { drizzle as drizzleNeon } from "drizzle-orm/neon-serverless";
@@ -12,17 +13,19 @@ let poolInstance: Pool | NeonPool | null = null;
 export function getDb(): DbInstance {
   if (dbInstance) return dbInstance;
 
-  if (process.env.DATABASE_URL?.includes("neon")) {
-    poolInstance = new NeonPool({ connectionString: process.env.DATABASE_URL });
+  const databaseUrl = requireDatabaseUrl();
+
+  if (isNeonUrl(databaseUrl)) {
+    poolInstance = new NeonPool({ connectionString: databaseUrl });
     dbInstance = drizzleNeon(poolInstance, { schema, casing: "snake_case" });
   } else {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new Pool({ connectionString: databaseUrl });
     poolInstance = pool;
     dbInstance = drizzleNode(pool, { schema, casing: "snake_case" });
-
-    // pg discards the broken client; exiting here would take the whole server down with it.
-    pool.on("error", error => console.error("Unexpected error on idle database client", error));
   }
+
+  // The pool discards the broken client; exiting here would take the whole server down with it.
+  poolInstance.on("error", (error: Error) => console.error("Unexpected error on idle database client", error));
 
   return dbInstance;
 }
