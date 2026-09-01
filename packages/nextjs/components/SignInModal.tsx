@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { signIn } from "~~/lib/auth-client";
+import { notification } from "~~/utils/scaffold-eth";
 
 // Google's own G, four paths, unaltered. Their branding rules forbid recoloring or flattening it,
 // so it stays multicolor in both themes while the button chrome switches.
@@ -65,8 +66,10 @@ export const SignInModal = ({ open, onClose, callbackURL }: Props) => {
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
-  const handleSocialSignIn = (provider: "google" | "github") => {
-    void signIn.social({ provider, callbackURL });
+  const handleSocialSignIn = async (provider: "google" | "github") => {
+    // On success better-auth navigates to the provider; only a failure leaves us here to tell.
+    const { error } = await signIn.social({ provider, callbackURL });
+    if (error) notification.error(error.message ?? "Sign-in failed, please try again.");
   };
 
   return (
