@@ -3,16 +3,16 @@
 import { useEffect } from "react";
 import { useSession } from "~~/lib/auth-client";
 import {
-  clearSyncKeys,
+  isSynced,
   listSnapshotKeys,
   loadSnapshot,
+  markSynced,
   removeSnapshot,
-  syncKeyFor,
 } from "~~/services/store/lab-persistence";
 
 // Server wins: an existing row keeps its data and the local copy is dropped; otherwise the local
-// copy becomes the row. A 400/404 on PUT means the server refused the blob, so it is dropped too.
-// Any other failure keeps the key for a retry on the next mount.
+// copy becomes the row. A 400 (or a 404 for a lab the server no longer knows, on PUT) means the
+// server refused the blob; the key is kept only when the refusal looks transient.
 const moveSnapshot = async (labId: string): Promise<void> => {
   const snapshot = loadSnapshot(labId);
   if (!snapshot) return removeSnapshot(labId);
@@ -21,12 +21,16 @@ const moveSnapshot = async (labId: string): Promise<void> => {
   const existing = await fetch(path);
   if (existing.status !== 200) {
     if (existing.status !== 404) throw new Error(`GET ${path} ${existing.status}`);
+    // Both "no row yet" and "unknown lab" are 404s; only the first may upload. An unknown or
+    // unpublished lab keeps its local copy — deleting here would destroy the only copy.
+    if ((await existing.text()).startsWith("unknown lab")) return;
     const put = await fetch(path, {
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(snapshot),
     });
-    if (!put.ok && put.status !== 400 && put.status !== 404) throw new Error(`PUT ${path} ${put.status}`);
+    if (put.status === 404) return; // lab vanished between GET and PUT: keep the local copy
+    if (!put.ok && put.status !== 400) throw new Error(`PUT ${path} ${put.status}`);
   }
   removeSnapshot(labId);
 };
@@ -37,17 +41,20 @@ const moveSnapshot = async (labId: string): Promise<void> => {
  * page load, so an open lab already hydrated from the right source.
  */
 export const ProgressSync = () => {
-  const userId = useSession().data?.user.id;
+  const { data: session, isPending } = useSession();
+  const userId = session?.user.id;
 
   useEffect(() => {
-    if (!userId) return clearSyncKeys();
-    const syncKey = syncKeyFor(userId);
-    if (window.localStorage.getItem(syncKey)) return;
+    // Wait for the session to resolve: data is null while pending too, and treating that as
+    // signed-out would re-run the sweep on every load. Anonymous visitors are left alone here;
+    // local progress is cleared on the sign-out action (HeaderAuth), not on the signed-out state.
+    if (isPending || !userId) return;
+    if (isSynced(userId)) return;
 
     void Promise.allSettled(listSnapshotKeys().map(moveSnapshot)).then(results => {
-      if (results.every(r => r.status === "fulfilled")) window.localStorage.setItem(syncKey, "1");
+      if (results.every(r => r.status === "fulfilled")) markSynced(userId);
     });
-  }, [userId]);
+  }, [isPending, userId]);
 
   return null;
 };

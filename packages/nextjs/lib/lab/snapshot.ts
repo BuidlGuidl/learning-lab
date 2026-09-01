@@ -28,6 +28,10 @@ export const isLabSnapshot = (value: unknown): value is LabSnapshot => {
   if (!isPlainObject(value) || !hasPosition(value)) return false;
   if (!isPlainObject(value.maxReached) || !hasPosition(value.maxReached)) return false;
   if (!isPlainObject(value.progress) || !isPlainObject(value.transcript)) return false;
+  const validEntries = Object.values(value.progress).every(
+    entry => isPlainObject(entry) && typeof entry.learnerInput === "string" && typeof entry.region === "string",
+  );
+  if (!validEntries) return false;
   const { labId, events } = value.transcript;
   return typeof labId === "string" && Array.isArray(events) && events.every(isGradingEvent);
 };

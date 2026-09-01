@@ -48,13 +48,31 @@ export const listSnapshotKeys = (): string[] => {
   }
 };
 
-// Once-per-sign-in marker for the sweep. Cleared wholesale on sign-out so the next sign-in sweeps again.
-export const syncKeyFor = (userId: string) => `${SYNC_KEY_PREFIX}${userId}`;
-export const clearSyncKeys = (): void => {
+// Once-per-sign-in marker for the sweep.
+const syncKeyFor = (userId: string) => `${SYNC_KEY_PREFIX}${userId}`;
+export const isSynced = (userId: string): boolean => {
+  if (typeof window === "undefined") return true;
+  try {
+    return !!window.localStorage.getItem(syncKeyFor(userId));
+  } catch {
+    return true; // storage off: nothing to sweep either
+  }
+};
+export const markSynced = (userId: string): void => {
+  try {
+    window.localStorage.setItem(syncKeyFor(userId), "1");
+  } catch {
+    // a dropped write only means the sweep re-runs next load
+  }
+};
+
+// Sign-out clears the sweep markers AND the progress blobs: the next person on this browser
+// must not inherit (and silently upload) the previous user's answers.
+export const clearLocalProgress = (): void => {
   if (typeof window === "undefined") return;
   try {
     Object.keys(window.localStorage)
-      .filter(key => key.startsWith(SYNC_KEY_PREFIX))
+      .filter(key => key.startsWith(SYNC_KEY_PREFIX) || key.startsWith(SNAPSHOT_KEY_PREFIX))
       .forEach(key => window.localStorage.removeItem(key));
   } catch {
     // nothing to clear when storage is off

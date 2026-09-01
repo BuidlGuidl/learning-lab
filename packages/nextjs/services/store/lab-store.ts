@@ -127,11 +127,16 @@ const buildSnapshot = (state: LabState): LabSnapshot => ({
 // Drafts stay in localStorage via the subscriber below. Fire-and-forget, last write wins.
 const saveIfSignedIn = (state: LabState) => {
   if (!state.isSignedIn || !state.currentLabId) return;
-  void fetch(`/api/progress/${state.currentLabId}`, {
+  void fetch(`/api/progress/${encodeURIComponent(state.currentLabId)}`, {
     method: "PUT",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(buildSnapshot(state)),
-  }).catch(error => console.warn("Failed to save lab progress", error));
+  })
+    // fetch resolves on 4xx/5xx, so an expired session or server error must be surfaced here.
+    .then(res => {
+      if (!res.ok) console.warn(`Failed to save lab progress: ${res.status}`);
+    })
+    .catch(error => console.warn("Failed to save lab progress", error));
 };
 
 // Append a grading event and save it. Every verdict goes to the server, fails included: it already

@@ -8,6 +8,7 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { MENU, MENU_ITEM, SUMMARY, SignInMenu } from "~~/components/SignInMenu";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 import { signOut, useSession } from "~~/lib/auth-client";
+import { clearLocalProgress } from "~~/services/store/lab-persistence";
 
 // Pending and signed-out share this box, so the header holds its shape while the session resolves.
 const CONTROL_FRAME = "h-8 min-w-[6.5rem]";
@@ -27,6 +28,9 @@ export const HeaderAuth = () => {
   const handleSignOut = async () => {
     closeDropdown();
     await signOut();
+    // The next person on this browser must not inherit (and the sweep must not upload)
+    // this user's local answers. Their real progress is already on the server.
+    clearLocalProgress();
     router.refresh();
   };
 
