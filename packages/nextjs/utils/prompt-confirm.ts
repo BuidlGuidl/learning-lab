@@ -1,16 +1,7 @@
 import * as fs from "fs";
 
-const buffer = Buffer.alloc(1);
-fs.readSync(0, buffer, 0, 1, null);
+const buffer = Buffer.alloc(1024);
+const bytesRead = fs.readSync(0, buffer, 0, 1024, null);
+const answer = buffer.toString("utf8", 0, bytesRead).trim().toLowerCase();
 
-try {
-  const remaining = Buffer.alloc(1024);
-  fs.readSync(0, remaining, 0, 1024, null);
-} catch {
-  // Ignore errors from reading remaining characters.
-}
-
-process.stdout.write("\n");
-
-const answer = buffer.toString().toLowerCase();
-process.exit(answer === "y" ? 0 : 1);
+process.exit(answer.startsWith("y") ? 0 : 1);

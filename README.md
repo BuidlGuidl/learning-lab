@@ -8,7 +8,8 @@ Built on [Scaffold-ETH 2](https://scaffoldeth.io).
 
 ## Requirements
 
-- [Node](https://nodejs.org/en/download/) (>= v20.18.3)
+- [Node](https://nodejs.org/en/download/) (>= v22.12)
+- [Docker](https://docs.docker.com/get-docker/) (for the local database)
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/) (v1 or v2+)
 - [Git](https://git-scm.com/downloads)
 - An [OpenRouter API key](https://openrouter.ai/keys) that powers the AI grader
@@ -29,7 +30,17 @@ Built on [Scaffold-ETH 2](https://scaffoldeth.io).
 
    Set your `OPENROUTER_API_KEY`.
 
-3. Start the app:
+3. Start the local database and apply the schema:
+
+   ```
+   docker compose up -d
+   yarn drizzle-kit push
+   yarn db:seed
+   ```
+
+   The database backs accounts and saved progress (nothing user-facing yet). `yarn drizzle-kit studio` opens a table viewer.
+
+4. Start the app:
 
    ```
    yarn start
