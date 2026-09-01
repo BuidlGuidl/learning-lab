@@ -6,6 +6,7 @@ import { Markdown } from "../Markdown";
 import { GradeFeedback } from "./GradeFeedback";
 import { TestRunPanel } from "./TestRunPanel";
 import { useGrade } from "./useGrade";
+import { useDebounceCallback } from "usehooks-ts";
 import { LightBulbIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { CodeInput } from "~~/components/code/CodeInput";
 import { latestEvent } from "~~/lib/grader/transcript";
@@ -26,6 +27,8 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const latest = useLabStore(s => latestEvent(s.transcript, card.id));
   const regionTests = useLabStore(s => s.tests?.[card.region]);
   const [input, setInput] = useState(saved);
+  const saveDraft = useLabStore(s => s.saveDraft);
+  const persistDraft = useDebounceCallback((value: string) => saveDraft(card.id, card.region, value), 400);
   // The behavioural run's result. The verdict chip reads this the moment the tests finish.
   const [report, setReport] = useState<RunReport | null>(null);
   // Live narration of the run (fetching compiler → compiling → testing). On a cold page the
@@ -77,7 +80,15 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   return (
     <CardFrame card={card}>
       <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.prompt}</Markdown>
-      <CodeInput value={input} onChange={setInput} placeholder={card.placeholder} readOnly={running || isLoading} />
+      <CodeInput
+        value={input}
+        onChange={value => {
+          setInput(value);
+          persistDraft(value);
+        }}
+        placeholder={card.placeholder}
+        readOnly={running || isLoading}
+      />
       <div className="card-actions justify-end mt-4">
         <button
           className="btn btn-primary"

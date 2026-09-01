@@ -80,6 +80,7 @@ type LabActions = {
   init: (lab: Lab) => void;
   hydrate: (snapshot: LabSnapshot) => void;
   setSignedIn: (value: boolean) => void;
+  saveDraft: (cardId: string, region: string, learnerInput: string) => void;
   next: (lab: Lab) => void;
   prev: (lab: Lab) => void;
   goTo: (chapterIndex: number, cardIndex: number) => void;
@@ -155,7 +156,12 @@ const withEvent = (s: LabState, event: GradingEvent, extra: Partial<LabState> = 
 // and a broken fill surfaces as a real compile error, never a silent
 // canonical stand-in.
 export const fillsOf = (progress: Record<string, ProgressEntry>): Record<string, string> =>
-  Object.fromEntries(Object.values(progress).map(p => [p.region, p.learnerInput]));
+  // Question drafts carry no region; they are typed text, not code, so the world never renders them.
+  Object.fromEntries(
+    Object.values(progress)
+      .filter(p => p.region)
+      .map(p => [p.region, p.learnerInput]),
+  );
 
 // Every region rendered as its finished canonical source — the "reveal" view a
 // read-only card uses to show completed code before the learner has written it.
@@ -193,6 +199,10 @@ export const useLabStore = create<LabState & LabActions>(set => ({
       };
     }),
   setSignedIn: value => set({ isSignedIn: value }),
+  // Typed-but-unsubmitted text. Rides progress so the localStorage subscriber persists it and the
+  // restore path layers it back; deliberately NOT a milestone, so it never PUTs on its own.
+  saveDraft: (cardId, region, learnerInput) =>
+    set(s => ({ progress: { ...s.progress, [cardId]: { learnerInput, region } } })),
   // Gate-aware forward nav: a gradable card blocks until cleared (pass or skip), prev stays
   // free. A successful sequential advance also bumps the maxReached watermark the sidebar
   // locks against — so the gate stopping here is exactly what keeps later cards locked.
