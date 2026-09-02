@@ -8,10 +8,10 @@ Built on [Scaffold-ETH 2](https://scaffoldeth.io).
 
 ## Requirements
 
-- [Node](https://nodejs.org/en/download/) (>= v22)
+- [Node](https://nodejs.org/en/download/) (>= v22.12)
+- [Docker](https://docs.docker.com/get-docker/) (for the local database)
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/) (v1 or v2+)
 - [Git](https://git-scm.com/downloads)
-- [Docker](https://docs.docker.com/get-docker/) for the local Postgres
 - An [OpenRouter API key](https://openrouter.ai/keys) that powers the AI grader
 - Google and GitHub OAuth apps for sign-in (see [OAuth credentials](#oauth-credentials))
 
