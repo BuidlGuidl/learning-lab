@@ -39,6 +39,15 @@ export const PrivateKeyKeyspace = makeIllustration({
   alt: "A learner searches a vast field of hexadecimal private keys while an Ethereum account stays locked, showing that one valid key is hidden among 2^256 possibilities.",
 });
 
+// Ch4 · Wallets — the wallet protects access credentials while account state
+// remains on the distributed Ethereum network.
+export const WalletKeyNotMoney = makeIllustration({
+  src: "/wallet-holds-key-ch4-4.webp",
+  width: 1200,
+  height: 675,
+  alt: "A learner holds a transparent wallet app protecting a key while a recovery phrase backup stays beside them and their address, ETH balance, and transaction history remain on a distributed Ethereum network.",
+});
+
 // Ch4 · What's safe to share — a high-detail wallet safety infographic.
 export const WalletSafetyInfographic = makeIllustration({
   src: "/wallet-safety-infographic-ch4-5.webp",
@@ -55,6 +64,15 @@ export const TransactionLifecycle = makeIllustration({
   width: 1200,
   height: 675,
   alt: "A transaction's lifecycle in four steps: you sign it with your key, it is broadcast to the network, a validator includes it in a block, and it becomes a permanent on-chain record.",
+});
+
+// Ch5 - Gas: an included transaction can revert its payment and state changes
+// while the gas spent on the network's work remains paid.
+export const GasIncludedRevert = makeIllustration({
+  src: "/gas-included-revert-ch5-2.webp",
+  width: 1200,
+  height: 675,
+  alt: "A transaction executes inside an included Ethereum block and then reverts: the purchase payment returns to the sender while the gas meter remains spent because the network already performed the work.",
 });
 
 // Ch5 · Written in stone — the record is public: anyone can read every row.
