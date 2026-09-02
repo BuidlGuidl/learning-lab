@@ -1,7 +1,7 @@
 # Ethereum 101 — Section → Card Outline
 
 Skeleton for the non-technical Ethereum 101 lab (issue #59, PR #63 discussion).
-6 sections, 18 cards. Narrative spine: **what is it → what can it do → why not
+6 sections, 20 cards (two of them open questions). Narrative spine: **what is it → what can it do → why not
 just banks → how you hold it → how you use it → recap.**
 
 **Ground rules for all copy:**
@@ -162,6 +162,11 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
   (say the idea in plain words).
 - *(No antecedent in v1–v4 — new card.)*
 
+### 3.4 Question — what would you recommend?
+
+- Open question after 3.3: Alex wants account recovery, Sam wants no gatekeeper.
+  The learner recommends a custody model to each and names the risk each accepts.
+
 ---
 
 ## Section 4 — Your money, your keys
@@ -227,7 +232,10 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
     a short list of ordinary words (one clause here — the wallets lab owns the
     rest). Lose the key *and* the phrase and there's no support desk to call —
     which is why the next card is about what's safe to reveal.
+  - One clause on the wallet password/PIN: it only unlocks the app on the device.
   - Teaser: the next lab is entirely about wallets.
+  - Interactive: **WalletSort** — sort items between “held by you / your wallet”,
+    “recorded on Ethereum”, and “nowhere: it doesn't exist”.
 - **Keep out:** re-deriving "key = control" from 4.3 (one-line callback max);
   wallet brand recommendations; hardware vs. software wallets.
 
@@ -286,6 +294,8 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
   - Small aside: the network's energy use fell ~99% with the 2022 switch to
     proof of stake. Name it in one sentence; staking/validators are a later lab.
 - **Keep out:** gas price/limit/units, fee markets, EIP-1559; staking mechanics.
+- Interactive: **GasOutcomes** (gas lab) — order actions by cost, busy-vs-quiet
+  slider, then predict whether an executed-but-reverted transaction pays gas.
 
 ### 5.3 Written in stone
 
@@ -304,6 +314,12 @@ rescue" card — the answers are one-line callbacks, not re-teaching.*
   - Frame both as features with sharp edges: the same permanence that stops
     history from being rewritten also means *your* mistakes stick.
 - **Keep out:** consensus/validators, block times, explorers (later labs).
+
+### 5.4 Question — one wrong character
+
+- Open question after 5.3: 0.1 ETH sent to a mistyped address. Where is the ETH,
+  what did it cost, can it be fixed, what would you do differently? Pulls
+  together 1.2, 4.2, 4.5, 5.2 and 5.3.
 
 ---
 
