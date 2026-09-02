@@ -456,6 +456,10 @@
   border-bottom-right-radius: 8px;
 }
 
+/* The bare root selector carries the same aliases so the lab-* utilities flip on
+   surfaces outside the lab shell too. The site header and /profile have no .lab
+   wrapper, so without it they keep the light @theme values in dark mode. */
+[data-theme="dark"],
 [data-theme="dark"] .lab,
 [data-theme="dark"] .lab-header {
   --color-lab-canvas: var(--color-dark-bg);

@@ -5,6 +5,7 @@ import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
 import { InteractivePanel } from "./InteractivePanel";
 import { Sidebar } from "./Sidebar";
+import { SignInNudge } from "./SignInNudge";
 import { useMediaQuery } from "usehooks-ts";
 import {
   ArrowLeftIcon,
@@ -14,7 +15,10 @@ import {
   CodeBracketIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { useSession } from "~~/lib/auth-client";
 import { isCardCleared } from "~~/lib/grader/transcript";
+import { isGradable } from "~~/lib/lab/gradable";
+import type { LabSnapshot } from "~~/lib/lab/snapshot";
 import type { Lab as LabType } from "~~/lib/lab/types";
 import { warmCompiler } from "~~/lib/solc/solc";
 import { loadSnapshot } from "~~/services/store/lab-persistence";
@@ -22,10 +26,10 @@ import { type Position, useLabStore } from "~~/services/store/lab-store";
 
 type Props = {
   lab: LabType;
+  initialSnapshot?: LabSnapshot | null;
 };
 
 const DRAWER_ID = "lab-drawer";
-const isGradable = (type: string) => type === "code-exercise" || type === "question";
 
 // A saved position is only safe to restore if it still exists — lab content shifts while
 // authoring, and an out-of-bounds index would render a blank card. null falls back to the start.
@@ -57,12 +61,17 @@ const isEditable = (el: EventTarget | null) => {
   return !["checkbox", "radio", "range", "button", "submit", "reset", "file", "color"].includes(type);
 };
 
-export const Lab = ({ lab }: Props) => {
+export const Lab = ({ lab, initialSnapshot }: Props) => {
+  const { data: session, isPending } = useSession();
+  // Restore runs once per lab. The server row is read through a ref so a router.refresh handing
+  // down a new object (same data) cannot re-hydrate and wipe what the learner did since mount.
+  const initialSnapshotRef = useRef(initialSnapshot);
   const chapterIndex = useLabStore(s => s.chapterIndex);
   const cardIndex = useLabStore(s => s.cardIndex);
   const transcript = useLabStore(s => s.transcript);
   const init = useLabStore(s => s.init);
   const hydrate = useLabStore(s => s.hydrate);
+  const setSignedIn = useLabStore(s => s.setSignedIn);
   const goTo = useLabStore(s => s.goTo);
   const next = useLabStore(s => s.next);
   const prev = useLabStore(s => s.prev);
@@ -82,7 +91,19 @@ export const Lab = ({ lab }: Props) => {
   useEffect(() => {
     // Read before init: init resets progress/transcript, and the persist subscriber writes that
     // reset to storage — reading after would see the just-cleared blob.
-    const snapshot = loadSnapshot(lab.id);
+    const localSnapshot = loadSnapshot(lab.id);
+    const initialSnapshot = initialSnapshotRef.current;
+    let snapshot = initialSnapshot ?? localSnapshot;
+    if (initialSnapshot) {
+      const currentCardId = lab.chapters[initialSnapshot.chapterIndex]?.cards[initialSnapshot.cardIndex]?.id;
+      const localProgress = currentCardId ? localSnapshot?.progress[currentCardId] : undefined;
+      if (currentCardId && localProgress) {
+        snapshot = {
+          ...initialSnapshot,
+          progress: { ...initialSnapshot.progress, [currentCardId]: localProgress },
+        };
+      }
+    }
     init(lab);
     // Restore answers/verdicts, then place the learner: a ?ch=&card= in the URL wins so a refresh
     // or shared link reopens that card, else resume the saved position.
@@ -94,6 +115,10 @@ export const Lab = ({ lab }: Props) => {
     // kick off the soljson download (~7MB) now, so the first submit doesn't eat the whole wait
     warmCompiler();
   }, [lab, init, hydrate, goTo]);
+
+  useEffect(() => {
+    setSignedIn(!isPending && !!session);
+  }, [isPending, session, setSignedIn]);
 
   // Mirror the card position into the URL so a refresh or shared link reopens it. replaceState,
   // not push, so Back exits the lab instead of walking cards. Skip the first run — it fires
@@ -149,7 +174,14 @@ export const Lab = ({ lab }: Props) => {
 
   // Gate: a gradable card locks forward nav until cleared (pass or skip). prev and
   // the sidebar's free-jump stay open — the gate is only on the Next button.
-  const gated = isGradable(card.type) && !isCardCleared(transcript, card.id);
+  const gated = isGradable(card) && !isCardCleared(transcript, card.id);
+
+  // Only interrupt a signed-out learner who has something to lose: one cleared gradable card.
+  // The nudge owns the third condition, its own dismissal, since that lives in localStorage.
+  const clearedAnyGradable = lab.chapters.some(item =>
+    item.cards.some(labCard => isGradable(labCard) && isCardCleared(transcript, labCard.id)),
+  );
+  const showSignInNudge = !isPending && !session && clearedAnyGradable;
 
   // On mobile the drawer overlays the lesson, so dismiss it after a jump; on desktop the rail stays put.
   const handleNavigate = () => {
@@ -205,6 +237,7 @@ export const Lab = ({ lab }: Props) => {
             </div>
 
             <div className="relative z-[1] mt-2 flex flex-col w-full max-w-3xl gap-6 mx-auto">
+              {showSignInNudge && <SignInNudge />}
               {/* key on card.id remounts the card subtree on every navigation. Without it React
               reuses the same component instance across two same-type cards (e.g. jumping
               exercise→exercise), so the prior card's textarea + grade state leaks in. */}

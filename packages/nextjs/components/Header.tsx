@@ -12,7 +12,8 @@ import { SwitchTheme } from "~~/components/SwitchTheme";
  */
 export const Header = () => {
   const pathname = usePathname();
-  const isLab = pathname?.startsWith("/labs/");
+  // /profile shares the lab chrome (lab-* tokens) so the header matches the page under it.
+  const isLab = pathname?.startsWith("/labs/") || pathname === "/profile";
 
   if (pathname === "/") return null;
 

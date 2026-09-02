@@ -29,7 +29,7 @@ Built on [Scaffold-ETH 2](https://scaffoldeth.io).
    cp packages/nextjs/.env.example packages/nextjs/.env.local
    ```
 
-   Set `OPENROUTER_API_KEY`, `BETTER_AUTH_SECRET` (any random string, e.g. `openssl rand -base64 32`) and the four OAuth vars from the section below. `DATABASE_URL` and `BETTER_AUTH_URL` already point at localhost in the committed `.env.development`.
+   Set `OPENROUTER_API_KEY`, `BETTER_AUTH_SECRET` ( you can use `openssl rand -base64 32`) and the four OAuth vars from the section below. `DATABASE_URL` and `BETTER_AUTH_URL` already point at localhost in the committed `.env.development`.
 
 3. Start Postgres, push the schema and seed it:
 
@@ -49,18 +49,25 @@ Open [http://localhost:3000](http://localhost:3000) and pick a lab. Labs compile
 
 ### OAuth credentials
 
-Sign-in is Google and GitHub only, handled by [Better Auth](https://www.better-auth.com). Each provider needs an OAuth app that points back at `http://localhost:3000`.
+Sign-in with Google and GitHub is handled by [Better Auth](https://www.better-auth.com).
 
-**GitHub**: [Settings → Developer settings → OAuth Apps → New OAuth App](https://github.com/settings/applications/new). Homepage URL `http://localhost:3000`, callback URL `http://localhost:3000/api/auth/callback/github`. Copy the client ID, generate a client secret, put them in `.env.local` as `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
+Each provider needs an OAuth app that points back at `http://localhost:3000`.
 
-**Google**: [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials) → Create credentials → OAuth client ID, type "Web application". Add `http://localhost:3000` under authorized JavaScript origins and `http://localhost:3000/api/auth/callback/google` under authorized redirect URIs. If the project has no consent screen yet, Google asks you to set one up first (External, add your own email as a test user). Put the client ID and secret in `.env.local` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+**GitHub**: [Settings → Developer settings → OAuth Apps → New OAuth App](https://github.com/settings/applications/new).
 
-Restart `yarn start` after editing `.env.local`. `/db-demo` shows the sign-in buttons and, once signed in, the users in the database.
+- Homepage URL `http://localhost:3000`, callback URL `http://localhost:3000/api/auth/callback/github`.
+- Copy client ID and client secret, put them as `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
+
+**Google**: [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials) → Create credentials → OAuth client ID, type "Web application".
+
+- Add `http://localhost:3000` under authorized JavaScript origins and `http://localhost:3000/api/auth/callback/google` under authorized redirect URIs.
+- If the project has no consent screen yet, Google asks you to set one up first (External, add your own email as a test user).
+- Client ID and secret as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 
 ### Database
 
-Drizzle + Postgres, same layout as [SpeedRunEthereum](https://github.com/BuidlGuidl/SpeedRunEthereum-v2): schemas in `packages/nextjs/services/database/config/`, queries in `repositories/`. Run `drizzle-kit` from the root with `yarn drizzle-kit`.
+Drizzle + Postgres: schemas in `packages/nextjs/services/database/config/`, queries in `repositories/`. Run `drizzle-kit` from the root with `yarn drizzle-kit`.
 
 - Our tables live in `schema.ts`. After editing it, `yarn drizzle-kit push` applies the change (no migrations yet).
-- `auth-schema.ts` is generated from `packages/nextjs/lib/auth.ts` by `yarn workspace @se-2/nextjs auth:generate`. Don't edit it by hand.
+- `auth-schema.ts` is generated from `packages/nextjs/lib/auth.ts` by `yarn workspace @se-2/nextjs auth:generate`.
 - `yarn db:seed` inserts one user and one lab progress row; it refuses to run against anything but localhost.

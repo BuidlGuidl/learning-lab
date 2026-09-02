@@ -18,7 +18,7 @@ export async function getUsers() {
   });
 }
 
-// Better Auth owns user creation once PR 1 lands; this exists for the seed and the db-demo page.
+// Better Auth owns user creation; this exists for the seed.
 export async function createUser(values: UserInsert) {
   const [row] = await db.insert(user).values(values).returning();
   return row;
