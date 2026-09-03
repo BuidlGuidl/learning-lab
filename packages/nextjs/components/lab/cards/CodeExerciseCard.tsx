@@ -76,8 +76,18 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
 
   return (
     <CardFrame card={card}>
-      <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.prompt}</Markdown>
+      <Markdown className="text-lg leading-[1.62] text-lab-text mb-4 [&_blockquote]:text-sm [&_blockquote]:leading-relaxed">
+        {card.prompt}
+      </Markdown>
       <CodeInput value={input} onChange={setInput} placeholder={card.placeholder} readOnly={running || isLoading} />
+      {card.placeholder && (
+        <div className="mt-2 flex items-start gap-2 rounded-box border border-warning/20 bg-warning/10 px-3 py-2 text-xs leading-relaxed text-base-content/65">
+          <LightBulbIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning/80" />
+          <p className="m-0">
+            The faded code in the editor above is a similar example, not the answer, just a starting hint.
+          </p>
+        </div>
+      )}
       <div className="card-actions justify-end mt-4">
         <button
           className="btn btn-primary"

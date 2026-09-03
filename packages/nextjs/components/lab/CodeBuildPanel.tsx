@@ -23,7 +23,7 @@ type BuildFocus = {
   label?: string;
 };
 
-const placeholderFor = (id: string) => `${id.replace(/-/g, " ")} · your task`;
+const placeholderFor = (id: string) => `${id.replace(/-/g, " ")} · your current task`;
 
 // The panel's view of renderProgram: filled/text lines pass through, unfilled
 // regions become a ghost line the JSX swaps for a badge. Marker-stripping and
