@@ -10,7 +10,7 @@ import { useMemo } from "react";
 import { CardFrame } from "../CardFrame";
 import { Markdown } from "../Markdown";
 import { Console, type ConsoleEntry } from "./Console";
-import { ArrowPathIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, LightBulbIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 import type { ContractHandle, World } from "~~/lib/lab/harness";
 import {
   type ExperimentBoot,
@@ -303,6 +303,16 @@ const DeployWorldCard = ({ card, lab }: Props) => {
             {busy ? <span className="loading loading-spinner loading-xs" /> : <ArrowPathIcon className="w-4 h-4" />}
             Redeploy
           </button>
+
+          {card.console && (
+            <div className="flex items-start gap-2 rounded-box border border-warning/20 bg-warning/10 px-3 py-2 text-xs leading-relaxed text-base-content/65">
+              <LightBulbIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning/80" />
+              <p className="m-0">
+                The contract deployed successfully. You can see its address, who deployed it, and the gas used in the
+                console.
+              </p>
+            </div>
+          )}
         </div>
       ) : null}
 

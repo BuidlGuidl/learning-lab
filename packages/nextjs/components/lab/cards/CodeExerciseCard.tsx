@@ -28,6 +28,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const [input, setInput] = useState(saved);
   // The behavioural run's result. The verdict chip reads this the moment the tests finish.
   const [report, setReport] = useState<RunReport | null>(null);
+  const [preSubmitMessage, setPreSubmitMessage] = useState<string | null>(null);
   // Live narration of the run (fetching compiler → compiling → testing). On a cold page the
   // first submit sits behind a ~7MB soljson download, and a silent button reads as broken.
   const [progress, setProgress] = useState<RunProgress | null>(null);
@@ -45,10 +46,26 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const { object, grade, isLoading, error, settledFeedback } = useGrade(card, chapterId);
 
   const handleSubmit = async () => {
+    const checkInput = input.replace(/\/\/.*$/gm, "");
+    const missingCheck = card.preSubmitChecks?.find(check => {
+      if (check.includes && !checkInput.includes(check.includes)) return true;
+      if (check.includesAny && !check.includesAny.some(value => checkInput.includes(value))) return true;
+      if (check.matches && !new RegExp(check.matches).test(checkInput)) return true;
+      if (check.matchesAny && !check.matchesAny.some(pattern => new RegExp(pattern).test(checkInput))) return true;
+      if (check.forbids && new RegExp(check.forbids).test(checkInput)) return true;
+      return false;
+    });
+    if (missingCheck) {
+      setReport(null);
+      setPreSubmitMessage(missingCheck.message);
+      return;
+    }
+
     // Record the input for the display path (reveal cards), then run the real thing: assemble
     // this region against canonicals, compile in the worker, deploy in tevm, run the region's
     // tests. That run IS the verdict, and it writes the gating event itself — no llm in the loop.
     completeCodeExercise(card.id, card.region, input);
+    setPreSubmitMessage(null);
     setReport(null);
     setProgress({ step: "compiling" });
     try {
@@ -73,19 +90,29 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   // (the learner discovers the option) but spells out the two gates: spend the free hints,
   // then run the test — the coach only ever speaks to a real verdict.
   const coachTip = moreHints ? "Check the hints first" : !report ? "Run the test first" : undefined;
+  const updateInput = (value: string) => {
+    setInput(value);
+    if (preSubmitMessage) setPreSubmitMessage(null);
+  };
 
   return (
     <CardFrame card={card}>
       <Markdown className="text-lg leading-[1.62] text-lab-text mb-4 [&_blockquote]:text-sm [&_blockquote]:leading-relaxed">
         {card.prompt}
       </Markdown>
-      <CodeInput value={input} onChange={setInput} placeholder={card.placeholder} readOnly={running || isLoading} />
-      {card.placeholder && (
+      <CodeInput value={input} onChange={updateInput} placeholder={card.placeholder} readOnly={running || isLoading} />
+      {card.placeholder && card.placeholderTip && (
         <div className="mt-2 flex items-start gap-2 rounded-box border border-warning/20 bg-warning/10 px-3 py-2 text-xs leading-relaxed text-base-content/65">
           <LightBulbIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning/80" />
           <p className="m-0">
             The faded code in the editor above is a similar example, not the answer, just a starting hint.
           </p>
+        </div>
+      )}
+      {preSubmitMessage && (
+        <div className="mt-3 flex items-start gap-2 rounded-box border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-relaxed text-base-content/75">
+          <LightBulbIcon className="mt-0.5 h-4 w-4 shrink-0 text-warning/80" />
+          <p className="m-0">{preSubmitMessage}</p>
         </div>
       )}
       <div className="card-actions justify-end mt-4">

@@ -67,7 +67,7 @@ export const tests: LabTests = {
       const value = await read(contracts.Crowdfund, "contributions", [accounts[1]]);
       expectEq(value, 5n * ETHER, "contributions[accounts[1]] after 2+3 ether");
     }),
-    test("fund() emits Funded with contributor and amount", async ({ contracts, write, accounts }) => {
+    test("fund() announces the contribution with a Funded event", async ({ contracts, write, accounts }) => {
       const tx = await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 2n * ETHER });
       expectOk(tx, "fund(2 ether)");
       const events = decodedEvents(tx.logs, contracts.Crowdfund.abi);

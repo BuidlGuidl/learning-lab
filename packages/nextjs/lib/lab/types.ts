@@ -64,6 +64,15 @@ export type CodeExerciseCard = CardBase & {
   region: string;
   prompt: string;
   placeholder?: string;
+  placeholderTip?: boolean;
+  preSubmitChecks?: {
+    includes?: string;
+    includesAny?: string[];
+    matches?: string;
+    matchesAny?: string[];
+    forbids?: string;
+    message: string;
+  }[];
   // Free, offline help, revealed one rung at a time (general → specific) before
   // the learner spends an AI call. The AI coach is the escalation past the last rung.
   // TODO(hint-matrix): per-assertion hints keyed to the failing test, once usage warrants.

@@ -1,3 +1,4 @@
+import { PublicLedger } from "../ethereum-101/assets/illustrations";
 import { BreakIt } from "./BreakIt";
 import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
@@ -27,7 +28,7 @@ export const lab = defineLab({
           id: "you-watched-one-work",
           label: "CONCEPT",
           title: "You've seen a smart contract work",
-          body: "In Ethereum 101 you met smart contracts from the outside. A vending machine took the right coin and refused the wrong one, then vended a snack accordingly.\n\nThose rules were a program, written in a language called **Solidity**, and somebody had to write it. This time you will write the code. You'll build a real crowdfunding app, one step at a time, all within the browser.\n\nYour code compiles and deploys to a small Ethereum-like machine living in this browser tab, so there's no wallet to set up and nothing leaves your machine, but the contract and the transactions are real.",
+          body: "In Ethereum 101 you met smart contracts from the outside. A vending machine took the right coin, refused the wrong one, and vended a snack accordingly.\n\nThose rules were a program, written in a language called **Solidity**, and somebody had to write it. This time you will write the code. You'll build a real crowdfunding app, one step at a time, all within the browser.\n\nYour code compiles and deploys to a small Ethereum-like machine living in this browser tab, so there's no wallet to set up and nothing leaves your machine, but the contract and the transactions are real.",
         },
         {
           type: "concept",
@@ -54,7 +55,7 @@ export const lab = defineLab({
           id: "what-were-building",
           label: "CONCEPT",
           title: "What we're building",
-          body: "Now that you can read a little Solidity, let's get started on a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nHere's the skeleton we'll start from. The gaps are the pieces you'll fill in over the next few cards, one at a time.\n\n```solidity\ncontract Crowdfund {\n  // GOAL: the funding target (you'll set this)\n  // contributions: a ledger of who sent what (you'll add this)\n\n  function fund() public payable {\n    // record the contribution (you'll write this)\n  }\n\n  function refund() public {\n    // pay contributors back if the goal isn't met (you'll write this)\n  }\n\n  function claim() public {\n    // pay the creator once the goal is reached\n  }\n}\n```\n\nLet's start filling in the gaps!",
+          body: "Now that you cunderstand a little Solidity code, let's get started on a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nHere's the skeleton we'll start from. The gaps are the pieces you'll fill in over the next few cards, one at a time.\n\n```solidity\ncontract Crowdfund {\n  // GOAL: the funding target (you'll set this)\n  // contributions: a ledger of who sent what (you'll add this)\n\n  function fund() public payable {\n    // record the contribution (you'll write this)\n  }\n\n  function refund() public {\n    // pay contributors back if the goal isn't met (you'll write this)\n  }\n\n  function claim() public {\n    // pay the creator once the goal is reached\n  }\n}\n```\n\nLet's start writing the code!",
         },
       ],
     },
@@ -66,14 +67,15 @@ export const lab = defineLab({
           type: "code-exercise",
           id: "set-goal",
           label: "CODE EXERCISE",
-          title: "Set the goal",
+          title: "Set the funding goal",
           region: "goal",
           prompt:
-            "> Click `</> code` in the top right corner or press `c` any time to see the whole file. Any code you have added will be there, the rest still unfinished.\n\nEvery campaign needs a target. Set a constant named `GOAL` to `10 ether`. The shape is `type visibility constant NAME = value;`: use `uint256` as the type, make the visibility `public`, and `constant` because the goal never changes after deployment. Solidity understands `ether` as a unit, so `10 ether` means exactly what it says.",
+            "> Click `</> code` in the top right corner or press `c` any time to see the whole file. Any code you have added will be there, the rest still unfinished.\n\nEvery campaign needs a target. Set a constant named `GOAL` to `10 ether`. The shape is `type visibility constant NAME = value;`: use `uint256` as the type, make the visibility `public`, and use `constant` because the goal never changes after deployment. Solidity understands `ether` as a unit, so `10 ether` means exactly what it says.",
           placeholder: "uint256 public constant FEE = 2 ether;",
+          placeholderTip: true,
           hints: [
             "Follow the placeholder's shape; only the name and value change.",
-            "`public` lets anyone read it; `constant` bakes the value in at deploy time.",
+            "`public` lets anyone read it; `constant` bakes in the value in at deploy time.",
             "Write `uint256 public constant GOAL = 10 ether;`. `ether` is a built-in unit, no math needed.",
           ],
         },
@@ -103,7 +105,7 @@ export const lab = defineLab({
           id: "who-signed-this",
           label: "CONCEPT",
           title: "Who signed this?",
-          body: "Every deployment comes from an account. In this lab, that account is a disposable browser account: pre-funded inside the sandbox and used only for this in-browser chain. Developers often call that kind of throwaway funded account a **burner wallet**.\n\nOn a real testnet or mainnet, the shape is the same but the setup is not hidden. A deployer account needs ETH for gas, signs the deploy transaction, and sends it through an RPC to the network. Sometimes that signer is a wallet app. For contract deployment, it is often a deploy script using a dedicated deployer key.\n\nSo this page is skipping the wallet plumbing, not changing the Ethereum idea: source becomes bytecode, an account signs a deploy transaction, gas is paid, and the network creates a contract address.",
+          body: "Every deployment comes from an account. In this lab, that account is a disposable browser account: pre-funded inside the sandbox and used only for this in-browser chain. Developers often call that kind of throwaway funded account a **burner wallet**.\n\nOn a real testnet or mainnet, the shape is the same but the setup is not hidden. A deployer account needs ETH for gas, signs the deploy transaction, and sends it to the network. \n\nSo this page is skipping the external wallet step, but everything happens in the same way.",
         },
       ],
     },
@@ -128,7 +130,7 @@ export const lab = defineLab({
             "The contract needs to remember who sent what, so we'll keep a **ledger** that pairs each contributor's address with the amount they sent. It's the same `mapping(address => uint256)` shape as the `Counter`, except the number it stores is now an ETH amount instead of a call count.\n\nDeclare one named `contributions`, marked `public`. Any address that hasn't contributed just reads zero.",
           placeholder: "mapping(address => uint256) public scores;",
           hints: [
-            "Read the type as key then value: the `address` is who contributed, the `uint256` is how much they sent.",
+            "A mapping takes arguments of key => value: the `address` is who contributed, the `uint256` is how much they sent.",
             "Mark it `public` the same way you did with `GOAL`. The placeholder shows the exact shape, just rename it.",
             "Write `mapping(address => uint256) public contributions;`.",
           ],
@@ -138,6 +140,7 @@ export const lab = defineLab({
           id: "the-ledger-is-public",
           label: "CONCEPT",
           title: "The ledger is public",
+          illustrations: [PublicLedger],
           body: "Anyone can read every row of that mapping: every contribution, every address. Addresses are **pseudonymous**, not private. Nobody knows it's you behind 0xab12…, but everything that address does is in the open.\n\n> Privacy on Ethereum is possible, but it takes extra work and isn't widely used yet, far from the default.",
         },
         {
@@ -147,8 +150,54 @@ export const lab = defineLab({
           title: "Record the funding",
           region: "fund-body",
           prompt:
-            "> You're only writing the body. Hit the `</> code` button or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and passed the `require` checks. Two things still need to happen:\n\n1. the ledger has to remember this contributor's new total\n2. the contract should announce that a contribution landed, using the `Funded` event it already declares",
+            "> You're only writing the body. Click `</> code` in the top right or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and passed the `require` checks. Two things still need to happen:\n\n- The ledger has to remember this contributor's new total\n- The contract should announce that a contribution landed, using the `Funded` event it already declares",
           placeholder: "balances[msg.sender] += msg.value;\nemit Deposited(msg.sender, msg.value);",
+          preSubmitChecks: [
+            {
+              matchesAny: [
+                String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]`,
+                String.raw`\bbalances\s*\[\s*msg\.sender\s*\]`,
+                String.raw`\b[a-zA-Z_]\w*\s*\[\s*msg\.sender\s*\]\s*(?:\+=|=)`,
+              ],
+              message: "You still need the ledger line that adds this payment to the contributor's total.",
+            },
+            {
+              forbids: String.raw`\bemit\s+Deposited\s*\(`,
+              message: "This contract's event is named `Funded`, not `Deposited`. Use `emit Funded(...)` here.",
+            },
+            {
+              matches: String.raw`\bemit\s+Funded\s*\(`,
+              message: "You updated the ledger. Now emit `Funded(...)` so the contract announces the contribution.",
+            },
+            {
+              forbids: String.raw`\bemit\s+Funded\s*\(\s*msg\.sender\s*\)`,
+              message: "`Funded(...)` needs a second value after `msg.sender`: use `msg.value`.",
+            },
+            {
+              forbids: String.raw`\bemit\s+Funded\s*\((?!\s*msg\.sender\s*,)`,
+              message: "The first value in `Funded(...)` should be `msg.sender`, the contributor's address.",
+            },
+            {
+              forbids: String.raw`\bemit\s+Funded\s*\(\s*msg\.sender\s*,(?!\s*msg\.value\s*\))`,
+              message: "The second value in `Funded(...)` should be `msg.value`, the ETH they sent.",
+            },
+            {
+              matches: String.raw`\bemit\s+Funded\s*\(\s*msg\.sender\s*,\s*msg\.value\s*\)`,
+              message: "`Funded` needs both `msg.sender` and `msg.value`: who contributed and how much they sent.",
+            },
+            {
+              matches: String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]`,
+              message: "Use `contributions`, not `balances`. `balances` was only the example name.",
+            },
+            {
+              matches: String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]\s*\+=`,
+              message: "Use `+=` so a second contribution adds to the contributor's existing total.",
+            },
+            {
+              matches: String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]\s*\+=\s*msg\.value\b`,
+              message: "Add `msg.value`; that is the ETH this contributor sent into `fund()`.",
+            },
+          ],
           hints: [
             "The ledger is `contributions[address]`. Adding to a running total is `+=`, not `=`.",
             "`Funded` takes who paid and how much, and you already have both in scope: `msg.sender` and `msg.value`.",
