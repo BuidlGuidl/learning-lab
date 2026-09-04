@@ -105,7 +105,7 @@ export const lab = defineLab({
           id: "who-signed-this",
           label: "CONCEPT",
           title: "Who signed this?",
-          body: "Every deployment comes from an account. In this lab, that account is a disposable browser account: pre-funded inside the sandbox and used only for this in-browser chain. Developers often call that kind of throwaway funded account a **burner wallet**.\n\nOn a real testnet or mainnet, the shape is the same but the setup is not hidden. A deployer account needs ETH for gas, signs the deploy transaction, and sends it to the network. \n\nSo this page is skipping the external wallet step, but everything happens in the same way.",
+          body: "Every deployment comes from an account. In this lab, that account is a disposable browser account: pre-funded inside the sandbox and used only for this in-browser chain. Developers often call that kind of throwaway funded account a **burner wallet**.\n\nOn a real testnet or mainnet, the shape is the same but the setup is not hidden. A deployer account needs ETH for gas, signs the deploy transaction, and sends it to the network. \n\nSo this page is skipping the external wallet step, but everything happens in the same way.\n\n[TODO: Add Image Here]",
         },
       ],
     },
