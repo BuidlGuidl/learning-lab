@@ -65,6 +65,7 @@ export type CodeExerciseCard = CardBase & {
   prompt: string;
   placeholder?: string;
   placeholderTip?: boolean;
+  placeholderTipText?: string;
   preSubmitChecks?: {
     includes?: string;
     includesAny?: string[];

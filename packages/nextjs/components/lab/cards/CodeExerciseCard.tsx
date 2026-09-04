@@ -105,7 +105,8 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
         <div className="mt-2 flex items-start gap-2 rounded-box border border-warning/20 bg-warning/10 px-3 py-2 text-xs leading-relaxed text-base-content/65">
           <LightBulbIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning/80" />
           <p className="m-0">
-            The faded code in the editor above is a similar example, not the answer, just a starting hint.
+            {card.placeholderTipText ??
+              "The faded code in the editor above is a similar example, not the answer, just a starting hint."}
           </p>
         </div>
       )}

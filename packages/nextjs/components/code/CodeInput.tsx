@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
 import { getHighlighter, shikiFontStyleToCss } from "./highlighter";
 import { useTheme } from "next-themes";
 import Editor from "react-simple-code-editor";
@@ -24,8 +24,19 @@ const toHtmlLines = (highlighter: Highlighter, code: string, theme: "github-dark
 const toHtml = (highlighter: Highlighter, code: string, theme: "github-dark-dimmed" | "github-light") =>
   toHtmlLines(highlighter, code, theme).join("\n");
 
-const lineAt = (textarea: HTMLTextAreaElement) =>
-  textarea.value.slice(0, textarea.selectionStart).split("\n").length - 1;
+const lineStartIndex = (code: string, line: number) => {
+  let index = 0;
+  for (let i = 0; i < line; i++) {
+    index = code.indexOf("\n", index) + 1;
+  }
+  return index;
+};
+
+const withLineAvailable = (code: string, line: number) => {
+  const lines = code.split("\n");
+  while (lines.length <= line) lines.push("");
+  return lines.join("\n");
+};
 
 type Props = {
   value: string;
@@ -42,8 +53,8 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
   // Loads once (shared promise); until ready, render plain escaped text — same on
   // server and first client render, so there's no hydration mismatch.
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
-  const [activeLine, setActiveLine] = useState<number | null>(null);
   const usesLineGhostPlaceholder = Boolean(placeholder?.includes("\n"));
+  const minVisibleLines = Math.max(3, placeholder?.split("\n").length ?? 1);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,14 +81,34 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
       if (valueLine.length > 0) return highlightedLines[index] ?? escapeHtml(valueLine);
 
       const placeholderLine = placeholderLines[index];
-      if (!placeholderLine || activeLine === index) return "";
+      if (!placeholderLine) return "";
 
       return `<span style="color:var(--color-editor-placeholder);font-style:italic">${escapeHtml(placeholderLine)}</span>`;
     }).join("\n");
   };
 
-  const updateActiveLine = (target: EventTarget) => {
-    if (target instanceof HTMLTextAreaElement) setActiveLine(lineAt(target));
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    const textarea = event.currentTarget;
+    if (!(textarea instanceof HTMLTextAreaElement)) return;
+
+    if (usesLineGhostPlaceholder && !readOnly) {
+      const style = window.getComputedStyle(textarea);
+      const lineHeight = Number.parseFloat(style.lineHeight) || 22;
+      const paddingTop = Number.parseFloat(style.paddingTop) || 0;
+      const y = event.clientY - textarea.getBoundingClientRect().top + textarea.scrollTop - paddingTop;
+      const clickedLine = Math.min(Math.max(Math.floor(y / lineHeight), 0), minVisibleLines - 1);
+
+      if (clickedLine >= textarea.value.split("\n").length) {
+        const nextValue = withLineAvailable(textarea.value, clickedLine);
+        const caret = lineStartIndex(nextValue, clickedLine);
+
+        onChange(nextValue);
+        requestAnimationFrame(() => {
+          textarea.setSelectionRange(caret, caret);
+        });
+        return;
+      }
+    }
   };
 
   return (
@@ -92,17 +123,13 @@ export const CodeInput = ({ value, onChange, placeholder, readOnly = false }: Pr
         readOnly={readOnly}
         padding={8}
         textareaClassName="code-slot-textarea"
-        onFocus={event => updateActiveLine(event.currentTarget)}
-        onClick={event => updateActiveLine(event.currentTarget)}
-        onKeyDown={event => updateActiveLine(event.currentTarget)}
-        onKeyUp={event => updateActiveLine(event.currentTarget)}
-        onBlur={() => setActiveLine(null)}
+        onClick={handleClick}
         style={{
           fontFamily: "var(--font-mono), monospace",
           fontSize: "0.875rem",
           lineHeight: 1.6,
           color: "var(--color-lab-text)",
-          minHeight: "4.5rem",
+          minHeight: `${minVisibleLines * 1.4 + 1.5}rem`,
         }}
       />
     </div>

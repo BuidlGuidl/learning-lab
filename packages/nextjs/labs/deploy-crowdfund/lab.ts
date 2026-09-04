@@ -1,4 +1,4 @@
-import { PublicLedger } from "../ethereum-101/assets/illustrations";
+import { DeadlineWindows, PublicLedger } from "../ethereum-101/assets/illustrations";
 import { BreakIt } from "./BreakIt";
 import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
@@ -150,7 +150,7 @@ export const lab = defineLab({
           title: "Record the funding",
           region: "fund-body",
           prompt:
-            "> You're only writing the body. Click `</> code` in the top right or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and passed the `require` checks. Two things still need to happen:\n\n- The ledger has to remember this contributor's new total\n- The contract should announce that a contribution landed, using the `Funded` event it already declares",
+            "> You're only writing the body. Click `</> code` in the top right or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and passed the `require` checks. Two things still need to happen:\n\n1. The ledger has to remember this contributor's new total\n2. The contract should announce that a contribution landed, using the `Funded` event it already declares",
           placeholder: "balances[msg.sender] += msg.value;\nemit Deposited(msg.sender, msg.value);",
           preSubmitChecks: [
             {
@@ -228,7 +228,8 @@ export const lab = defineLab({
           type: "concept",
           id: "require-and-deadlines",
           label: "CONCEPT",
-          title: "The contract is the referee",
+          title: "The code is the referee",
+          illustrations: [DeadlineWindows],
           body: "Every deal needs someone to enforce it, and the contract handles that itself. Part of that is being able to say no. When a condition isn't met, it **reverts** the transaction, rolling everything back as if it never happened. The tool for that is `require(condition, \"reason\")`.\n\nIn Ethereum 101 you watched a transaction get carried out, fail, and still pay gas. Now you're on the other side of that story: you're the one writing the rule that makes it happen.\n\nTime is a rule too. The contract reads the time from `block.timestamp` and enforces a **deadline** fixed at deployment. Escrow agent and referee in one.",
         },
         {
@@ -238,13 +239,16 @@ export const lab = defineLab({
           title: "Write refund()",
           region: "refund",
           prompt:
-            "`refund()` is the deal's other half: if the campaign fell short, each contributor can take their money back. The order of these steps matters, and a later card is about why. Write the body in order:\n\n1. allow the refund only if the deadline has passed and the goal wasn't reached\n2. read the caller's own contribution, and require it's more than zero\n3. zero their row in `contributions`, before any ETH moves\n4. send them their amount, and require the transfer succeeded\n5. emit `Refunded`",
+            "`refund()` is the deal's other half: if the campaign fell short, each contributor can take their money back. The order of these steps matters, and a later card is about why. Write the body in order:\n\n1. Require the deadline has passed, use error message 'funding still open' if not\n2. Require that the contract's ETH balance is below the `GOAL` (goal was reached)\n3. Require the caller's contribution is more than zero (nothing to refund)\n4. Save the caller's own contribution\n5. Zero their `contributions`, before any ETH moves\n6. Send them their amount, and require the transfer succeeded\n7. Emit `Refunded`",
           placeholder:
-            'require(block.timestamp >= deadline, "too early");\nuint256 amount = balances[msg.sender];\nbalances[msg.sender] = 0;\n(bool ok, ) = msg.sender.call{ value: amount }("");\nrequire(ok, "send failed");',
+            'require(block.timestamp >= deadline, "too early");\nrequire(address(this).balance < TARGET, "target met");\nrequire(balances[msg.sender] != 0, "nothing saved");\nuint256 amount = balances[msg.sender];\nbalances[msg.sender] = 0;\n(bool ok, ) = msg.sender.call{ value: amount }("");\nrequire(ok, "send failed");\nemit Withdrawn(msg.sender, amount);',
+          placeholderTip: true,
+          placeholderTipText:
+            "Lines 6 and 7 in the example are the accepted way to send ETH, you can type those exactly as they are.",
           hints: [
-            "The two guards are `block.timestamp >= deadline` and `address(this).balance < GOAL`. Then `uint256 amount = contributions[msg.sender];` and require `amount > 0`.",
-            'Sending raw ETH is `(bool ok, ) = msg.sender.call{ value: amount }("")` followed by `require(ok, "send failed")`. That pattern is the one new thing here, the rest you\'ve met.',
-            "Order: set `contributions[msg.sender] = 0;` before the `call`, then `emit Refunded(msg.sender, amount);` last.",
+            "`address(this).balance` is the contract's ETH balance. Compare it with `GOAL` to check whether the campaign fell short.",
+            "The caller's contribution is stored in `contributions[msg.sender]`. Check that it's more than zero, then save it in a `uint256` variable named `amount`.",
+            "Save `amount` before zeroing the ledger entry so you still know how much to send. Finish with `emit Refunded(msg.sender, amount);`.",
           ],
         },
         {
