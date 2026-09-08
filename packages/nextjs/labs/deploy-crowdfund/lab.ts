@@ -56,7 +56,7 @@ export const lab = defineLab({
           id: "what-were-building",
           label: "CONCEPT",
           title: "What we're building",
-          body: "Now that you cunderstand a little Solidity code, let's get started on a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nHere's the skeleton we'll start from. The gaps are the pieces you'll fill in over the next few cards, one at a time.\n\n```solidity\ncontract Crowdfund {\n  // GOAL: the funding target (you'll set this)\n  // contributions: a ledger of who sent what (you'll add this)\n\n  function fund() public payable {\n    // record the contribution (you'll write this)\n  }\n\n  function refund() public {\n    // pay contributors back if the goal isn't met (you'll write this)\n  }\n\n  function claim() public {\n    // pay the creator once the goal is reached\n  }\n}\n```\n\nLet's start writing the code!",
+          body: "Now that you understand a little Solidity code, let's get started on a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nHere's the skeleton we'll start from. The gaps are the pieces you'll fill in over the next few cards, one at a time.\n\n```solidity\ncontract Crowdfund {\n  // GOAL: the funding target (you'll set this)\n  // contributions: a ledger of who sent what (you'll add this)\n\n  function fund() public payable {\n    // record the contribution (you'll write this)\n  }\n\n  function refund() public {\n    // pay contributors back if the goal isn't met (you'll write this)\n  }\n\n  function claim() public {\n    // pay the creator once the goal is reached\n  }\n}\n```\n\nLet's start writing the code!",
         },
       ],
     },
@@ -143,7 +143,7 @@ export const lab = defineLab({
           label: "CONCEPT",
           title: "The ledger is public",
           illustrations: [PublicLedger],
-          body: "Anyone can read every row of that mapping: every contribution, every address. Addresses are **pseudonymous**, not private. Nobody knows it's you behind 0xab12…, but everything that address does is in the open.\n\n> Privacy on Ethereum is possible, but it takes extra work and isn't widely used yet, far from the default.",
+          body: "Anyone can read every row of that mapping: every contribution, every address. Addresses are **pseudonymous**, not private. Nobody knows it's you behind 0xab12…, but everything that address does is in the open.\n\n> Privacy on Ethereum is possible, but it takes extra work and isn't widely used yet.",
         },
         {
           type: "code-exercise",
