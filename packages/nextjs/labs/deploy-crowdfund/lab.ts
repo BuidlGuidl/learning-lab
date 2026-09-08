@@ -1,5 +1,6 @@
 import { DeadlineWindows, PublicLedger, Reentrancy } from "../ethereum-101/assets/illustrations";
 import { BreakIt } from "./BreakIt";
+import { DeployerAccount } from "./DeployerAccount";
 import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
@@ -12,7 +13,7 @@ import { defineLab } from "~~/lib/lab/define";
 // write, deploy, and use themselves, entirely in the browser.
 export const lab = defineLab({
   id: "deploy-crowdfund",
-  title: "Build the Crowdfund",
+  title: "Crowdfunding Contract",
   overview:
     "Takes a learner who finished Ethereum 101 from watching contracts enforce deals to building one: writing, deploying, and using their own crowdfunding contract in the browser.",
   contracts,
@@ -105,7 +106,8 @@ export const lab = defineLab({
           id: "who-signed-this",
           label: "CONCEPT",
           title: "Who signed this?",
-          body: "Every deployment comes from an account. In this lab, that account is a disposable browser account: pre-funded inside the sandbox and used only for this in-browser chain. Developers often call that kind of throwaway funded account a **burner wallet**.\n\nOn a real testnet or mainnet, the shape is the same but the setup is not hidden. A deployer account needs ETH for gas, signs the deploy transaction, and sends it to the network. \n\nSo this page is skipping the external wallet step, but everything happens in the same way.\n\n[TODO: Add Image Here]",
+          illustrations: [DeployerAccount],
+          body: "Every deployment comes from an account. In this lab, that account is a disposable browser account: pre-funded inside the sandbox and used only for this in-browser chain. Developers often call that kind of throwaway funded account a **burner wallet**.\n\nOn a real testnet or mainnet, the shape is the same but the setup is not hidden. A deployer account needs ETH for gas, signs the deploy transaction, and sends it to the network. \n\nSo this page is skipping the external wallet step, but everything happens in the same way.",
         },
       ],
     },
@@ -295,7 +297,7 @@ export const lab = defineLab({
           label: "CODE",
           title: "The finished contract",
           file: "Crowdfund.sol",
-          note: "The full reveal, every learner line in place, plus `claim()`, the function that pays the creator when the goal is hit. A fixed goal, a public ledger, a deadline, refunds that can't be gamed. The whole deal, enforced by code.",
+          note: "Here’s your complete crowdfunding contract, including `claim()`, which pays the creator when the goal is reached. Your code tracks contributions, enforces the deadline, and lets contributors get their money back if the campaign falls short.",
         },
         {
           type: "experiment",
@@ -306,6 +308,8 @@ export const lab = defineLab({
             "Deploy the finished contract, your lines and all. Every check you've earned in this lab runs against it on the way in. On mainnet, this exact same deploy would put your crowdfund at an address reachable by anyone on Earth.",
           console: "open",
           sharesWorld: true,
+          showDeploymentTip: false,
+          showDeploymentStatus: true,
         },
         {
           type: "experiment",
@@ -313,17 +317,17 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Use it like an app",
           scenario:
-            "This is your contract from the outside: an app. Pay into the pool from three browser accounts, then fast-forward the chain past the deadline and watch the deal settle itself. If the campaign fell short, every contributor pulls their own ETH back; if the goal was hit, the creator claims the lot. Nobody signs off on any of it, only the code.",
+            "This is your contract from the outside: an app. Pay into the pool from three browser accounts, then fast-forward the chain past the deadline and watch the deal settle itself. If the campaign fell short, every contributor can withdraw their own ETH; if the goal was hit, the creator claims the lot. Nobody signs off on any of it, only the code.",
           component: UseIt,
           reusesWorld: "ship-final",
-          console: "closed",
+          console: "open",
         },
         {
           type: "summary",
           id: "what-you-did",
           label: "SUMMARY",
           title: "You shipped a real contract",
-          body: "The fundraiser you once watched from the outside is now a program you wrote yourself. Along the way: state and mappings, `payable` functions and `msg.value`, `require` and deadlines, events, the call pattern contracts use to pay people, and the reentrancy discipline that separates working Solidity from safe Solidity.\n\nThe crowdfund you built holds real value and enforces its own rules, no referee needed.\n\nNext up: real networks and testnets, deploying with a wallet signature instead of a browser sandbox, and contracts that hold more than one campaign.",
+          body: "You read, wrote, and deployed a real smart contract. Along the way, you learned about state and mappings, `payable` functions, `require` and deadlines, events, and protecting refunds from reentrancy. The crowdfunding contract you built tracks contributions and enforces its own rules, no referee needed.\n\nThat's Ethereum.\n\n[TODO: Add next labs info]",
         },
       ],
     },

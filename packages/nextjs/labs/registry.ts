@@ -20,7 +20,7 @@ export const registry: Record<string, LabEntry> = {
   },
   // Under construction, not linked from home. Reach it at /labs/deploy-crowdfund.
   "deploy-crowdfund": {
-    title: "Build the Crowdfund",
+    title: "Crowdfunding Contract",
     load: () => import("./deploy-crowdfund/lab"),
   },
 };
