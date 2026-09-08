@@ -1,4 +1,4 @@
-import { DeadlineWindows, PublicLedger } from "../ethereum-101/assets/illustrations";
+import { DeadlineWindows, PublicLedger, Reentrancy } from "../ethereum-101/assets/illustrations";
 import { BreakIt } from "./BreakIt";
 import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
@@ -242,13 +242,12 @@ export const lab = defineLab({
             "`refund()` is the deal's other half: if the campaign fell short, each contributor can take their money back. The order of these steps matters, and a later card is about why. Write the body in order:\n\n1. Require the deadline has passed, use error message 'funding still open' if not\n2. Require that the contract's ETH balance is below the `GOAL` (goal was reached)\n3. Require the caller's contribution is more than zero (nothing to refund)\n4. Save the caller's own contribution\n5. Zero their `contributions`, before any ETH moves\n6. Send them their amount, and require the transfer succeeded\n7. Emit `Refunded`",
           placeholder:
             'require(block.timestamp >= deadline, "too early");\nrequire(address(this).balance < TARGET, "target met");\nrequire(balances[msg.sender] != 0, "nothing saved");\nuint256 amount = balances[msg.sender];\nbalances[msg.sender] = 0;\n(bool ok, ) = msg.sender.call{ value: amount }("");\nrequire(ok, "send failed");\nemit Withdrawn(msg.sender, amount);',
-          placeholderTip: true,
-          placeholderTipText:
-            "Lines 6 and 7 in the example are the accepted way to send ETH, you can type those exactly as they are.",
           hints: [
-            "`address(this).balance` is the contract's ETH balance. Compare it with `GOAL` to check whether the campaign fell short.",
-            "The caller's contribution is stored in `contributions[msg.sender]`. Check that it's more than zero, then save it in a `uint256` variable named `amount`.",
-            "Save `amount` before zeroing the ledger entry so you still know how much to send. Finish with `emit Refunded(msg.sender, amount);`.",
+            "Use `block.timestamp >= deadline` for the deadline check and `address(this).balance < GOAL` for the goal check.",
+            "The caller's contribution is stored in `contributions[msg.sender]`. Save it with `uint256 amount = contributions[msg.sender];`.",
+            "Set `contributions[msg.sender] = 0;` before sending ETH. The saved `amount` tells you how much to send.",
+            'Send `amount` of ETH to `msg.sender` using `(bool ok, ) = msg.sender.call{ value: amount }("");`, then check success with `require(ok, "refund failed");`.',
+            "Record the successful refund with `emit Refunded(msg.sender, amount);`. The event logs who received the refund and how much they received. This will be the last line of the function.",
           ],
         },
         {
@@ -257,16 +256,18 @@ export const lab = defineLab({
           label: "EXPERIMENT",
           title: "Try to break it",
           scenario:
-            "Deploy the campaign and try to bend your own rules. Contribute, demand your money back while the window is still open, then fast-forward the chain past the deadline and watch the very same request go through. Then try to refund twice.\n\nEvery refusal you see is a require you wrote, and every attempt paid gas. The network ran your rules either way.",
+            "Deploy your crowdfunding contract and try to break the rules! Contribute, attempt to withdraw your contribution while the window is still open, then fast-forward the chain past the deadline and watch the very same request go through. Watch the console output to see it all happen. \n\nEvery refusal you see is a require you wrote, and every attempt paid gas. The network ran your rules either way.",
           component: BreakIt,
           console: "open",
+          showDeploymentTip: false,
         },
         {
           type: "concept",
           id: "reentrancy",
           label: "CONCEPT",
           title: "Reentrancy, and why code is forever",
-          body: "The receiver of ETH can be a contract too, with code that runs the moment the ETH arrives, and that code can call `refund()` again before the first call finishes. That's a **reentrancy** attack. If `refund()` sent first and zeroed after, those nested calls would each pass the checks and drain everything.\n\nThat exact bug was behind TheDAO hack in 2016. Deployed code can't be patched, so the habit of updating state before external calls, and of auditing code before it ships, is non-negotiable in Ethereum.",
+          illustrations: [Reentrancy],
+          body: "A contract can receive ETH and automatically run code in response. An attacker can use that code to call `refund()` again while the first refund is still running.\n\nIf you send ETH **before clearing their contribution**, that second call still sees money owed and sends another refund. The attacker can repeat this to drain the pool. This is called **reentrancy**.\n\nYour code prevents it by setting the contribution to zero **before sending ETH**, so another call finds nothing left to refund.\n\nThat exact bug was behind TheDAO hack in 2016. Deployed code can't be patched, so the habit of updating state before external calls, and of auditing code before it ships, is non-negotiable in Ethereum.",
         },
         {
           type: "question",

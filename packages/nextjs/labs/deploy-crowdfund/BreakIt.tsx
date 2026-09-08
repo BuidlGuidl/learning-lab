@@ -20,26 +20,11 @@ type Props = { world: World };
 const ONE_DAY_S = 24n * 60n * 60n;
 const ONE_ETH = 10n ** 18n;
 
-// keyed by the exact reason strings the refund exercise asked for
-const REVERTS: Record<string, { line: string; lesson: string }> = {
-  "funding still open": {
-    line: 'require(block.timestamp >= deadline, "funding still open");',
-    lesson:
-      "Your deadline rule fired. The window is still open, so the deal says the money stays in until it closes. The whole transaction rolled back, and the gas for the attempt was still paid.",
-  },
-  "nothing to refund": {
-    line: 'require(amount > 0, "nothing to refund");',
-    lesson:
-      "Your ledger rule fired. The first refund zeroed this contributor's row, so the second ask found nothing under their name. Zeroing the row before the money moves is what makes a double refund impossible.",
-  },
-};
+const REVERT_REASONS = ["funding still open", "nothing to refund"];
 
 const explainRevert = (raw: string | null) => {
   if (!raw) return null;
-  for (const reason of Object.keys(REVERTS)) {
-    if (raw.includes(reason)) return { reason, ...REVERTS[reason] };
-  }
-  return null;
+  return REVERT_REASONS.find(reason => raw.includes(reason)) ?? null;
 };
 
 const Step = ({
@@ -101,6 +86,7 @@ export const BreakIt = ({ world }: Props) => {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastRevert, setLastRevert] = useState<string | null>(null);
+  const [progress, setProgress] = useState("Contract deployed successfully. Start by contributing 1 ETH.");
 
   const refresh = useCallback(async () => {
     const [poolBal, deadlineV, block] = await Promise.all([
@@ -136,6 +122,7 @@ export const BreakIt = ({ world }: Props) => {
       if (result.errors?.length) throw new Error(result.errors[0].message);
       setFunded(true);
       setLastRevert(null);
+      setProgress("Contribution successful. Your 1 ETH is in the pool. Try requesting a refund before the deadline.");
     });
 
   const refundEarly = () =>
@@ -145,6 +132,11 @@ export const BreakIt = ({ world }: Props) => {
       const reason = fail ? (fail.message ?? fail.name ?? "reverted") : null;
       setEarlyReason(reason);
       setLastRevert(reason);
+      setProgress(
+        reason
+          ? "Refund refused. Fast-forward past the deadline to try again."
+          : "The refund went through before the deadline. Check your refund() deadline rule.",
+      );
     });
 
   const passDeadline = () =>
@@ -152,6 +144,7 @@ export const BreakIt = ({ world }: Props) => {
       const mine = world.client.tevmMine as unknown as (p: { blockCount: number; interval: number }) => Promise<void>;
       await mine({ blockCount: 2, interval: Number(FUNDING_WINDOW_S + ONE_DAY_S) });
       setLastRevert(null);
+      setProgress("Deadline passed. The funding window is closed. Try requesting your refund again.");
     });
 
   const refundForReal = () =>
@@ -160,6 +153,7 @@ export const BreakIt = ({ world }: Props) => {
       if (result.errors?.length) throw new Error(result.errors[0].message);
       setRefunded(true);
       setLastRevert(null);
+      setProgress("Refund successful. Your 1 ETH was returned. Try refunding a second time.");
     });
 
   const refundAgain = () =>
@@ -169,6 +163,11 @@ export const BreakIt = ({ world }: Props) => {
       const reason = fail ? (fail.message ?? fail.name ?? "reverted") : null;
       setAgainReason(reason);
       setLastRevert(reason);
+      setProgress(
+        reason
+          ? "Second refund refused. You've completed all the steps."
+          : "The second refund went through. Check that refund() clears the caller's contribution.",
+      );
     });
 
   const closed = deadline !== null && now !== null && now >= deadline;
@@ -179,6 +178,17 @@ export const BreakIt = ({ world }: Props) => {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="alert alert-soft flex items-start gap-3" role="status" aria-live="polite" aria-atomic="true">
+        <ShieldCheckIcon className="w-5 h-5 text-lab-violet shrink-0 mt-0.5" />
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <p className="m-0 text-sm font-semibold">{error ? "This step couldn't finish. Try again." : progress}</p>
+          {error ? (
+            <p className="m-0 text-xs text-lab-error font-mono break-all">{error}</p>
+          ) : (
+            revert && <p className="m-0 font-mono text-xs text-base-content/40">reverted with &ldquo;{revert}&rdquo;</p>
+          )}
+        </div>
+      </div>
       <div className="rounded-box px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
           <span className="text-xs font-mono uppercase tracking-wider text-base-content/50">the pool</span>
@@ -262,20 +272,6 @@ export const BreakIt = ({ world }: Props) => {
           }
         />
       </div>
-
-      {revert && (
-        <div className="rounded-box border px-4 py-3 flex gap-3">
-          <ShieldCheckIcon className="w-5 h-5 text-lab-violet shrink-0 mt-0.5" />
-          <div className="flex flex-col gap-1.5 min-w-0">
-            <p className="m-0 text-sm font-semibold">Refused. That was your rule, not an error.</p>
-            <p className="m-0 text-sm text-base-content/80">{revert.lesson}</p>
-            <code className="block break-all font-mono text-xs">{revert.line}</code>
-            <p className="m-0 font-mono text-xs text-base-content/40">reverted with &ldquo;{revert.reason}&rdquo;</p>
-          </div>
-        </div>
-      )}
-
-      {error && <span className="text-xs text-lab-error font-mono break-all">{error}</span>}
     </div>
   );
 };
