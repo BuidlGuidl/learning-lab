@@ -1,4 +1,4 @@
-import { SepoliaBalance } from "./assets/SepoliaBalance";
+import { SeasonPoll } from "./assets/SeasonPoll";
 import { SignMessage } from "./assets/SignMessage";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
@@ -107,8 +107,16 @@ export const lab = defineLab({
           id: "cast-your-vote",
           label: "CONCEPT",
           title: "Cast your vote",
-          illustrations: [SepoliaBalance],
-          body: "[This card will have UI to show the connected account with sepoliaETH balance and UI for the poll contract (with smart contract address).]\n\n[It will instruct users to connect their metamask, show them that they are connected in the UI and then instruct them to cast a vote. The UI will show which vote they cast (after they do it) along with vote totals for everyone.]\n\n[It will then instruct them to make the transaction to cast a vote and point out basic security checks in metamask (like correct contract address) before signing the transaction. We can point out the gas estimates.]\n\n[Optionally: we can point out that their sepoliaEth went down due to gas.]\n\n[Optionally: we can have them try to double vote and show them what a revert looks like.]\n\n[Note: concepts might need to be split across multiple cards]",
+          illustrations: [SeasonPoll],
+          body: 'It\'s finally to use your wallet to make your first transaction!\n\n**1.** Connect your wallet this lab by opening your Metamask and clicking the "Connect" button in the lower right corner. Metamask will show that your wallet is connected to [this url] in the same location.\n\n**2.** Now that your wallet is connected, select your favorite season in the interface below and click "vote" to initialize your transaction. Take a look at your Metamask. There\'s a lot going on there!\n\nThe "Network fee" section shows how much gas (in SepoliaEth) you\'ll be using. That quote in fiat currency is what you\'d pay if this was on mainnet using real ETH.\n\nTake a look at that "Data" section. It\'s showing what data will be sent to the Poll smart contract in hex. Not very illuminating is it? Luckily there\'s an easy way to view the smart contract and see what it\'s doing:\n\n- In the "Network" panel, click the truncated smart contract address next to "Interacting with". Click the copy button to the right of the greyed-out address that appears in the popup.\n\n- Go to [Sepolia Etherscan](https://sepolia.etherscan.io/) and paste the contract address into Etherscan\'s searchbar and hit return.\n\n- Click the "Contract" button to see the deployed contract. [Finish THIS!!!]',
+        },
+        {
+          type: "concept",
+          id: "see-a-revert",
+          label: "CONCEPT",
+          title: "See a revert",
+          illustrations: [SeasonPoll],
+          body: "",
         },
       ],
     },
