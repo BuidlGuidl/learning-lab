@@ -1,4 +1,5 @@
 import { Faucet } from "./assets/Faucet";
+import { MainnetAndTestnet } from "./assets/MainnetAndTestnet";
 import { PublicSeasonPoll } from "./assets/PublicSeasonPoll";
 import { POLL_ADDRESS, SeasonPoll } from "./assets/SeasonPoll";
 import { VoteFunction } from "./assets/VoteFunction";
@@ -77,6 +78,7 @@ export const lab = defineLab({
           id: "what-is-a-testnet",
           label: "CONCEPT",
           title: "What is a testnet?",
+          illustrations: [MainnetAndTestnet],
           body: "Testnets are copies of the mainnet Ethereum network that operate **exactly** the same **except** testnet ETH has zero real-world value. You can't buy or sell testnet ETH for fiat currency.\n\nTestnets are important parts of the Ethereum ecosystem because they allow developers to build, troubleshoot, and harden smart contracts in a safe environment. A mistake in a smart contract that would be catastrophic on mainnet costs nothing when deployed on a testnet.\n\nWe'll use testnets to do real transactions with your wallet without risking valuable real ETH. Specifically, we're going to use the [Sepolia](https://ethereum.org/en/developers/docs/networks/#sepolia) testnet.",
         },
         {
