@@ -1,5 +1,6 @@
-import { SeasonPoll } from "./assets/SeasonPoll";
+import { POLL_ADDRESS, SeasonPoll } from "./assets/SeasonPoll";
 import { SignMessage } from "./assets/SignMessage";
+import { VoteFunction } from "./assets/VoteFunction";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
@@ -100,7 +101,15 @@ export const lab = defineLab({
           id: "the-public-poll",
           label: "CONCEPT",
           title: "The public poll",
-          body: "For your first transaction you will be voting on your favorite season in a public poll. You will use your wallet to transact with a real smart contract running on the Sepolia testnet!\n\nThe poll is public by the very nature of how the network operates. Anyone will be able to see that your account's public address made the transaction to vote on your favorite season.\n\nThe polling smart contract is fairly simple. It keeps a running total of how many votes were cast for each season. It only has one rule: each account is only allowed to vote once.\n\nOk, move on to the next section to perform your first real-world transaction!",
+          body: "For your first transaction you will be voting on your favorite season in a public poll. You will use your wallet to transact with a real smart contract running on the Sepolia testnet!\n\n[Before diving in and interacting with the poll contract.]",
+        },
+        {
+          type: "concept",
+          id: "etherscan",
+          label: "CONCEPT",
+          title: "Etherscan",
+          interactive: VoteFunction,
+          body: `It's never a good idea to blindly interact with a smart contract before confirming that the code is doing what the authors say it is. Luckily we can use the handy [Sepolia Etherscan](https://sepolia.etherscan.io/) utility to read the code within the season poll contract.\n\n- The Season Poll contract is deployed at this address: \`${POLL_ADDRESS}\`. Copy that so we can paste it in Etherscan.\n\n- Go to [Sepolia Etherscan](https://sepolia.etherscan.io/), paste the contract's address in Etherscan's search, and submit it.\n\n- Click "Contract" and scroll down to read the real code contained in SeasonPoll.sol.\n\nYou will be interacting with the vote function when you send your transaction to cast your vote. Check out the interaction below to get a walkthrough of what the vote function actually does. Then, move on to the next card to send your first real-world transaction!`,
         },
         {
           type: "concept",

@@ -49,7 +49,9 @@ const SEASONS = [
 // is read straight off the map rather than from useDeployedContractInfo — that
 // hook withholds its data until a getBytecode probe answers, and "which
 // contract am I voting on" shouldn't blank out when an RPC is having a moment.
-const POLL_ADDRESS = contracts?.[sepolia.id]?.SeasonPoll?.address;
+// Exported because the chapter's prose quotes the same address: a redeploy that
+// updates externalContracts must move both, so they read from one place.
+export const POLL_ADDRESS = contracts?.[sepolia.id]?.SeasonPoll?.address;
 
 // A failing vote still costs gas, so it must be a real limit, not a guess that
 // runs out — a vote writes one mapping entry and emits one event.
