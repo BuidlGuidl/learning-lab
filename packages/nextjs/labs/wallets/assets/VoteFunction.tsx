@@ -9,14 +9,12 @@
 // is dark in both themes, so this uses the fixed dark-* palette and pins shiki
 // to the dark theme rather than following resolvedTheme.
 //
-// Explanations are keyed to line *ranges*, not single lines: the require and the
-// comment explaining it read as one idea, so hovering either lights both.
+// Explanations use 1-based line numbers in SOURCE below.
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { decodeFontStyle, getHighlighter } from "~~/components/code/highlighter";
 
 const SOURCE = `function vote(Season season) external {
-    // A plain string reason so wallets show something readable when this reverts.
     require(!hasVoted[msg.sender], "SeasonPoll: address has already voted");
 
     hasVoted[msg.sender] = true;
@@ -47,7 +45,7 @@ const NOTES: Note[] = [
   },
   {
     from: 2,
-    to: 3,
+    to: 2,
     text: (
       <>
         The contract&apos;s one rule: each address only gets one vote. <C>require</C> tests that the address voting (
@@ -58,8 +56,8 @@ const NOTES: Note[] = [
     ),
   },
   {
-    from: 5,
-    to: 5,
+    from: 4,
+    to: 4,
     text: (
       <>
         Records that your address has cast a vote in the <C>hasVoted</C> mapping.
@@ -67,8 +65,8 @@ const NOTES: Note[] = [
     ),
   },
   {
-    from: 6,
-    to: 6,
+    from: 5,
+    to: 5,
     text: (
       <>
         Stores which season you chose, filed under your address. This is what makes the poll public: anyone can look up
@@ -77,13 +75,13 @@ const NOTES: Note[] = [
     ),
   },
   {
-    from: 7,
-    to: 7,
+    from: 6,
+    to: 6,
     text: <>Adds one to that season&apos;s running total.</>,
   },
   {
-    from: 9,
-    to: 9,
+    from: 8,
+    to: 8,
     text: (
       <>
         This <C>emit</C> statement is used to pass information along to UIs. This one announces that someone has cast a
@@ -92,8 +90,8 @@ const NOTES: Note[] = [
     ),
   },
   {
-    from: 10,
-    to: 10,
+    from: 9,
+    to: 9,
     text: <>The end. Reaching here without reverting means every change above is now a permanent part of Sepolia.</>,
   },
 ];
