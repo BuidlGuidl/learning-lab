@@ -1,6 +1,8 @@
+import { Faucet } from "./assets/Faucet";
+import { PublicSeasonPoll } from "./assets/PublicSeasonPoll";
 import { POLL_ADDRESS, SeasonPoll } from "./assets/SeasonPoll";
-import { SignMessage } from "./assets/SignMessage";
 import { VoteFunction } from "./assets/VoteFunction";
+import { WalletTypes } from "./assets/WalletTypes";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
@@ -34,6 +36,7 @@ export const lab = defineLab({
           id: "types-of-wallets",
           label: "CONCEPT",
           title: "Types of wallets",
+          illustrations: [WalletTypes],
           body: "There are two major types of wallets, each with their own strengths and weaknesses:\n\n **Cold wallets**: Specialized air-gapped hardware devices that generate and store private keys. They allow users to interact with the network without ever having their private keys touch a device that is connected to the internet. Cold wallets are the most secure option, but they are physical devices that can be lost (along with your accounts and any ETH they control) and are less convenient to use. [Ledger](https://www.ledger.com/), [Trezor](https://trezor.io/), and [Keystone](https://keyst.one/) are well-established cold wallet devices.\n\n **Hot wallets**: Software on an internet-connected device that controls private keys and gives users an easy way to interact with the network. Hot wallets are somewhat less secure but by far the most common option due to their availability (free software) and the fact that there's no separate physical device to lose. Popular hot wallets include [MetaMask](https://metamask.io/), [Rainbow](https://rainbow.me/), and [Rabby](https://rabby.io/), though there are many more available.",
         },
         {
@@ -81,6 +84,7 @@ export const lab = defineLab({
           id: "faucets",
           label: "CONCEPT",
           title: "Faucets",
+          illustrations: [Faucet],
           body: 'Faucets are public services that grant testnet ETH at no charge. Remember, we can\'t use an exchange to buy testnet ETH because it has no value. Let\'s go get some SepoliaETH!\n\n- Go to the [Google Cloud\'s Sepolia faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia).\n\n- Make sure that "Ethereum Sepolia" is selected in the top dropdown.\n\n- Copy your account address in MetaMask using the copy button to the right of your account\'s public address and paste it in the "Wallet address or ENS name" field.\n\n- Click "Get 0.05 Sepolia ETH" and wait a moment for your testnet ETH to be issued.\n\n- Confirm that your account received the Sepolia ETH in MetaMask. You should see that your account now holds 0.05 SepoliaETH! [add how to see that in more detail]\n\nCool! Now that you have some SepoliaETH to play with, let\'s use it to perform your first transaction.',
         },
       ],
@@ -94,6 +98,7 @@ export const lab = defineLab({
           id: "the-public-poll-contract",
           label: "CONCEPT",
           title: "The public poll contract",
+          illustrations: [PublicSeasonPoll],
           interactive: VoteFunction,
           body: `For your first transaction, you will be voting on your favorite season in a public poll. You will use your wallet to interact with a real smart contract running on the Sepolia testnet!\n\nIt's never a good idea to blindly interact with a smart contract before confirming that the code is doing what the authors say it does. Luckily we can use the handy [Sepolia Etherscan](https://sepolia.etherscan.io/) utility to read the code within the season poll contract.\n\n- The Season Poll contract is deployed at this address: \`${POLL_ADDRESS}\`. Copy that so we can paste it in Etherscan.\n\n- Go to [Sepolia Etherscan](https://sepolia.etherscan.io/), paste the contract's address in Etherscan's search, and submit it.\n\n- Click "Contract" and scroll down to read the real code contained in SeasonPoll.sol.\n\nYou will be interacting with the vote function when you send your transaction to cast your vote. Check out the interaction below to get a walkthrough of what the vote function actually does. Then, move on to the next card to send your first real-world transaction!`,
         },
