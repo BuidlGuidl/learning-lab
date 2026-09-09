@@ -225,9 +225,9 @@ export const SeasonPoll = ({ children }: { children?: ReactNode }) => {
 
         {votedSeason !== null && (
           <p className="m-0 text-sm text-lab-muted">
-            Your vote for <strong className="text-lab-text">{SEASONS[votedSeason]?.label}</strong> is now part of
-            Sepolia&apos;s permanent record. Try voting again — the contract only allows one vote per account, so you
-            will see what it looks like when a contract refuses.
+            {"Your vote for "}
+            <strong className="text-lab-text">{SEASONS[votedSeason]?.label}</strong>
+            {" is now part of Sepolia’s permanent record."}
           </p>
         )}
       </div>
