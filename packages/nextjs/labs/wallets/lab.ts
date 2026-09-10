@@ -83,6 +83,13 @@ export const lab = defineLab({
         },
         {
           type: "concept",
+          id: "configure-sepolia-in-metamask",
+          label: "CONCEPT",
+          title: "Configure Sepolia in MetaMask",
+          body: 'MetaMask does not show the Sepolia testnet by default, but that\'s an easy fix. Follow these steps to get the Sepolia network configured in your wallet:\n\n**1.** Click the "All networks" menu button just below the "Tokens" tab.\n\n**2.** Click the "Mannage networks" button at the bottom of the "Select networks" popup.\n\n**3.** Scroll down to the middle of the networks list, enable the toggle for "Show test networks", and click the back button in the upper left corner of the "Manage networks" page.\n\n**4.** Now click the "All default networks" button below the "Tokens" tab again and click the "Sepolia" option (about half way down the list).\n\nNow your MetaMask is correctly configured to interact with the Sepolia testnet!',
+        },
+        {
+          type: "concept",
           id: "faucets",
           label: "CONCEPT",
           title: "Faucets",
