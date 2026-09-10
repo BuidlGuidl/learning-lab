@@ -28,12 +28,12 @@
 // something false about a contract they can't yet read for themselves.
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { POLL_ADDRESS } from "../pollAddress";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { sepolia } from "viem/chains";
 import { useAccount, useSwitchChain } from "wagmi";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { getParsedError } from "~~/utils/scaffold-eth";
-import { contracts } from "~~/utils/scaffold-eth/contract";
 
 // Matches the Season enum in SeasonPoll.sol — index is the uint8 sent on-chain.
 // Bars carry a light/dark pair: the *-bright ramp is legible on the dark card
@@ -44,14 +44,6 @@ const SEASONS = [
   { label: "Summer", emoji: "☀️", bar: "bg-peach-deep dark:bg-peach-bright" },
   { label: "Autumn", emoji: "🍂", bar: "bg-magenta-deep dark:bg-magenta-bright" },
 ];
-
-// The address the card names is a build-time fact from externalContracts, so it
-// is read straight off the map rather than from useDeployedContractInfo — that
-// hook withholds its data until a getBytecode probe answers, and "which
-// contract am I voting on" shouldn't blank out when an RPC is having a moment.
-// Exported because the chapter's prose quotes the same address: a redeploy that
-// updates externalContracts must move both, so they read from one place.
-export const POLL_ADDRESS = contracts?.[sepolia.id]?.SeasonPoll?.address;
 
 // A failing vote still costs gas, so it must be a real limit, not a guess that
 // runs out — a vote writes one mapping entry and emits one event.

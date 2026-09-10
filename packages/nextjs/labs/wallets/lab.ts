@@ -1,9 +1,10 @@
 import { Faucet } from "./assets/Faucet";
 import { MainnetAndTestnet } from "./assets/MainnetAndTestnet";
 import { PublicSeasonPoll } from "./assets/PublicSeasonPoll";
-import { POLL_ADDRESS, SeasonPoll } from "./assets/SeasonPoll";
+import { SeasonPoll } from "./assets/SeasonPoll";
 import { VoteFunction } from "./assets/VoteFunction";
 import { WalletTypes } from "./assets/WalletTypes";
+import { POLL_ADDRESS } from "./pollAddress";
 import { defineLab } from "~~/lib/lab/define";
 import type { DeployFn, LabTests } from "~~/lib/lab/harness";
 
@@ -94,7 +95,26 @@ export const lab = defineLab({
           label: "CONCEPT",
           title: "Faucets",
           illustrations: [Faucet],
-          body: 'Faucets are public services that grant testnet ETH at no charge. Remember, we can\'t use an exchange to buy testnet ETH because it has no value. Let\'s go get some SepoliaETH!\n\n**1.** Go to the [Google Cloud Sepolia Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia).\n\n**2.** Make sure that "Ethereum Sepolia" is selected in the top dropdown.\n\n**3.** Copy your account address in MetaMask using the copy button to the right of your account\'s public address and paste it in the "Wallet address or ENS name" field.\n\n**4.** Click "Get 0.05 Sepolia ETH" and wait a moment for your testnet ETH to be issued.\n\n**5.** Confirm that your account received the Sepolia ETH in MetaMask. The \"Tokens\" tab list should show that your account now holds 0.05 SepoliaETH!\n\nCool! Now that you have some SepoliaETH to play with, let\'s use it to perform your first transaction.',
+          body: 'Faucets are public services that grant testnet ETH at no charge. Remember, we can\'t use an exchange to buy testnet ETH because it has no value. Let\'s go get some SepoliaETH!\n\n**1.** Go to the [Google Cloud Sepolia Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia).\n\n**2.** Make sure that "Ethereum Sepolia" is selected in the top dropdown.\n\n**3.** Copy your account address in MetaMask using the copy button to the right of your account\'s public address and paste it in the "Wallet address or ENS name" field.\n\n**4.** Click "Get 0.05 Sepolia ETH" and wait a moment for your testnet ETH to be issued.\n\n**5.** Confirm that your account received the SepoliaETH in MetaMask. The \"Tokens\" tab list should show that your account now holds 0.05 SepoliaETH!\n\nHead to the next card to answer a question about faucet safety. Then we\'ll put your SepoliaETH to work!',
+        },
+        {
+          type: "question",
+          id: "faucet-safety",
+          label: "QUESTION",
+          title: "Faucet safety",
+          question:
+            "Faucets have to guard against bots taking advantage of their good will, by sending numerous requests to drain their testnet ETH balance. Faucets confirm that requests come from real people in a number of ways: a Google login, an active social media account, or a requirement that the requesting account already holds a small amount of mainnet ETH.\n\nImagine you find a faucet asking for a different kind of verification. It instructs you to send it **0.1 mainnet ETH** to prove you are a human, and promises to return that ETH once it has issued your testnet ETH.\n\nShould you do it?",
+          rubricConcepts: [
+            "no, don't send it",
+            "testnet ETH has no real value, so paying real ETH for it makes no sense",
+            "nothing obliges them to send it back once they have it",
+            "balances are public on chain, so a faucet can already see your mainnet ETH",
+            "a real check reads your address; it never requires you to part with funds",
+          ],
+          hints: [
+            "Weigh what you would be handing over against what you would be getting back.",
+            "Look again at the last verification method in that list. If a faucet can require that you already hold mainnet ETH, what must it already be able to see?",
+          ],
         },
       ],
     },

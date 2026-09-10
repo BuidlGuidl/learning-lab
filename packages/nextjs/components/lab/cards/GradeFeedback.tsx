@@ -7,11 +7,15 @@ const VerdictChip = ({ verdict }: { verdict: GradingOutcome }) => {
   return <span className={`badge ${tone} font-mono uppercase text-xs tracking-wider`}>{verdict}</span>;
 };
 
+// A missed concept is a sentence the model wrote, not a one-word tag, so these
+// wrap. DaisyUI sizes .badge with a fixed height, which leaves the pill one line
+// tall while the text spills out of it — h-auto/min-h-0 hand the height back to
+// the content, and the padding replaces what the fixed height was providing.
 const MissedConcepts = ({ concepts }: { concepts: string[] }) => (
-  <div className="mt-3 flex flex-wrap items-center gap-1.5">
-    <span className="text-xs text-base-content/50 uppercase tracking-wider">missed</span>
+  <div className="mt-3 flex flex-wrap items-start gap-1.5">
+    <span className="text-xs uppercase tracking-wider text-base-content/50">missed</span>
     {concepts.map((concept, i) => (
-      <span key={i} className="badge badge-ghost badge-sm">
+      <span key={i} className="badge badge-ghost badge-sm h-auto min-h-0 whitespace-normal py-1 text-left leading-snug">
         {concept}
       </span>
     ))}

@@ -1,3 +1,5 @@
+"use client";
+
 import { makeIllustration } from "./Illustration";
 
 export const WalletTypes = makeIllustration({
