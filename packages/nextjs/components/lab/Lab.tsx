@@ -11,6 +11,7 @@ import {
   ArrowRightIcon,
   Bars3Icon,
   ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
   CodeBracketIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -171,14 +172,30 @@ export const Lab = ({ lab }: Props) => {
         onChange={e => setSidebarOpen(e.target.checked)}
       />
 
+      {!sidebarOpen && (
+        <button
+          type="button"
+          className="btn btn-sm absolute left-0 top-4 z-10 h-10 w-8 border-l-0 bg-lab-surface px-0 text-lab-violet"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Expand chapter navigation"
+          aria-expanded={false}
+          title="Expand chapter navigation"
+        >
+          <ChevronDoubleRightIcon className="h-5 w-5" />
+        </button>
+      )}
+
       <div className="lab__content overflow-y-auto drawer-content">
         <div className="mx-auto w-[min(100%,760px)]">
           <section className="min-w-0">
-            <div className="w-full max-w-3xl mx-auto shrink-0 relative z-[1] flex items-center justify-between gap-3">
+            <div
+              className={`w-full max-w-3xl mx-auto shrink-0 relative z-[1] flex items-center justify-between gap-3 ${sidebarOpen ? "" : "pl-8 lg:pl-0"}`}
+            >
               <button
                 onClick={() => setSidebarOpen(o => !o)}
                 className="flex min-w-0 cursor-pointer items-center gap-2 text-sm font-medium text-lab-muted transition-colors hover:text-lab-violet"
                 aria-label={sidebarOpen ? "Hide chapters" : "Show chapters"}
+                aria-expanded={sidebarOpen}
               >
                 {sidebarOpen ? <ChevronDoubleLeftIcon className="w-4 h-4" /> : <Bars3Icon className="w-4 h-4" />}
                 <span className="flex min-w-0 items-center gap-2 text-sm leading-[1.3] text-lab-muted max-md:gap-1.5 max-md:text-[13px] [&_span]:truncate [&_strong]:truncate">

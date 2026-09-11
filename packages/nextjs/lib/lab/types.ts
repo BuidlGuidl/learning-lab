@@ -64,6 +64,16 @@ export type CodeExerciseCard = CardBase & {
   region: string;
   prompt: string;
   placeholder?: string;
+  placeholderTip?: boolean;
+  placeholderTipText?: string;
+  preSubmitChecks?: {
+    includes?: string;
+    includesAny?: string[];
+    matches?: string;
+    matchesAny?: string[];
+    forbids?: string;
+    message: string;
+  }[];
   // Free, offline help, revealed one rung at a time (general → specific) before
   // the learner spends an AI call. The AI coach is the escalation past the last rung.
   // TODO(hint-matrix): per-assertion hints keyed to the failing test, once usage warrants.
@@ -106,6 +116,8 @@ export type ExperimentCard = CardBase &
     // expanded (a deploy card, where the log is the point); "closed" folds it
     // by default (a surface card, where the experience leads).
     console?: "open" | "closed";
+    showDeploymentTip?: boolean;
+    showDeploymentStatus?: boolean;
     // Share one deployed world across cards. A card sets sharesWorld: true to opt
     // its world (keyed by its own id) into reuse; a later card sets reusesWorld to
     // that card's id to mount its component on the same world instead of deploying
