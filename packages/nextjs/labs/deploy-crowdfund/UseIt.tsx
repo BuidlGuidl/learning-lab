@@ -310,7 +310,7 @@ export const UseIt = ({ world }: Props) => {
   const [pool, setPool] = useState<bigint>(0n);
   const [wallets, setWallets] = useState<Record<Account, bigint>>({});
   const [ledger, setLedger] = useState<Record<Account, bigint>>({});
-  const [claimed, setClaimed] = useState(false);
+  const [claimedHere, setClaimedHere] = useState(false);
   const [refunded, setRefunded] = useState<Set<Account>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -370,7 +370,7 @@ export const UseIt = ({ world }: Props) => {
   const claim = () =>
     run("claim", async () => {
       const result = await world.write(crowdfund, "claim", { from: creator });
-      if (!result.errors?.length) setClaimed(true);
+      if (!result.errors?.length) setClaimedHere(true);
       return result;
     });
 
@@ -395,6 +395,17 @@ export const UseIt = ({ world }: Props) => {
   const closed = now >= deadline;
   const goalMet = pool >= goal;
   const revert = explainRevert(error);
+  // The world outlives this component, so a claim has to be recoverable from the
+  // chain rather than from state that dies on navigation — and claiming is the
+  // one outcome the pool balance alone reads backwards. claim() sweeps the whole
+  // balance, which drops `pool` below GOAL and flips goalMet false, so a settled
+  // campaign comes back looking like one that came up short.
+  //
+  // What separates them: claim() never clears `contributions`, while refund()
+  // zeroes a row before sending. An empty pool with rows still standing can only
+  // mean the creator claimed. As in BreakIt, the session flag is a floor the
+  // chain can't lower.
+  const claimed = claimedHere || (closed && pool === 0n && funders.some(a => (ledger[a] ?? 0n) > 0n));
   const phase = phaseFor(claimed, closed, goalMet);
   // the next guided step, derived from state: first unfunded funder, then mining,
   // then the claim — only that button lights up and stays enabled.
