@@ -1,3 +1,4 @@
+import { ExchangeCustody } from "./assets/ExchangeCustody";
 import { Faucet } from "./assets/Faucet";
 import { MainnetAndTestnet } from "./assets/MainnetAndTestnet";
 import { PublicSeasonPoll } from "./assets/PublicSeasonPoll";
@@ -46,6 +47,7 @@ export const lab = defineLab({
           id: "exchanges",
           label: "CONCEPT",
           title: "Exchanges",
+          illustrations: [ExchangeCustody],
           body: "Exchanges are web apps that allow users to buy, sell, or trade ETH for other tokens. You've probably heard of the more popular exchanges like [Coinbase](https://www.coinbase.com/), [Binance](https://www.binance.com/), or [Kraken](https://www.kraken.com/). On the surface, they have wallet-like capabilities, **but** there's a very important difference!\n\nExchanges are **third-party custody systems**, much like traditional banks. They control a private key, and you give the exchange permission to act on your behalf.\n\nBecause exchanges are not **self-custody systems**, they are **not** a safe place to store ETH. If an exchange is hacked or goes out of business, your ETH can be lost forever. Use exchanges for buying, selling, or trading ETH, but always use a wallet to store your ETH.\n\n[NOTE: wallets allow you to do exchange-like things with tokens. Need to add something about this.]",
         },
       ],
