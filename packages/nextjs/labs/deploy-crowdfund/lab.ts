@@ -277,13 +277,17 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "Walk through the attack",
           question:
-            "A malicious contract calls `refund()`, and the moment the ETH arrives it calls `refund()` again. Walk through your code: why does the second call get nothing?",
+            "A malicious contract calls `refund()`, and the moment the ETH arrives it calls `refund()` again. Quote the one line of your `refund()` that stops that second call from taking anything, then walk through why it works.",
           rubricConcepts: [
-            "the contribution was set to zero before any ETH was sent",
-            "so when the nested call runs, `contributions[attacker]` is already zero and it fails the `amount > 0` require",
+            "quotes the line that zeroes the caller's row: `contributions[msg.sender] = 0;` — an answer that never produces this line has not answered the question, however well it describes the attack",
+            "that line runs before any ETH is sent, so the nested call already sees a zero",
+            "the nested call then fails the `amount > 0` require and reverts",
             "updating state before the external call is the general defense, not a quirk of this one contract",
           ],
-          hints: ["Follow your lines in order: what is `contributions[attacker]` by the time the second call runs?"],
+          hints: [
+            "Follow your lines in order: what is `contributions[attacker]` by the time the second call runs?",
+            "The line you want changes state rather than moving ETH, and it sits above the `call` that sends the refund.",
+          ],
         },
       ],
     },
