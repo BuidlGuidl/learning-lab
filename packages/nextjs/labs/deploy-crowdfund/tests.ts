@@ -145,9 +145,31 @@ export const tests: LabTests = {
         "goal was reached",
       );
     }),
-    // TODO(#20): nothing here fails a vulnerable refund (send before zeroing,
-    // the TheDAO bug) yet. That needs a re-entering attacker contract, and the
-    // lab can't hide a test-only fixture from the code peek — add it with the
-    // fixture model in the lab-design pass.
+    // Ordering is invisible to every assertion above: zeroing after the send
+    // leaves byte-identical storage, and only a caller that runs code mid-
+    // transfer can tell the difference — every test here calls from an EOA.
+    // So this one asserts on *how* refund() ran rather than what it left
+    // behind. One opcode log, two indices: the ledger write must land before
+    // the external call. That is the TheDAO rule, checked without needing the
+    // re-entering attacker fixture of TODO(#20).
+    test("refund() clears the ledger before sending any ETH", async ({ contracts, write, accounts, client }) => {
+      expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 1n * ETHER }), "fund(1 ether)");
+
+      await passDeadline(client);
+
+      const tx = await write(contracts.Crowdfund, "refund", { from: accounts[1], createTrace: true });
+      expectOk(tx, "refund() after deadline");
+
+      const ops = (tx.trace?.structLogs ?? []).map(entry => String(entry.op).toUpperCase());
+      const zeroedAt = ops.indexOf("SSTORE");
+      const sentAt = ops.indexOf("CALL");
+
+      expect(zeroedAt !== -1, "refund() never wrote to storage — the caller's ledger row is not being cleared");
+      expect(sentAt !== -1, "refund() never made an external call — no ETH was sent back");
+      expect(
+        zeroedAt < sentAt,
+        "refund() sends the ETH before it clears the caller's ledger row. Zero the row first: while the transfer runs, the ledger still says this caller is owed money.",
+      );
+    }),
   ],
 };

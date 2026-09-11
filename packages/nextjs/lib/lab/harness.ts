@@ -30,6 +30,10 @@ export type CallResult = {
   data?: unknown;
   errors?: { name?: string; message?: string }[];
   logs?: { address: Address; topics: `0x${string}`[]; data: `0x${string}` }[];
+  // Present only when a write asks for createTrace: one entry per opcode the
+  // call executed, in execution order. Narrowed to the fields assertions use;
+  // tevm also returns gas, gasCost and the stack on each entry.
+  trace?: { structLogs: { op: string; pc: number; depth: number }[] };
 };
 
 export type World = {
@@ -41,7 +45,12 @@ export type World = {
   write: (
     contract: ContractHandle,
     functionName: string,
-    opts?: { args?: unknown[]; from?: Address; value?: bigint },
+    // createTrace fills result.trace with an opcode-level log, for assertions
+    // about *how* a function ran rather than what it left behind (see the
+    // refund ordering test). It allocates one entry per opcode executed, so
+    // switch it on for a specific assertion, never for surface components or
+    // anything that writes in a loop.
+    opts?: { args?: unknown[]; from?: Address; value?: bigint; createTrace?: boolean },
   ) => Promise<CallResult>;
   read: (contract: ContractHandle, functionName: string, args?: unknown[]) => Promise<unknown>;
 };
@@ -93,6 +102,9 @@ export async function bootWorld(compiled: Compiled, deploy: DeployFn): Promise<W
       value: opts.value,
       addToBlockchain: true,
       throwOnFail: false,
+      // spread rather than pass undefined, so every existing caller sends the
+      // exact same params it did before tracing existed
+      ...(opts.createTrace ? { createTrace: true } : {}),
     });
 
   const read: World["read"] = async (contract, functionName, args = []) => {
