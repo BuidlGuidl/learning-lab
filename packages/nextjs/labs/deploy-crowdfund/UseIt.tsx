@@ -407,14 +407,17 @@ export const UseIt = ({ world }: Props) => {
   // chain can't lower.
   const claimed = claimedHere || (closed && pool === 0n && funders.some(a => (ledger[a] ?? 0n) > 0n));
   const phase = phaseFor(claimed, closed, goalMet);
-  // the next guided step, derived from state: first unfunded funder, then mining,
-  // then the claim — only that button lights up and stays enabled.
+  // Fund accounts in order, but allow mining after the first contribution so
+  // learners can also end the campaign below its goal and try refunds.
   const nextFunder = closed ? undefined : funders.find(a => (ledger[a] ?? 0n) === 0n);
   const allFunded = !closed && !nextFunder;
+  const canMine = !closed && funders.some(a => (ledger[a] ?? 0n) > 0n);
   // the banner's live instruction; falls back to the phase note when the guided
   // path runs out (claimed, or a short campaign)
   const stepNote = nextFunder
-    ? `send 4 ETH from account #${funders.indexOf(nextFunder) + 1} into the pool.`
+    ? canMine
+      ? "send another 4 ETH, or mine past the deadline to try refunds below the goal."
+      : `send 4 ETH from account #${funders.indexOf(nextFunder) + 1} into the pool.`
     : allFunded
       ? "the pool's full — mine blocks to push the clock past the deadline."
       : closed && goalMet && !claimed
@@ -492,7 +495,7 @@ export const UseIt = ({ world }: Props) => {
             <span>block #{blockNumber?.toString() ?? "…"}</span>
             <span>{chainDate}</span>
           </div>
-          {allFunded && (
+          {canMine && (
             <div className="mt-1">
               <ActionButton
                 busy={busy}
@@ -562,14 +565,16 @@ export const UseIt = ({ world }: Props) => {
                 <>
                   {contribution > 0n && (
                     <>
-                      in pool <LiveBalance value={contribution} /> ETH ·{" "}
+                      {claimed ? "contributed" : "in pool"} <LiveBalance value={contribution} /> ETH ·{" "}
                     </>
                   )}
                   wallet <LiveBalance value={walletBal} /> ETH
                 </>
               }
               action={
-                !closed ? (
+                claimed ? (
+                  <span className="text-xs font-mono text-lab-mint">paid to creator ✓</span>
+                ) : !closed ? (
                   contribution > 0n ? (
                     <span className="text-xs font-mono text-lab-mint">funded ✓</span>
                   ) : (
