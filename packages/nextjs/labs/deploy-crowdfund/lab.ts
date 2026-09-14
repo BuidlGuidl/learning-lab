@@ -1,10 +1,17 @@
-import { DeadlineWindows, PublicLedger, Reentrancy } from "../ethereum-101/assets/illustrations";
 import { BreakIt } from "./BreakIt";
 import { DeployerAccount } from "./DeployerAccount";
 import { ReadGoal } from "./ReadGoal";
 import { UseIt } from "./UseIt";
 import { contracts } from "./contracts.gen";
 import { deploy } from "./deploy";
+import {
+  ContractBalance,
+  ContractDeployment,
+  CrowdfundOverview,
+  PublicLedger,
+  Reentrancy,
+  RefundDeadline,
+} from "./illustrations";
 import { tests } from "./tests";
 import { defineLab } from "~~/lib/lab/define";
 
@@ -56,6 +63,7 @@ export const lab = defineLab({
           id: "what-were-building",
           label: "CONCEPT",
           title: "What we're building",
+          illustrations: [CrowdfundOverview],
           body: "Now that you understand a little Solidity code, let's get started on a simple **crowdfunding contract**. It holds ETH and has three rules.\n\n- Contributors can send ETH into the contract.\n- If the campaign reaches its goal, the creator can claim the ETH.\n- If it falls short, contributors can take their money back.\n\nHere's the skeleton we'll start from. The gaps are the pieces you'll fill in over the next few cards, one at a time.\n\n```solidity\ncontract Crowdfund {\n  // GOAL: the funding target (you'll set this)\n  // contributions: a ledger of who sent what (you'll add this)\n\n  function fund() public payable {\n    // record the contribution (you'll write this)\n  }\n\n  function refund() public {\n    // pay contributors back if the goal isn't met (you'll write this)\n  }\n\n  function claim() public {\n    // pay the creator once the goal is reached\n  }\n}\n```\n\nLet's start writing the code!",
         },
       ],
@@ -95,6 +103,7 @@ export const lab = defineLab({
           id: "what-just-happened",
           label: "EXPERIMENT",
           title: "What just happened",
+          illustrations: [ContractDeployment],
           scenario:
             "Your Solidity source was compiled to **bytecode**, and that bytecode is now running on an **EVM** in the browser. On a live network like Ethereum mainnet, the same bytes would be part of Ethereum's shared state and replicated across full nodes in the network. Anyone could read the contract's public state, inspect its bytecode, and, if the source code has been published, verify that the source compiles to the deployed bytecode.",
           reusesWorld: "deploy-goal",
@@ -120,6 +129,7 @@ export const lab = defineLab({
           id: "eth-is-native",
           label: "CONCEPT",
           title: "Contracts have balance too",
+          illustrations: [ContractBalance],
           body: "Just like your account, a contract has its own **balance**. ETH can go in and come back out.\n\nTo accept ETH, a function has to be marked `payable`, otherwise the call is rejected. Once it's in, `msg.value` tells you how much arrived, just like `msg.sender` tells you who sent it.\n\n```solidity\nfunction fund() public payable {\n  // msg.value = the ETH sent with this call\n}\n```\n\nNext, we'll give the contract a way to record every contribution.",
         },
         {
@@ -231,7 +241,7 @@ export const lab = defineLab({
           id: "require-and-deadlines",
           label: "CONCEPT",
           title: "The code is the referee",
-          illustrations: [DeadlineWindows],
+          illustrations: [RefundDeadline],
           body: "Every deal needs someone to enforce it, and the contract handles that itself. Part of that is being able to say no. When a condition isn't met, it **reverts** the transaction, rolling everything back as if it never happened. The tool for that is `require(condition, \"reason\")`.\n\nIn Ethereum 101 you watched a transaction get carried out, fail, and still pay gas. Now you're on the other side of that story: you're the one writing the rule that makes it happen.\n\nTime is a rule too. The contract reads the time from `block.timestamp` and enforces a **deadline** fixed at deployment. Escrow agent and referee in one.",
         },
         {

@@ -1,6 +1,6 @@
 "use client";
 
-import { makeIllustration } from "../ethereum-101/assets/Illustration";
+import { makeIllustration } from "../ethereum-101-v2/assets/Illustration";
 
 export const DeployerAccount = makeIllustration({
   src: "/deployer-account-flow-v2.png",
