@@ -164,8 +164,8 @@ export const tests: LabTests = {
       const zeroedAt = ops.indexOf("SSTORE");
       const sentAt = ops.indexOf("CALL");
 
-      expect(zeroedAt !== -1, "refund() never wrote to storage — the caller's ledger row is not being cleared");
-      expect(sentAt !== -1, "refund() never made an external call — no ETH was sent back");
+      expect(zeroedAt !== -1, "refund() did not write to storage. Clear the caller's contribution before sending ETH.");
+      expect(sentAt !== -1, "refund() did not make an external call. Send the refund to the caller.");
       expect(
         zeroedAt < sentAt,
         "refund() sends the ETH before it clears the caller's ledger row. Zero the row first: while the transfer runs, the ledger still says this caller is owed money.",

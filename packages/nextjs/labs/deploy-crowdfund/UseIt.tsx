@@ -40,7 +40,11 @@ const STEP_S = 2n * ONE_DAY_S;
 // fixed contribution per send — three funders × 4 clears the 10 ETH goal
 const FUND_AMOUNT = 4n * 10n ** 18n;
 // guide prompts for the three funder sends, in order
-const FUND_STEPS = ["Let's send 4 ETH into the pool", "Let's send another 4 ETH in", "One more — let's fill the pool"];
+const FUND_STEPS = [
+  "Let's send 4 ETH into the pool",
+  "Let's send another 4 ETH in",
+  "Send another 4 ETH to reach the goal",
+];
 
 // A reverted write comes back as viem's verbose RevertError. Pull the human reason
 // out and pair it with the require() line that fired — keyed by each require's
@@ -53,8 +57,7 @@ const REVERTS: Record<string, { line: string; lesson: string }> = {
   },
   "funding still open": {
     line: 'require(block.timestamp >= deadline, "funding still open");',
-    lesson:
-      "The deadline hasn't passed yet. Until the clock crosses it the contract holds everyone to the window — no refunds, no claim.",
+    lesson: "The deadline has not passed yet. Contributors cannot get refunds, and the creator cannot claim the funds.",
   },
   "nothing to refund": {
     line: 'require(amount > 0, "nothing to refund");',
@@ -111,7 +114,7 @@ const phaseFor = (claimed: boolean, closed: boolean, goalMet: boolean): Phase =>
       accent: MINT,
       icon: CheckBadgeIcon,
       label: "Settled",
-      note: "the creator swept the pool. Code released the funds — no escrow agent had to sign off.",
+      note: "The creator claimed the funds. The contract released them without approval from an intermediary.",
     };
   if (closed && goalMet)
     return {
@@ -132,7 +135,7 @@ const phaseFor = (claimed: boolean, closed: boolean, goalMet: boolean): Phase =>
       accent: MINT,
       icon: CheckBadgeIcon,
       label: "Goal reached",
-      note: "the target's hit — advance the clock past the deadline so the creator can claim.",
+      note: "The goal is reached. Advance past the deadline so the creator can claim the funds.",
     };
   return {
     accent: VIOLET,
@@ -419,9 +422,9 @@ export const UseIt = ({ world }: Props) => {
       ? "send another 4 ETH, or mine past the deadline to try refunds below the goal."
       : `send 4 ETH from account #${funders.indexOf(nextFunder) + 1} into the pool.`
     : allFunded
-      ? "the pool's full — mine blocks to push the clock past the deadline."
+      ? "The goal is reached. Mine blocks to advance past the deadline."
       : closed && goalMet && !claimed
-        ? "the deadline passed — the creator can now claim the whole pool."
+        ? "The deadline has passed. The creator can now claim all the funds."
         : null;
   const bannerNote = stepNote ?? phase.note;
   const pct = goal === 0n ? 0 : Math.min(100, Number((pool * 100n) / goal));

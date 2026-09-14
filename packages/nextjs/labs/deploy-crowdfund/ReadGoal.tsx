@@ -25,8 +25,8 @@ export const ReadGoal = ({ world }: Props) => {
   return (
     <div className="rounded-box px-5 py-4 flex flex-col gap-3 items-start">
       <p className="text-sm text-base-content/80 m-0">
-        It&apos;s a real contract now, with public state. Ask it for the <code className="font-mono">GOAL</code> you set
-        — the answer comes straight from on-chain, not the source file.
+        It&apos;s a real contract now, with public state. Ask it for the <code className="font-mono">GOAL</code> you
+        set. The answer comes from the deployed contract&apos;s state.
       </p>
       <button className="btn btn-primary btn-sm gap-2" onClick={read} disabled={reading}>
         {reading && <span className="loading loading-spinner loading-xs" />}
