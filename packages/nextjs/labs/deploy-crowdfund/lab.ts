@@ -164,22 +164,17 @@ export const lab = defineLab({
           prompt:
             "> You're only writing the body. Click `</> code` in the top right or press `c` any time to see the current state of the contract, with your work in it.\n\nA contribution has just arrived in the `fund()` function and passed the `require` checks. Two things still need to happen:\n\n1. The ledger has to remember this contributor's new total\n2. The contract should announce that a contribution landed, using the `Funded` event it already declares",
           placeholder: "balances[msg.sender] += msg.value;\nemit Deposited(msg.sender, msg.value);",
+          // Only `forbids` here, deliberately. A source-text check can safely name one
+          // thing that is wrong, but never one shape that is required: the behavioural
+          // tests already decide correctness, and a required-shape regex only rejects
+          // valid answers it failed to anticipate — `contributions[msg.sender] =
+          // contributions[msg.sender] + msg.value` is correct, and an earlier `+=`
+          // check refused it. Each of these instead front-runs a *compile* error, the
+          // slowest and ugliest failure path, with a sentence that teaches.
           preSubmitChecks: [
-            {
-              matchesAny: [
-                String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]`,
-                String.raw`\bbalances\s*\[\s*msg\.sender\s*\]`,
-                String.raw`\b[a-zA-Z_]\w*\s*\[\s*msg\.sender\s*\]\s*(?:\+=|=)`,
-              ],
-              message: "You still need the ledger line that adds this payment to the contributor's total.",
-            },
             {
               forbids: String.raw`\bemit\s+Deposited\s*\(`,
               message: "This contract's event is named `Funded`, not `Deposited`. Use `emit Funded(...)` here.",
-            },
-            {
-              matches: String.raw`\bemit\s+Funded\s*\(`,
-              message: "You updated the ledger. Now emit `Funded(...)` so the contract announces the contribution.",
             },
             {
               forbids: String.raw`\bemit\s+Funded\s*\(\s*msg\.sender\s*\)`,
@@ -192,22 +187,6 @@ export const lab = defineLab({
             {
               forbids: String.raw`\bemit\s+Funded\s*\(\s*msg\.sender\s*,(?!\s*msg\.value\s*\))`,
               message: "The second value in `Funded(...)` should be `msg.value`, the ETH they sent.",
-            },
-            {
-              matches: String.raw`\bemit\s+Funded\s*\(\s*msg\.sender\s*,\s*msg\.value\s*\)`,
-              message: "`Funded` needs both `msg.sender` and `msg.value`: who contributed and how much they sent.",
-            },
-            {
-              matches: String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]`,
-              message: "Use `contributions`, not `balances`. `balances` was only the example name.",
-            },
-            {
-              matches: String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]\s*\+=`,
-              message: "Use `+=` so a second contribution adds to the contributor's existing total.",
-            },
-            {
-              matches: String.raw`\bcontributions\s*\[\s*msg\.sender\s*\]\s*\+=\s*msg\.value\b`,
-              message: "Add `msg.value`; that is the ETH this contributor sent into `fund()`.",
             },
           ],
           hints: [
