@@ -43,3 +43,10 @@ export const RefundDeadline = makeIllustration({
   height: 675,
   alt: "A refund request is blocked before the deadline. After the deadline, a contributor can request their 1 ETH back if the campaign has not reached its 10 ETH goal.",
 });
+
+export const DeploymentCelebration = makeIllustration({
+  src: "/deploy-crowdfund/summary-celebration-v2.jpg",
+  width: 1280,
+  height: 720,
+  alt: "Four developers celebrate around a glowing cube marked with code and Ethereum symbols after deploying their crowdfunding contract.",
+});
