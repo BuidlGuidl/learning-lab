@@ -322,7 +322,7 @@ export const lab = defineLab({
           label: "SUMMARY",
           title: "You shipped a real contract",
           illustrations: [DeploymentCelebration],
-          body: "You read, wrote, and deployed a real smart contract. Along the way, you learned about state, mappings, `payable` functions, `require` statements, deadlines, events, and protecting refunds from reentrancy attacks. The crowdfunding contract you built tracks contributions and enforces its own rules, no referee needed.\n\nThat's Ethereum.\n\n[TODO: Add next labs info]",
+          body: "You read, wrote, and deployed a real smart contract. Along the way, you learned about state, mappings, `payable` functions, `require` statements, deadlines, events, and protecting refunds from reentrancy attacks. The crowdfunding contract you built tracks contributions and enforces its own rules, no referee needed.\n\nThat's Ethereum.",
         },
       ],
     },
