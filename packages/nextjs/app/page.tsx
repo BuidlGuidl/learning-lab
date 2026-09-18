@@ -66,7 +66,8 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/ethereum-101-learning-lab.png",
     imageAlt: "",
-    meta: ["Beginner", "20 cards"],
+    level: "Beginner",
+    activity: "Concepts",
     title: "Ethereum 101",
     body: (
       <>
@@ -82,8 +83,8 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/wallets-final.webp",
     imageAlt: "",
-    meta: ["Beginner", "Wallets · Testnet"],
-    mintMetaIndex: 0,
+    level: "Beginner",
+    activity: "Transactions",
     title: "Wallets",
     body: (
       <>
@@ -99,7 +100,8 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/crowdfunding-final.webp",
     imageAlt: "",
-    meta: ["Beginner", "Solidity · Smart contracts"],
+    level: "Beginner",
+    activity: "Solidity coding",
     title: "Crowdfunding Contract",
     body: (
       <>
@@ -157,8 +159,8 @@ type ModuleCardProps = {
   artFill?: boolean;
   imageSrc: string;
   imageAlt: string;
-  meta: string[];
-  mintMetaIndex?: number;
+  level: string;
+  activity: string;
   title: string;
   body: ReactNode;
   action: string;
@@ -178,8 +180,8 @@ const ModuleCard = ({
   artFill,
   imageSrc,
   imageAlt,
-  meta,
-  mintMetaIndex,
+  level,
+  activity,
   title,
   body,
   action,
@@ -208,17 +210,8 @@ const ModuleCard = ({
       </div>
       <div className="flex flex-col gap-3 px-7 pt-7 pb-8">
         <div className="flex flex-wrap gap-2">
-          {meta.map((item, index) => (
-            <span
-              key={item}
-              className={cn(
-                "rounded-tags px-2.5 py-1 text-xs font-bold",
-                mintMetaIndex === index ? "bg-lp-pill-mint-bg text-lp-positive" : "bg-lp-pill-bg text-lp-pill-fg",
-              )}
-            >
-              {item}
-            </span>
-          ))}
+          <span className="rounded-tags bg-lp-bg px-2.5 py-1 text-xs font-bold text-lp-text-secondary">{level}</span>
+          <span className="rounded-tags bg-lp-pill-bg px-2.5 py-1 text-xs font-bold text-lp-pill-fg">{activity}</span>
         </div>
         <h3 className="m-0 text-[28px] font-black text-lp-text-primary">{title}</h3>
         <p className="m-0 text-base leading-[1.6] text-lp-text-secondary">{body}</p>
