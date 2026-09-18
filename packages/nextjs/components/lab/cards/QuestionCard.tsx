@@ -5,6 +5,7 @@ import { CardFrame } from "../CardFrame";
 import { Markdown } from "../Markdown";
 import { GradeFeedback } from "./GradeFeedback";
 import { useGrade } from "./useGrade";
+import { useDebounceCallback } from "usehooks-ts";
 import { LightBulbIcon } from "@heroicons/react/24/outline";
 import { latestEvent } from "~~/lib/grader/transcript";
 import type { GradingOutcome } from "~~/lib/grader/transcript";
@@ -19,7 +20,11 @@ type Props = {
 // No compiler for prose, so the model owns the verdict here.
 export const QuestionCard = ({ card, chapterId }: Props) => {
   const latest = useLabStore(s => latestEvent(s.transcript, card.id));
-  const [input, setInput] = useState(latest?.answer ?? "");
+  const draft = useLabStore(s => s.progress[card.id]?.learnerInput);
+  const saveDraft = useLabStore(s => s.saveDraft);
+  // The draft survives a reload via the store; the transcript's last submitted answer is the fallback.
+  const [input, setInput] = useState(draft ?? latest?.answer ?? "");
+  const persistDraft = useDebounceCallback((value: string) => saveDraft(card.id, "", value), 400);
   // How many rungs of the hint ladder are turned over. Transient on purpose — cheap to
   // re-reveal, and hints aren't progress worth persisting (same call as the code exercise).
   const [revealedHints, setRevealedHints] = useState(0);
@@ -41,7 +46,10 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
         rows={5}
         placeholder="Explain in your own words…"
         value={input}
-        onChange={e => setInput(e.target.value)}
+        onChange={e => {
+          setInput(e.target.value);
+          persistDraft(e.target.value);
+        }}
         disabled={isLoading}
       />
       <div className="card-actions justify-end mt-4">

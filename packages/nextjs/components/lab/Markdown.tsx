@@ -2,7 +2,38 @@
 
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { CodeBlock } from "~~/components/code/CodeBlock";
+import { useCopyToClipboard } from "~~/hooks/scaffold-eth";
+
+// An address named in lesson prose is there to be pasted somewhere — a wallet, an
+// explorer's search bar — so inline code that is one carries a copy button. The
+// chip and the button are siblings rather than one inline-flex unit so a 42-char
+// address still wraps with the prose in a narrow column.
+const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+
+const CHIP = "rounded bg-base-300 px-1.5 py-0.5 font-mono text-[0.85em] text-base-content";
+
+const CopyableAddress = ({ address }: { address: string }) => {
+  const { copyToClipboard, isCopiedToClipboard } = useCopyToClipboard();
+  return (
+    <>
+      <code className={`${CHIP} break-all`}>{address}</code>
+      <button
+        type="button"
+        onClick={() => copyToClipboard(address)}
+        aria-label={isCopiedToClipboard ? "Address copied" : "Copy address"}
+        className="ml-1 cursor-pointer align-middle text-lab-muted transition-colors hover:text-lab-violet"
+      >
+        {isCopiedToClipboard ? (
+          <CheckCircleIcon className="inline h-4 w-4 text-lab-mint" aria-hidden />
+        ) : (
+          <DocumentDuplicateIcon className="inline h-4 w-4" aria-hidden />
+        )}
+      </button>
+    </>
+  );
+};
 
 // Element styling for lesson prose. react-markdown owns block layout, so callers
 // pass their text styling (color, size, block margin) via `className` on the
@@ -47,9 +78,9 @@ const components: Components = {
   code: ({ className, children }) => {
     const lang = className?.match(/language-(\w+)/)?.[1];
     if (!lang) {
-      return (
-        <code className="rounded bg-base-300 px-1.5 py-0.5 font-mono text-[0.85em] text-base-content">{children}</code>
-      );
+      const text = String(children);
+      if (ADDRESS_RE.test(text)) return <CopyableAddress address={text} />;
+      return <code className={CHIP}>{children}</code>;
     }
     const code = String(children).replace(/\n$/, "");
     if (lang === "solidity") {

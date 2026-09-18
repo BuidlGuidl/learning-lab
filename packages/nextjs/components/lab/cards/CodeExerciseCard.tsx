@@ -6,6 +6,7 @@ import { Markdown } from "../Markdown";
 import { GradeFeedback } from "./GradeFeedback";
 import { TestRunPanel } from "./TestRunPanel";
 import { useGrade } from "./useGrade";
+import { useDebounceCallback } from "usehooks-ts";
 import { LightBulbIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { CodeInput } from "~~/components/code/CodeInput";
 import { latestEvent } from "~~/lib/grader/transcript";
@@ -26,6 +27,8 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const latest = useLabStore(s => latestEvent(s.transcript, card.id));
   const regionTests = useLabStore(s => s.tests?.[card.region]);
   const [input, setInput] = useState(saved);
+  const saveDraft = useLabStore(s => s.saveDraft);
+  const persistDraft = useDebounceCallback((value: string) => saveDraft(card.id, card.region, value), 400);
   // The behavioural run's result. The verdict chip reads this the moment the tests finish.
   const [report, setReport] = useState<RunReport | null>(null);
   const [preSubmitMessage, setPreSubmitMessage] = useState<string | null>(null);
@@ -92,6 +95,7 @@ export const CodeExerciseCard = ({ card, chapterId }: Props) => {
   const coachTip = moreHints ? "Check the hints first" : !report ? "Run the test first" : undefined;
   const updateInput = (value: string) => {
     setInput(value);
+    persistDraft(value);
     if (preSubmitMessage) setPreSubmitMessage(null);
   };
 

@@ -3,15 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { HeaderAuth } from "~~/components/HeaderAuth";
 import { SwitchTheme } from "~~/components/SwitchTheme";
 
 /**
- * Minimal site header — product wordmark + theme toggle. The lab runs entirely in-browser
- * (tevm), so there's no wallet to connect; chapter navigation lives in the sidebar.
+ * Minimal site header — product wordmark + session control + theme toggle. The lab runs entirely
+ * in-browser (tevm), so there's no wallet to connect; chapter navigation lives in the sidebar.
  */
 export const Header = () => {
   const pathname = usePathname();
-  const isLab = pathname?.startsWith("/labs/");
+  // /profile shares the lab chrome (lab-* tokens) so the header matches the page under it.
+  const isLab = pathname?.startsWith("/labs/") || pathname === "/profile";
 
   if (pathname === "/") return null;
 
@@ -25,7 +27,10 @@ export const Header = () => {
         <Image src="/eth-diamond-purple.svg" alt="" width={24} height={24} />
         Learning Lab
       </Link>
-      <SwitchTheme className="site-theme-switch" />
+      <div className="flex items-center gap-3">
+        <HeaderAuth />
+        <SwitchTheme className="site-theme-switch" />
+      </div>
     </div>
   );
 };

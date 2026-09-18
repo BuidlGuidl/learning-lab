@@ -23,4 +23,9 @@ export const registry: Record<string, LabEntry> = {
     title: "Crowdfunding Contract",
     load: () => import("./deploy-crowdfund/lab"),
   },
+  // Under construction, intentionally not linked from home.
+  wallets: {
+    title: "Wallets",
+    load: () => import("./wallets/lab"),
+  },
 };

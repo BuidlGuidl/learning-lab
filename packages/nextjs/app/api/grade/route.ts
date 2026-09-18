@@ -5,6 +5,7 @@ import { buildGradingPrompt, projectHistory } from "~~/lib/grader/prompt";
 import { verdictSchema } from "~~/lib/grader/schema";
 import type { LearningTranscript } from "~~/lib/grader/transcript";
 import { nextAttempt } from "~~/lib/grader/transcript";
+import { isGradable } from "~~/lib/lab/gradable";
 import type { RunReport } from "~~/lib/lab/run";
 
 // Client submits raw inputs; the server loads the lab, builds the prompt, and streams the
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
     });
   });
   if (!card) return new Response(`unknown card: ${body.cardId}`, { status: 404 });
-  if (card.type !== "code-exercise" && card.type !== "question") {
+  if (!isGradable(card)) {
     return new Response(`card ${body.cardId} is not gradable`, { status: 400 });
   }
 
