@@ -210,7 +210,7 @@ const ModuleCard = ({
       </div>
       <div className="flex flex-col gap-3 px-7 pt-7 pb-8">
         <div className="flex flex-wrap gap-2">
-          <span className="rounded-tags bg-lp-bg px-2.5 py-1 text-xs font-bold text-lp-text-secondary">{level}</span>
+          <span className="rounded-tags bg-lp-pill-bg px-2.5 py-1 text-xs font-bold text-lp-pill-fg">{level}</span>
           <span className="rounded-tags bg-lp-pill-bg px-2.5 py-1 text-xs font-bold text-lp-pill-fg">{activity}</span>
         </div>
         <h3 className="m-0 text-[28px] font-black text-lp-text-primary">{title}</h3>
