@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { registry } from "~~/labs/registry";
+import { getLabSlug, registry } from "~~/labs/registry";
 import { flatIndex, totalCards } from "~~/lib/lab/position";
 import { getServerSession } from "~~/lib/session";
 import { getLabProgressByUser } from "~~/services/database/repositories/labProgress";
@@ -9,7 +9,7 @@ import { getLabProgressByUser } from "~~/services/database/repositories/labProgr
 export const dynamic = "force-dynamic";
 
 // The lab we point a learner at when they have no rows yet.
-const STARTER_LAB_ID = "ethereum-101";
+const STARTER_LAB_ID = "ethereum-101-v2";
 
 // The lab's filled action, spelled out because this page sits outside .lab: base.css pills every
 // .btn from outside a cascade layer, so daisyUI's button can't be pulled back to the lab's radius here.
@@ -41,7 +41,7 @@ const ProfilePage = async () => {
           title: entry?.title ?? row.labId,
           percent,
           updatedAt: row.updatedAt,
-          resumeHref: `/labs/${row.labId}?ch=${row.snapshot.maxReached.chapterIndex}&card=${row.snapshot.maxReached.cardIndex}`,
+          resumeHref: `/labs/${getLabSlug(row.labId)}?ch=${row.snapshot.maxReached.chapterIndex}&card=${row.snapshot.maxReached.cardIndex}`,
         };
       }),
   );
@@ -71,7 +71,7 @@ const ProfilePage = async () => {
         {labs.length === 0 ? (
           <div className="flex flex-wrap items-center gap-4 rounded-lg border border-lab-border bg-lab-surface px-4 py-4">
             <p className="m-0 flex-1 text-sm text-lab-muted">No labs started yet.</p>
-            <Link href={`/labs/${STARTER_LAB_ID}`} className={PRIMARY_ACTION}>
+            <Link href={`/labs/${getLabSlug(STARTER_LAB_ID)}`} className={PRIMARY_ACTION}>
               Start {registry[STARTER_LAB_ID]?.title ?? "Ethereum 101"}
             </Link>
           </div>

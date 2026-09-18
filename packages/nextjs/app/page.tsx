@@ -23,7 +23,8 @@ const MARKETING_ROUTES = {
   home: "/",
   labs: "#labs",
   ethereum101: "/labs/ethereum-101",
-  tokenization: "/labs/tokenization",
+  wallets: "/labs/wallets",
+  crowdfunding: "/labs/deploy-crowdfund",
 };
 
 const PRODUCT_COPY = {
@@ -65,33 +66,50 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/ethereum-101-learning-lab.png",
     imageAlt: "",
-    meta: ["Beginner", "23 cards"],
+    level: "Beginner",
+    activity: "Concepts",
     title: "Ethereum 101",
     body: (
       <>
-        Go from &ldquo;what is Ethereum&rdquo; to deploying your own crowdfunding contract. Meet the world computer,
-        accounts, and gas, then write, deploy, and use a real contract that collects contributions and refunds them if
-        the goal falls short.
+        Meet the world computer. Learn how Ethereum works, how accounts and wallets connect, and what happens when you
+        send a transaction. Explore smart contracts and gas through interactive examples. No coding needed.
       </>
     ),
     action: "Start Ethereum 101",
   },
   {
-    href: MARKETING_ROUTES.tokenization,
+    href: MARKETING_ROUTES.wallets,
     artTint: "mint",
-    imageSrc: "/feature-global.png",
+    artFill: true,
+    imageSrc: "/wallets-final.webp",
     imageAlt: "",
-    meta: ["Intermediate", "ERC-721 · NFTs"],
-    mintMetaIndex: 0,
-    comingSoon: true,
-    title: "Tokenization",
+    level: "Beginner",
+    activity: "Transactions",
+    title: "Wallets",
     body: (
       <>
-        A token gives any item a digital passport: proof of ownership you carry in your wallet and apps can read. Create
-        your own ERC-721 token, mint it, send it to another account, and control who else can move it.
+        Set up a wallet, protect your recovery phrase, and get test ETH. Send a transaction, check it on a block
+        explorer, and use your wallet to interact with an app.
       </>
     ),
-    action: "Coming soon",
+    action: "Start Wallets",
+  },
+  {
+    href: MARKETING_ROUTES.crowdfunding,
+    artTint: "lavender",
+    artFill: true,
+    imageSrc: "/crowdfunding-final.webp",
+    imageAlt: "",
+    level: "Beginner",
+    activity: "Solidity coding",
+    title: "Crowdfunding Contract",
+    body: (
+      <>
+        Build your own crowdfunding contract in Solidity. Write the rules, deploy it in your browser, and collect
+        contributions. Test what happens when the goal is reached and how refunds work when it is not.
+      </>
+    ),
+    action: "Start Crowdfunding",
   },
 ];
 
@@ -141,8 +159,8 @@ type ModuleCardProps = {
   artFill?: boolean;
   imageSrc: string;
   imageAlt: string;
-  meta: string[];
-  mintMetaIndex?: number;
+  level: string;
+  activity: string;
   title: string;
   body: ReactNode;
   action: string;
@@ -162,8 +180,8 @@ const ModuleCard = ({
   artFill,
   imageSrc,
   imageAlt,
-  meta,
-  mintMetaIndex,
+  level,
+  activity,
   title,
   body,
   action,
@@ -192,17 +210,8 @@ const ModuleCard = ({
       </div>
       <div className="flex flex-col gap-3 px-7 pt-7 pb-8">
         <div className="flex flex-wrap gap-2">
-          {meta.map((item, index) => (
-            <span
-              key={item}
-              className={cn(
-                "rounded-tags px-2.5 py-1 text-xs font-bold",
-                mintMetaIndex === index ? "bg-lp-pill-mint-bg text-lp-positive" : "bg-lp-pill-bg text-lp-pill-fg",
-              )}
-            >
-              {item}
-            </span>
-          ))}
+          <span className="rounded-tags bg-lp-pill-bg px-2.5 py-1 text-xs font-bold text-lp-pill-fg">{level}</span>
+          <span className="rounded-tags bg-lp-pill-bg px-2.5 py-1 text-xs font-bold text-lp-pill-fg">{activity}</span>
         </div>
         <h3 className="m-0 text-[28px] font-black text-lp-text-primary">{title}</h3>
         <p className="m-0 text-base leading-[1.6] text-lp-text-secondary">{body}</p>
@@ -295,7 +304,7 @@ const Home: NextPage = () => {
             <Eyebrow>{PRODUCT_COPY.curriculum.eyebrow}</Eyebrow>
             <h2 className={lpH2}>{PRODUCT_COPY.curriculum.title}</h2>
           </div>
-          <div className="grid grid-cols-1 gap-6 min-[901px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 min-[901px]:grid-cols-3">
             {curriculumModules.map(module => (
               <ModuleCard key={module.title} {...module} />
             ))}
