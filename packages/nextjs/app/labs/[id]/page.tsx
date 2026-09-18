@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { LabLoader } from "./LabLoader";
-import { registry } from "~~/labs/registry";
+import { getLabIdBySlug } from "~~/labs/registry";
 import { getServerSession } from "~~/lib/session";
 import { getLabProgress } from "~~/services/database/repositories/labProgress";
 
@@ -12,10 +12,11 @@ type Props = {
 
 const LabPage = async ({ params }: Props) => {
   const { id } = await params;
-  if (!registry[id]) notFound();
+  const labId = getLabIdBySlug(id);
+  if (!labId) notFound();
   const session = await getServerSession();
-  const row = session ? await getLabProgress(session.user.id, id) : null;
-  return <LabLoader id={id} initialSnapshot={row?.snapshot ?? null} />;
+  const row = session ? await getLabProgress(session.user.id, labId) : null;
+  return <LabLoader id={labId} initialSnapshot={row?.snapshot ?? null} />;
 };
 
 export default LabPage;

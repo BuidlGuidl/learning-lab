@@ -23,7 +23,8 @@ const MARKETING_ROUTES = {
   home: "/",
   labs: "#labs",
   ethereum101: "/labs/ethereum-101",
-  tokenization: "/labs/tokenization",
+  wallets: "/labs/wallets",
+  crowdfunding: "/labs/deploy-crowdfund",
 };
 
 const PRODUCT_COPY = {
@@ -65,33 +66,48 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/ethereum-101-learning-lab.png",
     imageAlt: "",
-    meta: ["Beginner", "23 cards"],
+    meta: ["Beginner", "20 cards"],
     title: "Ethereum 101",
     body: (
       <>
-        Go from &ldquo;what is Ethereum&rdquo; to deploying your own crowdfunding contract. Meet the world computer,
-        accounts, and gas, then write, deploy, and use a real contract that collects contributions and refunds them if
-        the goal falls short.
+        Meet the world computer. Learn how Ethereum works, how accounts and wallets connect, and what happens when you
+        send a transaction. Explore smart contracts and gas through interactive examples. No coding needed.
       </>
     ),
     action: "Start Ethereum 101",
   },
   {
-    href: MARKETING_ROUTES.tokenization,
+    href: MARKETING_ROUTES.wallets,
     artTint: "mint",
-    imageSrc: "/feature-global.png",
+    artFill: true,
+    imageSrc: "/wallets-learning-lab.webp",
     imageAlt: "",
-    meta: ["Intermediate", "ERC-721 · NFTs"],
+    meta: ["Beginner", "Wallets · Testnet"],
     mintMetaIndex: 0,
-    comingSoon: true,
-    title: "Tokenization",
+    title: "Wallets",
     body: (
       <>
-        A token gives any item a digital passport: proof of ownership you carry in your wallet and apps can read. Create
-        your own ERC-721 token, mint it, send it to another account, and control who else can move it.
+        Set up a wallet, protect your recovery phrase, and get test ETH. Send a transaction, check it on a block
+        explorer, and use your wallet to interact with an app.
       </>
     ),
-    action: "Coming soon",
+    action: "Start Wallets",
+  },
+  {
+    href: MARKETING_ROUTES.crowdfunding,
+    artTint: "lavender",
+    artFill: true,
+    imageSrc: "/crowdfunding-learning-lab.webp",
+    imageAlt: "",
+    meta: ["Beginner", "Solidity · Smart contracts"],
+    title: "Crowdfunding Contract",
+    body: (
+      <>
+        Build your own crowdfunding contract in Solidity. Write the rules, deploy it in your browser, and collect
+        contributions. Test what happens when the goal is reached and how refunds work when it is not.
+      </>
+    ),
+    action: "Start Crowdfunding",
   },
 ];
 
@@ -295,7 +311,7 @@ const Home: NextPage = () => {
             <Eyebrow>{PRODUCT_COPY.curriculum.eyebrow}</Eyebrow>
             <h2 className={lpH2}>{PRODUCT_COPY.curriculum.title}</h2>
           </div>
-          <div className="grid grid-cols-1 gap-6 min-[901px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 min-[901px]:grid-cols-3">
             {curriculumModules.map(module => (
               <ModuleCard key={module.title} {...module} />
             ))}
