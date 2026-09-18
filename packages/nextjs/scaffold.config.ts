@@ -15,7 +15,7 @@ export const DEFAULT_ALCHEMY_API_KEY = "IZYEU2cWBgnFmgiTAgpWD";
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.mainnet],
+  targetNetworks: [chains.mainnet, chains.sepolia],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
   pollingInterval: 3000,
   // This is ours Alchemy's default API key.
@@ -26,6 +26,14 @@ const scaffoldConfig = {
   // If you want to use a different RPC for a specific network, you can add it here.
   // The key is the chain ID, and the value is the HTTP RPC URL
   rpcOverrides: {
+    // Sepolia's viem default is a public endpoint that rate-limits this app's
+    // polling. That matters more than it looks: useDeployedContractInfo probes
+    // getBytecode once, and a rejected probe latches the contract to NOT_FOUND
+    // for the life of the mount — which disables every read and write built on
+    // it, so the wallets lab's poll card goes blank until a reload. Pin Sepolia
+    // to Alchemy so the probe is reliable.
+    [chains.sepolia.id]:
+      `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || DEFAULT_ALCHEMY_API_KEY}`,
     // Example:
     // [chains.mainnet.id]: "https://mainnet.rpc.buidlguidl.com",
   },
