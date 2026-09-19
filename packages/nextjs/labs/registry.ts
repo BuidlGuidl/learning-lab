@@ -19,7 +19,7 @@ export const registry: Record<string, LabEntry> = {
     load: () => import("./ethereum-101-v2/lab"),
   },
   // Under construction, not linked from home. Reach it at /labs/crowdfunding.
-  "deploy-crowdfund": {
+  crowdfunding: {
     title: "Crowdfunding Contract",
     load: () => import("./deploy-crowdfund/lab"),
   },
