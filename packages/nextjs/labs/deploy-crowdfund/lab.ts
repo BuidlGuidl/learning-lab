@@ -20,7 +20,7 @@ import { defineLab } from "~~/lib/lab/define";
 // fundraiser the learner watched revert in the gas lab becomes a contract they
 // write, deploy, and use themselves, entirely in the browser.
 export const lab = defineLab({
-  id: "deploy-crowdfund",
+  id: "crowdfunding",
   title: "Crowdfunding Contract",
   overview:
     "Takes a learner who finished Ethereum 101 from watching contracts enforce deals to building one: writing, deploying, and using their own crowdfunding contract in the browser.",
