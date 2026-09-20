@@ -24,7 +24,7 @@ const MARKETING_ROUTES = {
   labs: "#labs",
   ethereum101: "/labs/ethereum-101",
   wallets: "/labs/wallets",
-  crowdfunding: "/labs/deploy-crowdfund",
+  crowdfunding: "/labs/crowdfunding",
 };
 
 const PRODUCT_COPY = {
