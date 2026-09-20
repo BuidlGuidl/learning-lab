@@ -10,7 +10,7 @@ import { useMemo } from "react";
 import { CardFrame } from "../CardFrame";
 import { Markdown } from "../Markdown";
 import { Console, type ConsoleEntry } from "./Console";
-import { ArrowPathIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, LightBulbIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 import type { ContractHandle, World } from "~~/lib/lab/harness";
 import {
   type ExperimentBoot,
@@ -156,6 +156,24 @@ const DeployWorldCard = ({ card, lab }: Props) => {
   const open = boot?.ok && (boot.reference || boot.passed) ? boot : null;
   const failedRegions = redChecks ? [...new Set(redChecks.checks.filter(c => !c.passed).map(c => c.region))] : [];
 
+  let deploymentStatus: string | null = null;
+  if (progress) {
+    deploymentStatus =
+      progress.step === "testing" ? "Deploying your contract…" : "Preparing and compiling your contract…";
+  } else if (crash) {
+    deploymentStatus = "Deployment couldn't finish. Try again.";
+  } else if (boot && !boot.ok) {
+    deploymentStatus = isCompilerUnavailable(boot.errors)
+      ? "The compiler couldn't load. Try again."
+      : "Your contract couldn't compile. Review the errors below.";
+  } else if (redChecks) {
+    deploymentStatus = "Contract deployed, but some checks failed. Review the results below.";
+  } else if (open) {
+    deploymentStatus = open.reference
+      ? "Reference contract deployed successfully. Continue to try the app."
+      : "Your contract deployed successfully. All checks passed. Continue to try your app.";
+  }
+
   // The world handed to the surface, with its reads and writes logged to the console.
   const loggedWorld = useMemo<World | null>(
     () => (open ? makeLoggedWorld(open.world, entry => appendConsoleEntry(worldId, entry)) : null),
@@ -165,6 +183,22 @@ const DeployWorldCard = ({ card, lab }: Props) => {
   return (
     <CardFrame card={card}>
       <Markdown className="text-lg leading-[1.62] text-lab-text mb-4">{card.scenario}</Markdown>
+
+      {card.showDeploymentStatus && deploymentStatus && (
+        <div
+          className="alert alert-soft flex items-start gap-3 mb-4"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {busy ? (
+            <span className="loading loading-spinner loading-sm shrink-0" />
+          ) : (
+            <RocketLaunchIcon className="w-5 h-5 text-lab-violet shrink-0 mt-0.5" />
+          )}
+          <p className="m-0 text-sm font-semibold">{deploymentStatus}</p>
+        </div>
+      )}
 
       {(card.illustrations ?? []).map((Illustration, index) => (
         <div key={index} className="mb-5">
@@ -303,6 +337,16 @@ const DeployWorldCard = ({ card, lab }: Props) => {
             {busy ? <span className="loading loading-spinner loading-xs" /> : <ArrowPathIcon className="w-4 h-4" />}
             Redeploy
           </button>
+
+          {card.console && card.showDeploymentTip !== false && (
+            <div className="flex items-start gap-2 rounded-box border border-warning/20 bg-warning/10 px-3 py-2 text-xs leading-relaxed text-base-content/65">
+              <LightBulbIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning/80" />
+              <p className="m-0">
+                The contract deployed successfully. You can see its address, who deployed it, and the gas used in the
+                console.
+              </p>
+            </div>
+          )}
         </div>
       ) : null}
 
@@ -335,6 +379,7 @@ const ReuseWorldCard = ({ card, lab }: Props) => {
   const markRevealed = useLabStore(s => s.markRevealed);
   const goTo = useLabStore(s => s.goTo);
   const owner = useMemo(() => findSharer(lab, worldId), [lab, worldId]);
+  const ownerIsPreviousCard = owner && lab.chapters[owner.chapterIndex].cards[owner.cardIndex + 1]?.id === card.id;
 
   const boot = world?.boot ?? null;
   // the deployed world, if it reached a mountable (green or reference) state
@@ -361,9 +406,11 @@ const ReuseWorldCard = ({ card, lab }: Props) => {
         <div className="flex flex-col gap-3">
           <div className="rounded-box border border-base-300 bg-base-200/60 px-4 py-3">
             <p className="text-sm text-base-content/80 m-0">
-              No live contract yet — deploy it on{" "}
-              <span className="font-medium">{owner ? owner.card.title : "the deploy card"}</span> first, then come back
-              here to use it.
+              No live contract yet. Deploy it on{" "}
+              <span className="font-medium">
+                {ownerIsPreviousCard ? "the previous card" : owner ? owner.card.title : "the deploy card"}
+              </span>{" "}
+              first, then come back here to use it.
             </p>
           </div>
           {owner && (

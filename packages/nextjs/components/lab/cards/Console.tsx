@@ -94,6 +94,9 @@ function deployLines(progress: RunProgress | null, boot: ExperimentBoot | null, 
     for (const [name, handle] of Object.entries(boot.world.contracts)) {
       lines.push({ tone: "info", text: `deploying ${name}…` });
       lines.push({ tone: "ok", text: `✓ deployed at ${handle.address}` });
+      if (handle.deployment?.from) {
+        lines.push({ tone: "muted", text: `from      ${short(handle.deployment.from)}`, indent: true });
+      }
       if (handle.deployment?.gasUsed !== undefined) {
         lines.push({ tone: "muted", text: `gas used  ${handle.deployment.gasUsed.toLocaleString()}`, indent: true });
       }
