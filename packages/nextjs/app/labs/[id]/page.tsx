@@ -16,7 +16,7 @@ const LabPage = async ({ params }: Props) => {
   if (!labId) notFound();
   const session = await getServerSession();
   const row = session ? await getLabProgress(session.user.id, labId) : null;
-  return <LabLoader id={labId} initialSnapshot={row?.snapshot ?? null} />;
+  return <LabLoader key={labId} id={labId} initialSnapshot={row?.snapshot ?? null} />;
 };
 
 export default LabPage;

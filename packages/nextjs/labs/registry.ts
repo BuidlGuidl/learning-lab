@@ -2,7 +2,9 @@ import type { Lab } from "~~/lib/lab/types";
 
 type LabEntry = {
   title: string;
+  shortTitle?: string;
   slug?: string;
+  nextLabId?: string;
   load: () => Promise<{ lab: Lab }>;
 };
 
@@ -20,16 +22,19 @@ export const registry: Record<string, LabEntry> = {
   "ethereum-101-v2": {
     title: "Ethereum 101",
     slug: "ethereum-101",
+    nextLabId: "wallets",
     load: () => import("./ethereum-101-v2/lab"),
   },
   // Under construction, not linked from home. Reach it at /labs/crowdfunding.
   crowdfunding: {
     title: "Crowdfunding Contract",
+    shortTitle: "Crowdfunding",
     load: () => import("./deploy-crowdfund/lab"),
   },
   // Under construction, intentionally not linked from home.
   wallets: {
     title: "Wallets",
+    nextLabId: "crowdfunding",
     load: () => import("./wallets/lab"),
   },
 };
