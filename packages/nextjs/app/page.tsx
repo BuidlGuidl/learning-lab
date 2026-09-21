@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { NextPage } from "next";
 import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { HeroShowcase } from "~~/app/_components/HeroShowcase";
+import { HeaderAuth } from "~~/components/HeaderAuth";
 import { SwitchTheme } from "~~/components/SwitchTheme";
 
 const inter = Inter({
@@ -261,11 +262,14 @@ const Home: NextPage = () => {
   return (
     <div className={`lp ${inter.variable} ${ibmPlexMono.variable}`}>
       <nav
-        className="flex h-[68px] items-center gap-10 border-b border-lp-border bg-lp-bg px-5 sm:px-8 min-[1100px]:px-12"
+        className="flex h-[68px] items-center gap-3 border-b border-lp-border bg-lp-bg px-5 sm:px-8 min-[1100px]:px-12"
         aria-label="Main navigation"
       >
         <Brand />
-        <SwitchTheme className="ml-auto site-theme-switch" />
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          <HeaderAuth />
+          <SwitchTheme className="site-theme-switch" />
+        </div>
       </nav>
 
       <header className="w-full max-w-[1280px] mx-auto px-5 sm:px-8 min-[1100px]:px-12 grid grid-cols-[1fr_1.2fr] items-center gap-10 pt-14 pb-16 min-[1101px]:gap-24 min-[901px]:pt-[72px] min-[901px]:pb-[84px] max-[900px]:grid-cols-1">
