@@ -25,7 +25,7 @@ const SOURCE = `function vote(Season season) external {
 }`;
 
 const C = ({ children }: { children: ReactNode }) => (
-  <code className="rounded bg-dark-elevated px-1 py-0.5 font-mono text-[0.9em] text-dark-text">{children}</code>
+  <code className="rounded bg-lab-track px-1 py-0.5 font-mono text-[0.9em] text-lab-text">{children}</code>
 );
 
 // from/to are 1-based and inclusive. Lines covered by no note (the blank ones)
@@ -120,13 +120,13 @@ export const VoteFunction = () => {
   }, []);
 
   return (
-    <div className="flex flex-col gap-3 text-dark-text">
+    <div className="flex flex-col gap-3 text-lab-text">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="font-mono text-xs text-dark-text-faint">SeasonPoll.sol</span>
-        <span className="text-xs text-dark-text-faint">hover a line for a plain-English translation</span>
+        <span className="font-mono text-xs text-lab-faint">SeasonPoll.sol</span>
+        <span className="text-xs text-lab-faint">hover a line for a plain-English translation</span>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-dark-border bg-dark-surface">
+      <div className="overflow-x-auto rounded-lg border border-lab-border bg-lab-surface">
         <div className="w-max min-w-full py-2" onMouseLeave={() => setActive(null)}>
           {(lines ?? RAW_LINES).map((tokens, index) => {
             const lineNumber = index + 1;
@@ -169,7 +169,7 @@ export const VoteFunction = () => {
                 onMouseEnter={() => setActive(noteIndex)}
                 onFocus={() => setActive(noteIndex)}
                 onClick={() => setActive(noteIndex)}
-                className={`${rowClass} cursor-pointer ${active === noteIndex ? "bg-dark-elevated" : ""}`}
+                className={`${rowClass} cursor-pointer ${active === noteIndex ? "bg-lab-track" : ""}`}
               >
                 {content}
               </button>
@@ -180,10 +180,10 @@ export const VoteFunction = () => {
 
       <div
         aria-live="polite"
-        className="min-h-[4.5rem] rounded-lg border border-dark-border bg-dark-surface px-4 py-3 text-sm leading-relaxed text-dark-text-muted"
+        className="min-h-[4.5rem] rounded-lg border border-lab-border bg-lab-surface px-4 py-3 text-sm leading-relaxed text-lab-muted"
       >
         {active === null ? (
-          <span className="text-dark-text-faint">Hover any line of the function to see what it does.</span>
+          <span className="text-lab-faint">Hover any line of the function to see what it does.</span>
         ) : (
           NOTES[active].text
         )}

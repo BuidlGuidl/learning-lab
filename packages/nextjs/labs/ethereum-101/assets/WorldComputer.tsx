@@ -29,14 +29,14 @@ const TILT = 0.42; // viewing the globe slightly from above, so it reads as a sp
 // dark-panel palette (the rail is dark in both themes), aligned to the lab tokens
 const COLOR = {
   okFill: "rgb(168 125 255 / 0.16)",
-  okStroke: "#a87dff",
-  text: "#eee8ff",
-  faint: "#766892",
+  okStroke: "var(--color-lab-violet)",
+  text: "var(--color-lab-text)",
+  faint: "var(--color-lab-faint)",
   faintFill: "rgb(118 104 146 / 0.10)",
-  rogue: "#ff7ccb",
+  rogue: "var(--color-lab-magenta)",
   rogueFill: "rgb(255 124 203 / 0.16)",
-  mint: "#54d6a8",
-  globe: "#a87dff",
+  mint: "var(--color-lab-mint)",
+  globe: "var(--color-lab-violet)",
 };
 
 const dist3 = (a: Vec3, b: Vec3) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2;
@@ -240,16 +240,16 @@ export const WorldComputer = () => {
   const depthOpacity = (depth: number) => 0.5 + 0.5 * ((depth + 1) / 2);
 
   return (
-    <div className="flex flex-col gap-4 text-dark-text">
+    <div className="flex flex-col gap-4 text-lab-text">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
-          <span className="text-dark-text-muted">shared state</span>
-          <strong className="font-semibold text-dark-text">STATE {consensus}</strong>
+        <span className="inline-flex items-center gap-2 rounded-full border border-lab-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
+          <span className="text-lab-muted">shared state</span>
+          <strong className="font-semibold text-lab-text">STATE {consensus}</strong>
         </span>
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-lab-muted transition-colors hover:text-lab-text"
         >
           reset
         </button>
@@ -265,9 +265,9 @@ export const WorldComputer = () => {
       >
         <defs>
           <radialGradient id="wc-sphere" cx="38%" cy="30%" r="75%">
-            <stop offset="0%" stopColor="#3d2c61" />
-            <stop offset="62%" stopColor="#241640" />
-            <stop offset="100%" stopColor="#160e26" />
+            <stop offset="0%" stopColor="var(--color-lab-globe-1)" />
+            <stop offset="62%" stopColor="var(--color-lab-globe-2)" />
+            <stop offset="100%" stopColor="var(--color-lab-globe-3)" />
           </radialGradient>
         </defs>
 
@@ -366,14 +366,14 @@ export const WorldComputer = () => {
         })}
       </svg>
 
-      <p className="m-0 min-h-[2.5rem] text-sm leading-relaxed text-dark-text-muted">{caption}</p>
+      <p className="m-0 min-h-[2.5rem] text-sm leading-relaxed text-lab-muted">{caption}</p>
 
       <div className="flex flex-wrap gap-2.5">
         <button
           type="button"
           onClick={broadcast}
           disabled={busy}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? "broadcasting…" : "Broadcast a change"}
         </button>
@@ -381,17 +381,17 @@ export const WorldComputer = () => {
           type="button"
           onClick={tamper}
           disabled={busy}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-4 py-2.5 text-sm font-semibold text-dark-text transition hover:border-violet-bright disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-lab-border bg-lab-code-panel-tint px-4 py-2.5 text-sm font-semibold text-lab-text transition hover:border-lab-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
           Tamper a node
         </button>
       </div>
 
-      <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-dark-text-muted">
-        <LightBulbIcon className="h-4 w-4 shrink-0 text-violet-bright" />
+      <div className="flex items-center gap-2 rounded-lg border border-lab-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-lab-muted">
+        <LightBulbIcon className="h-4 w-4 shrink-0 text-lab-violet" />
         <span>
-          <strong className="font-semibold text-dark-text">Tip</strong>: click any node to drop it offline, then bring
-          it back.
+          <strong className="font-semibold text-lab-text">Tip</strong>: click any node to drop it offline, then bring it
+          back.
         </span>
       </div>
     </div>

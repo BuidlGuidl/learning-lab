@@ -108,13 +108,13 @@ export const GasOutcomes = () => {
   const answered = prediction !== null;
 
   return (
-    <div className="flex flex-col gap-4 text-dark-text">
+    <div className="flex flex-col gap-4 text-lab-text">
       <div className="flex items-center justify-between gap-3">
-        <span className="font-mono text-xs text-dark-text-muted">gas lab · {phase + 1}/3</span>
+        <span className="font-mono text-xs text-lab-muted">gas lab · {phase + 1}/3</span>
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer font-mono text-xs text-dark-text-muted hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-lab-muted hover:text-lab-text"
         >
           reset
         </button>
@@ -127,10 +127,10 @@ export const GasOutcomes = () => {
             aria-current={phase === i ? "step" : undefined}
             className={`rounded-lg border px-2 py-2 text-center text-[11px] font-semibold leading-tight transition-colors ${
               phase === i
-                ? "border-violet-bright/60 bg-violet-bright/15 text-dark-text"
+                ? "border-lab-accent/60 bg-lab-accent/15 text-lab-text"
                 : phase > i
-                  ? "border-mint-bright/30 bg-mint-bright/10 text-mint-bright"
-                  : "border-dark-border bg-dark-bg text-dark-text-faint"
+                  ? "border-lab-mint/30 bg-lab-mint/10 text-lab-mint"
+                  : "border-lab-border bg-lab-canvas text-lab-faint"
             }`}
           >
             {label}
@@ -141,10 +141,10 @@ export const GasOutcomes = () => {
       {/* ───────────── Phase 1: order the actions ───────────── */}
       {phase === 0 && (
         <div className="flex flex-col gap-3">
-          <p className="m-0 text-sm leading-relaxed text-dark-text-muted">
+          <p className="m-0 text-sm leading-relaxed text-lab-muted">
             Four things you could ask the network to do. Tap them from{" "}
-            <strong className="text-dark-text">cheapest</strong> to{" "}
-            <strong className="text-dark-text">most expensive</strong> in gas.
+            <strong className="text-lab-text">cheapest</strong> to{" "}
+            <strong className="text-lab-text">most expensive</strong> in gas.
           </p>
 
           <div className="grid gap-2 sm:grid-cols-2">
@@ -161,17 +161,17 @@ export const GasOutcomes = () => {
                   disabled={orderChecked}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors disabled:cursor-default ${
                     rightHere
-                      ? "border-mint-bright/50 bg-mint-bright/10 text-dark-text"
+                      ? "border-lab-mint/50 bg-lab-mint/10 text-lab-text"
                       : wrongHere
-                        ? "border-peach-bright/50 bg-peach-bright/10 text-dark-text"
+                        ? "border-lab-peach/50 bg-lab-peach/10 text-lab-text"
                         : picked
-                          ? "border-violet-bright/60 bg-violet-bright/15 text-dark-text"
-                          : "border-dark-border bg-dark-bg text-dark-text-muted hover:border-violet-bright"
+                          ? "border-lab-accent/60 bg-lab-accent/15 text-lab-text"
+                          : "border-lab-border bg-lab-canvas text-lab-muted hover:border-lab-accent"
                   }`}
                 >
                   <span
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border font-mono text-xs ${
-                      picked ? "border-violet-bright text-violet-bright" : "border-dark-border text-dark-text-faint"
+                      picked ? "border-lab-accent text-lab-violet" : "border-lab-border text-lab-faint"
                     }`}
                   >
                     {picked ? position + 1 : "·"}
@@ -187,7 +187,7 @@ export const GasOutcomes = () => {
               type="button"
               disabled={!orderComplete}
               onClick={() => setOrderChecked(true)}
-              className="cursor-pointer rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] hover:opacity-90 disabled:cursor-default disabled:opacity-40"
+              className="cursor-pointer rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent hover:opacity-90 disabled:cursor-default disabled:opacity-40"
             >
               {orderComplete ? "Check my order" : `Pick ${ACTIONS.length - order.length} more`}
             </button>
@@ -195,34 +195,32 @@ export const GasOutcomes = () => {
 
           {orderChecked && (
             <div className="flex flex-col gap-3" aria-live="polite">
-              <div className="rounded-lg border border-dark-border bg-dark-surface p-3 text-sm leading-relaxed">
-                <strong className={orderRight ? "text-mint-bright" : "text-peach-bright"}>
+              <div className="rounded-lg border border-lab-border bg-lab-surface p-3 text-sm leading-relaxed">
+                <strong className={orderRight ? "text-lab-mint" : "text-lab-peach"}>
                   {orderRight ? "Right order." : "Not quite."}
                 </strong>{" "}
-                <span className="text-dark-text-muted">
-                  Gas measures the <strong className="text-dark-text">work</strong> the network does, not the amount of
+                <span className="text-lab-muted">
+                  Gas measures the <strong className="text-lab-text">work</strong> the network does, not the amount of
                   ETH involved. Sending 10 ETH is exactly the same job as sending 0.01 ETH.
                 </span>
               </div>
 
-              <div className="rounded-lg border border-dark-border bg-dark-bg p-3">
-                <span className="block text-xs font-semibold uppercase tracking-wide text-dark-text-faint">
-                  Relative gas
-                </span>
+              <div className="rounded-lg border border-lab-border bg-lab-canvas p-3">
+                <span className="block text-xs font-semibold uppercase tracking-wide text-lab-faint">Relative gas</span>
                 <ul className="mt-3 flex flex-col gap-2">
                   {CORRECT_ORDER_BY_WORK.map(action => (
                     <li key={action.id} className="text-xs">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-dark-text">{action.label}</span>
-                        <span className="font-mono text-dark-text-faint">×{action.work}</span>
+                        <span className="text-lab-text">{action.label}</span>
+                        <span className="font-mono text-lab-faint">×{action.work}</span>
                       </div>
-                      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-dark-border">
+                      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-lab-border">
                         <div
-                          className="h-full rounded-full bg-violet-bright transition-[width] duration-500"
+                          className="h-full rounded-full bg-lab-accent transition-[width] duration-500"
                           style={{ width: `${(action.work / MAX_WORK) * 100}%` }}
                         />
                       </div>
-                      <p className="mb-0 mt-1 text-[11px] leading-snug text-dark-text-muted">{action.note}</p>
+                      <p className="mb-0 mt-1 text-[11px] leading-snug text-lab-muted">{action.note}</p>
                     </li>
                   ))}
                 </ul>
@@ -231,7 +229,7 @@ export const GasOutcomes = () => {
               <button
                 type="button"
                 onClick={() => setPhase(1)}
-                className="cursor-pointer rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] hover:opacity-90"
+                className="cursor-pointer rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent hover:opacity-90"
               >
                 Next: busy vs quiet
               </button>
@@ -243,15 +241,15 @@ export const GasOutcomes = () => {
       {/* ───────────── Phase 2: network activity slider ───────────── */}
       {phase === 1 && (
         <div className="flex flex-col gap-3">
-          <p className="m-0 text-sm leading-relaxed text-dark-text-muted">
+          <p className="m-0 text-sm leading-relaxed text-lab-muted">
             Same job: sending 0.01 ETH. The only thing that changes is how many other people want the network right now.
             Drag the slider.
           </p>
 
-          <div className="rounded-lg border border-dark-border bg-dark-surface p-4">
-            <div className="flex items-center justify-between text-xs text-dark-text-faint">
+          <div className="rounded-lg border border-lab-border bg-lab-surface p-4">
+            <div className="flex items-center justify-between text-xs text-lab-faint">
               <span>quiet</span>
-              <span className="font-semibold text-dark-text">network activity</span>
+              <span className="font-semibold text-lab-text">network activity</span>
               <span>busy</span>
             </div>
             <input
@@ -268,21 +266,21 @@ export const GasOutcomes = () => {
             />
 
             <div className="mt-4 flex items-end gap-4">
-              <div className="flex h-28 w-10 items-end overflow-hidden rounded-lg bg-dark-bg">
+              <div className="flex h-28 w-10 items-end overflow-hidden rounded-lg bg-lab-canvas">
                 <div
-                  className="w-full rounded-t-lg bg-violet-bright transition-[height] duration-200"
+                  className="w-full rounded-t-lg bg-lab-accent transition-[height] duration-200"
                   style={{ height: `${(multiplier / 10) * 100}%` }}
                 />
               </div>
-              <div className="text-sm leading-relaxed text-dark-text-muted">
-                <span className="block font-mono text-2xl font-semibold text-dark-text">×{multiplier.toFixed(1)}</span>
+              <div className="text-sm leading-relaxed text-lab-muted">
+                <span className="block font-mono text-2xl font-semibold text-lab-text">×{multiplier.toFixed(1)}</span>
                 <span className="block text-xs">the fee for the same transfer, compared with an empty network</span>
               </div>
             </div>
           </div>
 
           <div
-            className={`rounded-lg border border-dark-border bg-dark-bg p-3 text-sm leading-relaxed text-dark-text-muted transition-opacity ${
+            className={`rounded-lg border border-lab-border bg-lab-canvas p-3 text-sm leading-relaxed text-lab-muted transition-opacity ${
               sliderTouched ? "opacity-100" : "opacity-50"
             }`}
             aria-live="polite"
@@ -295,16 +293,16 @@ export const GasOutcomes = () => {
               "Rush hour. Your job hasn't changed at all; you're paying more to get it done ahead of everyone else who wants the same room. There is no ceiling: it depends only on how busy the network is."}
           </div>
 
-          <p className="m-0 text-xs leading-relaxed text-dark-text-faint">
-            Two dials, then: <strong className="text-dark-text-muted">what</strong> you ask for sets the work;{" "}
-            <strong className="text-dark-text-muted">when</strong> you ask sets the price of that work.
+          <p className="m-0 text-xs leading-relaxed text-lab-faint">
+            Two dials, then: <strong className="text-lab-muted">what</strong> you ask for sets the work;{" "}
+            <strong className="text-lab-muted">when</strong> you ask sets the price of that work.
           </p>
 
           <button
             type="button"
             onClick={() => setPhase(2)}
             disabled={!sliderTouched}
-            className="cursor-pointer rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] hover:opacity-90 disabled:cursor-default disabled:opacity-40"
+            className="cursor-pointer rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent hover:opacity-90 disabled:cursor-default disabled:opacity-40"
           >
             Next: it failed. Gas?
           </button>
@@ -314,18 +312,18 @@ export const GasOutcomes = () => {
       {/* ───────────── Phase 3: the revert ───────────── */}
       {phase === 2 && (
         <div className="flex flex-col gap-3">
-          <p className="m-0 text-sm leading-relaxed text-dark-text-muted">
+          <p className="m-0 text-sm leading-relaxed text-lab-muted">
             You already saw that a transaction the network refuses never reaches a block and costs nothing. Now a
             trickier one.
           </p>
 
-          <div className="rounded-xl border border-dark-border bg-dark-surface p-4">
-            <span className="text-sm font-semibold text-dark-text">Someone gets there first</span>
-            <p className="mb-0 mt-2 text-sm leading-relaxed text-dark-text-muted">{REVERT_CASE.setup}</p>
+          <div className="rounded-xl border border-lab-border bg-lab-surface p-4">
+            <span className="text-sm font-semibold text-lab-text">Someone gets there first</span>
+            <p className="mb-0 mt-2 text-sm leading-relaxed text-lab-muted">{REVERT_CASE.setup}</p>
           </div>
 
           <div>
-            <p className="mb-2 mt-0 text-xs font-semibold uppercase tracking-wide text-dark-text-muted">
+            <p className="mb-2 mt-0 text-xs font-semibold uppercase tracking-wide text-lab-muted">
               Your 0.5 ETH is back in your account. Did you pay gas?
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -346,10 +344,10 @@ export const GasOutcomes = () => {
                   }
                   className={`cursor-pointer rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors disabled:cursor-default ${
                     answered && value
-                      ? "border-mint-bright bg-mint-bright/10 text-mint-bright"
+                      ? "border-lab-mint bg-lab-mint/10 text-lab-mint"
                       : answered && value === prediction
-                        ? "border-peach-bright bg-peach-bright/10 text-peach-bright"
-                        : "border-dark-border bg-dark-bg text-dark-text-muted hover:border-violet-bright"
+                        ? "border-lab-peach bg-lab-peach/10 text-lab-peach"
+                        : "border-lab-border bg-lab-canvas text-lab-muted hover:border-lab-accent"
                   }`}
                 >
                   {value ? "Yes, gas was paid" : "No, nothing was paid"}
@@ -360,26 +358,26 @@ export const GasOutcomes = () => {
 
           {answered && (
             <div className="flex flex-col gap-3" aria-live="polite">
-              <div className="rounded-lg border border-dark-border bg-dark-surface p-3 text-sm leading-relaxed">
-                <strong className={prediction ? "text-mint-bright" : "text-peach-bright"}>
+              <div className="rounded-lg border border-lab-border bg-lab-surface p-3 text-sm leading-relaxed">
+                <strong className={prediction ? "text-lab-mint" : "text-lab-peach"}>
                   {prediction ? "Correct." : "Not this time."}
                 </strong>{" "}
-                <span className="text-dark-text-muted">{REVERT_CASE.explanation}</span>
+                <span className="text-lab-muted">{REVERT_CASE.explanation}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg border border-dark-border bg-dark-bg p-3">
-                  <span className="block text-dark-text-faint">Your contribution</span>
-                  <strong className="mt-1 block font-mono text-dark-text">{REVERT_CASE.payment}</strong>
+                <div className="rounded-lg border border-lab-border bg-lab-canvas p-3">
+                  <span className="block text-lab-faint">Your contribution</span>
+                  <strong className="mt-1 block font-mono text-lab-text">{REVERT_CASE.payment}</strong>
                 </div>
-                <div className="rounded-lg border border-dark-border bg-dark-bg p-3">
-                  <span className="block text-dark-text-faint">Gas</span>
-                  <strong className="mt-1 block font-mono text-dark-text">{REVERT_CASE.gas}</strong>
+                <div className="rounded-lg border border-lab-border bg-lab-canvas p-3">
+                  <span className="block text-lab-faint">Gas</span>
+                  <strong className="mt-1 block font-mono text-lab-text">{REVERT_CASE.gas}</strong>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-dark-border bg-dark-bg p-3">
-                <span className="block text-xs font-semibold uppercase tracking-wide text-dark-text-faint">
+              <div className="rounded-lg border border-lab-border bg-lab-canvas p-3">
+                <span className="block text-xs font-semibold uppercase tracking-wide text-lab-faint">
                   Where your transaction got to
                 </span>
                 <ol className="mt-3 grid grid-cols-4 gap-2">
@@ -391,10 +389,10 @@ export const GasOutcomes = () => {
                         key={stage}
                         className={`rounded-lg border px-2 py-2 text-center text-[11px] font-semibold leading-tight ${
                           lastStage
-                            ? "border-peach-bright/50 bg-peach-bright/10 text-peach-bright"
+                            ? "border-lab-peach/50 bg-lab-peach/10 text-lab-peach"
                             : reached
-                              ? "border-mint-bright/30 bg-mint-bright/10 text-mint-bright"
-                              : "border-dark-border text-dark-text-faint"
+                              ? "border-lab-mint/30 bg-lab-mint/10 text-lab-mint"
+                              : "border-lab-border text-lab-faint"
                         }`}
                       >
                         <span className="block font-mono text-[10px] opacity-70">0{i + 1}</span>
@@ -404,14 +402,14 @@ export const GasOutcomes = () => {
                     );
                   })}
                 </ol>
-                <p className="mb-0 mt-3 text-xs leading-relaxed text-dark-text-muted">
+                <p className="mb-0 mt-3 text-xs leading-relaxed text-lab-muted">
                   Gas is charged from step 03 onwards. A transaction that stops at 02 pays nothing; one that reaches 03
                   pays for the work, whatever the result at 04.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-mint-bright/30 bg-mint-bright/10 p-4 text-sm leading-relaxed text-dark-text-muted">
-                <strong className="text-dark-text">Gas lab complete</strong>
+              <div className="rounded-xl border border-lab-mint/30 bg-lab-mint/10 p-4 text-sm leading-relaxed text-lab-muted">
+                <strong className="text-lab-text">Gas lab complete</strong>
                 <p className="mb-0 mt-3">
                   The question is never “did it succeed?” but “did the network carry it out?” That&apos;s why reading a
                   transaction before you sign it matters: you pay for the work either way.

@@ -40,7 +40,7 @@ const RECIPIENT = "0x4Db8…A07e";
 const BALANCE = 1; // ETH the account holds
 const GAS_FEE = 0.0002; // ETH, the network's fee for the work
 const AMOUNTS = [0.25, 2]; // one you can afford, one you can't — both offered on purpose
-const REJECT = "#ff8a8a"; // soft red for the rejected path
+const REJECT = "var(--color-lab-reject)"; // soft red for the rejected path
 
 const HEX = "0123456789abcdef";
 const randomHex = (n: number) => "0x" + Array.from({ length: n }, () => HEX[Math.floor(Math.random() * 16)]).join("");
@@ -141,16 +141,16 @@ export const TransactionJourney = () => {
   const failed = phase === "rejected";
 
   return (
-    <div className="flex flex-col gap-4 text-dark-text">
+    <div className="flex flex-col gap-4 text-lab-text">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
-          <span className="text-dark-text-muted">gas fee</span>
-          <strong className="font-semibold text-dark-text">≈ {fmt(GAS_FEE)} ETH</strong>
+        <span className="inline-flex items-center gap-2 rounded-full border border-lab-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
+          <span className="text-lab-muted">gas fee</span>
+          <strong className="font-semibold text-lab-text">≈ {fmt(GAS_FEE)} ETH</strong>
         </span>
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-lab-muted transition-colors hover:text-lab-text"
         >
           reset
         </button>
@@ -158,9 +158,9 @@ export const TransactionJourney = () => {
 
       {/* the strip: three stations, a track that fills as the tx advances */}
       <div className="relative px-1">
-        <div className="absolute left-6 right-6 top-[15px] h-0.5 bg-dark-border" />
+        <div className="absolute left-6 right-6 top-[15px] h-0.5 bg-lab-border" />
         <div
-          className="absolute left-6 top-[15px] h-0.5 bg-violet-bright transition-all duration-500"
+          className="absolute left-6 top-[15px] h-0.5 bg-lab-accent transition-all duration-500"
           style={{ width: `calc((100% - 3rem) * ${stage / (STAGES.length - 1)})` }}
         />
         <ol className="relative flex justify-between">
@@ -173,16 +173,16 @@ export const TransactionJourney = () => {
               <li key={s.label} className="flex w-12 flex-col items-center gap-1.5">
                 <span className="relative z-10 h-8 w-8">
                   {/* opaque base so the track line reads as passing behind the node */}
-                  <span className="absolute inset-0 rounded-full bg-dark-bg" aria-hidden />
+                  <span className="absolute inset-0 rounded-full bg-lab-canvas" aria-hidden />
                   <span
                     className={`absolute inset-0 flex items-center justify-center rounded-full border transition-colors ${
                       isFailStation
-                        ? "border-[#ff8a8a] bg-dark-bg text-[#ff8a8a]"
+                        ? "border-lab-reject bg-lab-canvas text-lab-reject"
                         : active
-                          ? "border-violet-bright bg-violet-bright text-[#1a102c]"
+                          ? "border-lab-accent bg-lab-accent text-lab-on-accent"
                           : done
-                            ? "border-violet-bright bg-lab-code-panel-tint text-violet-bright"
-                            : "border-dark-border bg-dark-bg text-dark-text-faint"
+                            ? "border-lab-accent bg-lab-code-panel-tint text-lab-violet"
+                            : "border-lab-border bg-lab-canvas text-lab-faint"
                     }`}
                   >
                     {isFailStation ? (
@@ -196,7 +196,7 @@ export const TransactionJourney = () => {
                 </span>
                 <span
                   className={`text-[10px] font-medium ${
-                    isFailStation ? "text-[#ff8a8a]" : active || done ? "text-dark-text" : "text-dark-text-faint"
+                    isFailStation ? "text-lab-reject" : active || done ? "text-lab-text" : "text-lab-faint"
                   }`}
                 >
                   {s.label}
@@ -207,26 +207,26 @@ export const TransactionJourney = () => {
         </ol>
       </div>
 
-      <p className="m-0 min-h-[3.25rem] text-sm leading-relaxed text-dark-text-muted">{captionFor(phase, signing)}</p>
+      <p className="m-0 min-h-[3.25rem] text-sm leading-relaxed text-lab-muted">{captionFor(phase, signing)}</p>
 
       <div className="min-h-[176px]">
         {phase === "compose" && (
-          <div className="flex flex-col gap-3 rounded-xl border border-dark-border bg-dark-surface p-4">
+          <div className="flex flex-col gap-3 rounded-xl border border-lab-border bg-lab-surface p-4">
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="flex items-center gap-2">
-                <span className="h-4 w-4 shrink-0 rounded-full bg-gradient-to-br from-violet-bright to-[#ff7ccb]" />
-                <span className="font-mono text-dark-text">{ACCOUNT}</span>
-                <span className="text-dark-text-faint">you</span>
+                <span className="h-4 w-4 shrink-0 rounded-full bg-gradient-to-br from-lab-violet to-[var(--color-lab-magenta)]" />
+                <span className="font-mono text-lab-text">{ACCOUNT}</span>
+                <span className="text-lab-faint">you</span>
               </span>
-              <span className="font-mono text-dark-text-muted">{fmt(BALANCE)} ETH</span>
+              <span className="font-mono text-lab-muted">{fmt(BALANCE)} ETH</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <PaperAirplaneIcon className="h-4 w-4 shrink-0 text-dark-text-faint" />
-              <span className="text-dark-text-muted">send to</span>
-              <span className="truncate font-mono text-dark-text">{RECIPIENT}</span>
+              <PaperAirplaneIcon className="h-4 w-4 shrink-0 text-lab-faint" />
+              <span className="text-lab-muted">send to</span>
+              <span className="truncate font-mono text-lab-text">{RECIPIENT}</span>
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">Amount</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-lab-muted">Amount</span>
               <div className="flex gap-2">
                 {AMOUNTS.map(a => {
                   const sel = a === amount;
@@ -238,12 +238,12 @@ export const TransactionJourney = () => {
                       onClick={() => setAmount(a)}
                       className={`flex-1 cursor-pointer rounded-lg border px-3 py-2 text-left font-mono text-sm transition-colors ${
                         sel
-                          ? "border-violet-bright bg-lab-code-panel-tint text-dark-text"
-                          : "border-dark-border bg-dark-bg text-dark-text-muted hover:border-violet-bright/60"
+                          ? "border-lab-accent bg-lab-code-panel-tint text-lab-text"
+                          : "border-lab-border bg-lab-canvas text-lab-muted hover:border-lab-accent/60"
                       }`}
                     >
                       {a} ETH
-                      {!afford && <span className="ml-1 text-[10px] text-dark-text-faint">over balance</span>}
+                      {!afford && <span className="ml-1 text-[10px] text-lab-faint">over balance</span>}
                     </button>
                   );
                 })}
@@ -253,17 +253,17 @@ export const TransactionJourney = () => {
         )}
 
         {phase === "signed" && (
-          <div className="flex flex-col gap-3 rounded-xl border border-dark-border bg-dark-surface p-4">
+          <div className="flex flex-col gap-3 rounded-xl border border-lab-border bg-lab-surface p-4">
             <SummaryLine amount={amount} />
             <div className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">Signature</span>
-              <code className="break-all rounded-lg border border-dark-border bg-dark-bg px-3 py-2 font-mono text-xs leading-relaxed text-violet-bright">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-lab-muted">Signature</span>
+              <code className="break-all rounded-lg border border-lab-border bg-lab-canvas px-3 py-2 font-mono text-xs leading-relaxed text-lab-violet">
                 {signing ? scramble || "0x…" : hash}
               </code>
             </div>
             {!signing &&
               (enough ? (
-                <span className="flex items-center gap-1.5 text-xs text-dark-text-muted">
+                <span className="flex items-center gap-1.5 text-xs text-lab-muted">
                   <ShieldCheckIcon className="h-4 w-4 shrink-0 text-lab-mint" />
                   Produced by your private key. Nobody can forge it.
                 </span>
@@ -278,12 +278,10 @@ export const TransactionJourney = () => {
         )}
 
         {phase === "checking" && (
-          <div className="flex flex-col gap-3 rounded-xl border border-dark-border bg-dark-surface p-4">
+          <div className="flex flex-col gap-3 rounded-xl border border-lab-border bg-lab-surface p-4">
             <SummaryLine amount={amount} />
             <div className="flex flex-col gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-dark-text-muted">
-                Nodes checking
-              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-lab-muted">Nodes checking</span>
               <CheckRow label="Signature is really yours" state="checking" />
               <CheckRow label="Account holds enough ETH" state="checking" />
             </div>
@@ -291,13 +289,13 @@ export const TransactionJourney = () => {
         )}
 
         {phase === "mined" && (
-          <div className="flex flex-col gap-3 rounded-xl border border-violet-bright bg-dark-surface p-4">
+          <div className="flex flex-col gap-3 rounded-xl border border-lab-accent bg-lab-surface p-4">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 font-mono text-sm text-dark-text">
-                <CubeIcon className="h-4 w-4 text-violet-bright" />
+              <span className="inline-flex items-center gap-1.5 font-mono text-sm text-lab-text">
+                <CubeIcon className="h-4 w-4 text-lab-violet" />
                 Block #{blockNumber.toLocaleString()}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-lab-code-panel-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-bright">
+              <span className="inline-flex items-center gap-1 rounded-full bg-lab-code-panel-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-lab-violet">
                 <LockClosedIcon className="h-3 w-3" />
                 permanent
               </span>
@@ -312,13 +310,13 @@ export const TransactionJourney = () => {
         )}
 
         {phase === "rejected" && (
-          <div className="flex flex-col gap-3 rounded-xl border border-[#ff8a8a]/40 bg-dark-surface p-4">
+          <div className="flex flex-col gap-3 rounded-xl border border-lab-reject/40 bg-lab-surface p-4">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 font-mono text-sm text-[#ff8a8a]">
+              <span className="inline-flex items-center gap-1.5 font-mono text-sm text-lab-reject">
                 <XMarkIcon className="h-4 w-4" />
                 Rejected
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-dark-text-faint">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-lab-faint">
                 never reached a block
               </span>
             </div>
@@ -330,12 +328,12 @@ export const TransactionJourney = () => {
                 note={`(needs more than your ${fmt(BALANCE)} ETH)`}
               />
             </div>
-            <div className="flex flex-col gap-1 rounded-lg border border-dark-border bg-dark-bg px-3 py-2 text-xs">
+            <div className="flex flex-col gap-1 rounded-lg border border-lab-border bg-lab-canvas px-3 py-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-dark-text-muted">Your balance</span>
-                <span className="font-mono text-dark-text">{fmt(BALANCE)} ETH unchanged</span>
+                <span className="text-lab-muted">Your balance</span>
+                <span className="font-mono text-lab-text">{fmt(BALANCE)} ETH unchanged</span>
               </div>
-              <span className="text-[11px] text-dark-text-faint">it never reached a block, so no gas was charged</span>
+              <span className="text-[11px] text-lab-faint">it never reached a block, so no gas was charged</span>
             </div>
           </div>
         )}
@@ -368,58 +366,55 @@ export const TransactionJourney = () => {
 };
 
 const SummaryLine = ({ amount }: { amount: number }) => (
-  <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-dark-bg px-3 py-2 font-mono text-xs">
-    <span className="text-dark-text">Send {amount} ETH</span>
-    <span className="text-dark-text-faint">→</span>
-    <span className="truncate text-dark-text-muted">{RECIPIENT}</span>
+  <div className="flex items-center gap-2 rounded-lg border border-lab-border bg-lab-canvas px-3 py-2 font-mono text-xs">
+    <span className="text-lab-text">Send {amount} ETH</span>
+    <span className="text-lab-faint">→</span>
+    <span className="truncate text-lab-muted">{RECIPIENT}</span>
   </div>
 );
 
 const CheckRow = ({ label, state, note }: { label: string; state: "checking" | "pass" | "fail"; note?: string }) => (
   <div className="flex items-center gap-2 text-xs">
     {state === "checking" ? (
-      <span className="h-3.5 w-3.5 shrink-0 animate-pulse rounded-full border border-dark-text-faint" />
+      <span className="h-3.5 w-3.5 shrink-0 animate-pulse rounded-full border border-lab-faint" />
     ) : state === "pass" ? (
       <CheckIcon className="h-3.5 w-3.5 shrink-0 text-lab-mint" />
     ) : (
       <XMarkIcon className="h-3.5 w-3.5 shrink-0" style={{ color: REJECT }} />
     )}
-    <span
-      style={state === "fail" ? { color: REJECT } : undefined}
-      className={state === "fail" ? "" : "text-dark-text-muted"}
-    >
+    <span style={state === "fail" ? { color: REJECT } : undefined} className={state === "fail" ? "" : "text-lab-muted"}>
       {label}
-      {note && <span className="text-dark-text-faint"> {note}</span>}
+      {note && <span className="text-lab-faint"> {note}</span>}
     </span>
   </div>
 );
 
 const BalanceAfter = ({ to, note }: { to: number; note: string }) => (
-  <div className="flex flex-col gap-1 rounded-lg border border-dark-border bg-dark-bg px-3 py-2 text-xs">
+  <div className="flex flex-col gap-1 rounded-lg border border-lab-border bg-lab-canvas px-3 py-2 text-xs">
     <div className="flex items-center justify-between">
-      <span className="text-dark-text-muted">Your balance</span>
-      <span className="font-mono text-dark-text">
-        {fmt(BALANCE)} <span className="text-dark-text-faint">→</span> {fmt(to)} ETH
+      <span className="text-lab-muted">Your balance</span>
+      <span className="font-mono text-lab-text">
+        {fmt(BALANCE)} <span className="text-lab-faint">→</span> {fmt(to)} ETH
       </span>
     </div>
-    <span className="text-[11px] text-dark-text-faint">{note}</span>
+    <span className="text-[11px] text-lab-faint">{note}</span>
   </div>
 );
 
 const ChainView = ({ blockNumber }: { blockNumber: number }) => (
   <div className="flex items-center justify-center gap-1 py-1">
-    <span className="text-xs text-dark-text-faint">…</span>
+    <span className="text-xs text-lab-faint">…</span>
     {[0, 1].map(i => (
       <Fragment key={i}>
-        <span className="rounded-md border border-dark-border bg-dark-bg px-2.5 py-1.5 opacity-60">
-          <CubeIcon className="h-4 w-4 text-dark-text-faint" />
+        <span className="rounded-md border border-lab-border bg-lab-canvas px-2.5 py-1.5 opacity-60">
+          <CubeIcon className="h-4 w-4 text-lab-faint" />
         </span>
-        <span className="h-px w-2 bg-dark-border" />
+        <span className="h-px w-2 bg-lab-border" />
       </Fragment>
     ))}
-    <span className="flex flex-col items-center gap-0.5 rounded-md border border-violet-bright bg-lab-code-panel-tint px-2.5 py-1.5">
-      <CubeIcon className="h-4 w-4 text-violet-bright" />
-      <span className="font-mono text-[9px] text-violet-bright">#…{String(blockNumber).slice(-4)}</span>
+    <span className="flex flex-col items-center gap-0.5 rounded-md border border-lab-accent bg-lab-code-panel-tint px-2.5 py-1.5">
+      <CubeIcon className="h-4 w-4 text-lab-violet" />
+      <span className="font-mono text-[9px] text-lab-violet">#…{String(blockNumber).slice(-4)}</span>
     </span>
   </div>
 );
@@ -439,7 +434,7 @@ const PrimaryButton = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+    className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
   >
     <Icon className="h-4 w-4" />
     {children}

@@ -21,6 +21,19 @@
   --color-lab-error: var(--color-magenta-deep);
   --color-lab-tint: var(--color-lab-canvas);
   --color-lab-gutter: #bdaee4;
+  /* Interactive-panel accents. accent/on-accent is the filled button pair: on
+     dark the fill is the light violet with dark text, on light it inverts. */
+  --color-lab-accent: var(--color-ethereum-violet);
+  --color-lab-on-accent: var(--color-pure-white);
+  --color-lab-peach: var(--color-peach-deep);
+  --color-lab-magenta: var(--color-magenta-deep);
+  /* The rejected-path red in TransactionJourney: a distinct red rather than the
+     magenta of lab-error, so the failed branch reads as failure, not accent. */
+  --color-lab-reject: #c22f2f;
+  /* WorldComputer's globe gradient, light -> dark stops. */
+  --color-lab-globe-1: #ece0ff;
+  --color-lab-globe-2: #d7c4f7;
+  --color-lab-globe-3: #c0a6ef;
   --shadow-lab:
     0 2px 12px 1px rgb(65 18 140 / 0.02), 0 12px 16px -3px rgb(65 18 140 / 0.02),
     0 24px 32px -6px rgb(65 18 140 / 0.02), 0 32px 40px -12px rgb(152 27 27 / 0.04);
@@ -314,7 +327,7 @@
     z-index: 50;
     width: var(--lab-build-panel-width);
     flex: none;
-    border-left: 1px solid var(--color-dark-border);
+    border-left: 1px solid var(--color-lab-border);
     box-shadow: var(--shadow-lab);
     transform: translateX(100%);
     transition: transform var(--lab-code-motion);
@@ -391,7 +404,7 @@
     z-index: 35;
     width: var(--lab-build-panel-width);
     flex: none;
-    border-left: 1px solid var(--color-dark-border);
+    border-left: 1px solid var(--color-lab-border);
     box-shadow: var(--shadow-lab);
     transform: translateX(100%);
     transition: transform var(--lab-code-motion);
@@ -468,6 +481,14 @@
   --color-lab-error: var(--color-magenta-bright);
   --color-lab-tint: color-mix(in srgb, var(--color-violet-bright) 16%, transparent);
   --color-lab-gutter: var(--color-dark-gutter);
+  --color-lab-accent: var(--color-violet-bright);
+  --color-lab-on-accent: #1a102c;
+  --color-lab-peach: var(--color-peach-bright);
+  --color-lab-magenta: var(--color-magenta-bright);
+  --color-lab-reject: #ff8a8a;
+  --color-lab-globe-1: #3d2c61;
+  --color-lab-globe-2: #241640;
+  --color-lab-globe-3: #160e26;
   --shadow-lab: 0 10px 34px -16px rgb(0 0 0 / 0.7);
 }
 

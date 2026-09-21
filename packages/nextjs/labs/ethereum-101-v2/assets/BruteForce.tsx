@@ -34,16 +34,16 @@ const shuffled = <T,>(arr: T[]): T[] => {
 const MatchedHex = ({
   value,
   target,
-  missClass = "text-peach-bright",
+  missClass = "text-lab-peach",
 }: {
   value: string;
   target: string;
   missClass?: string;
 }) => (
   <span className="break-all">
-    <span className="text-dark-text-muted">0x</span>
+    <span className="text-lab-muted">0x</span>
     {value.split("").map((ch, i) => (
-      <span key={i} className={ch === target[i] ? "text-mint-bright" : missClass || undefined}>
+      <span key={i} className={ch === target[i] ? "text-lab-mint" : missClass || undefined}>
         {ch}
       </span>
     ))}
@@ -142,71 +142,71 @@ export const BruteForce = () => {
   const matches = realGuess ? realGuess.split("").filter((ch, i) => ch === realTarget[i]).length : 0;
 
   return (
-    <div className="flex flex-col gap-4 text-dark-text">
+    <div className="flex flex-col gap-4 text-lab-text">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
-          <span className="text-dark-text-muted">guesses</span>
-          <strong className="font-semibold text-dark-text">{guesses}</strong>
+        <span className="inline-flex items-center gap-2 rounded-full border border-lab-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
+          <span className="text-lab-muted">guesses</span>
+          <strong className="font-semibold text-lab-text">{guesses}</strong>
         </span>
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-lab-muted transition-colors hover:text-lab-text"
         >
           reset
         </button>
       </div>
 
       {!onRealKey ? (
-        <div className="flex flex-col gap-3 rounded-lg border border-dark-border bg-lab-code-panel-tint p-3 font-mono text-xs">
+        <div className="flex flex-col gap-3 rounded-lg border border-lab-border bg-lab-code-panel-tint p-3 font-mono text-xs">
           <div className="flex flex-col gap-1">
-            <span className="text-dark-text-muted">target key · 16 possibilities</span>
-            <span className="rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 text-sm">
+            <span className="text-lab-muted">target key · 16 possibilities</span>
+            <span className="rounded-md border border-lab-border bg-lab-inset px-2.5 py-2 text-sm">
               {toyTarget ? (
                 <MatchedHex value={toyTarget} target={toyGuess} missClass="" />
               ) : (
                 <>
-                  <span className="text-dark-text-muted">0x</span>…
+                  <span className="text-lab-muted">0x</span>…
                 </>
               )}
             </span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 text-sm">
+            <span className="rounded-md border border-lab-border bg-lab-inset px-2.5 py-2 text-sm">
               {toyGuess ? (
                 <MatchedHex value={toyGuess} target={toyTarget} />
               ) : (
                 <>
-                  <span className="text-dark-text-muted">0x</span>—
+                  <span className="text-lab-muted">0x</span>—
                 </>
               )}
             </span>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-3 rounded-lg border border-dark-border bg-lab-code-panel-tint p-3 font-mono text-xs">
+        <div className="flex flex-col gap-3 rounded-lg border border-lab-border bg-lab-code-panel-tint p-3 font-mono text-xs">
           <div className="flex flex-col gap-1">
-            <span className="text-dark-text-muted">target key · 2²⁵⁶ possibilities</span>
-            <span className="break-all rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2">
+            <span className="text-lab-muted">target key · 2²⁵⁶ possibilities</span>
+            <span className="break-all rounded-md border border-lab-border bg-lab-inset px-2.5 py-2">
               <MatchedHex value={realTarget} target={realGuess} missClass="" />
             </span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2">
+            <span className="rounded-md border border-lab-border bg-lab-inset px-2.5 py-2">
               {realGuess ? (
                 <MatchedHex value={realGuess} target={realTarget} />
               ) : (
                 <>
-                  <span className="text-dark-text-muted">0x</span>—
+                  <span className="text-lab-muted">0x</span>—
                 </>
               )}
             </span>
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-dark-text-muted">{matches} of 64 characters match</span>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-dark-elevated">
+            <span className="text-lab-muted">{matches} of 64 characters match</span>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-lab-track">
               <div
-                className="h-full rounded-full bg-mint-bright transition-all duration-300"
+                className="h-full rounded-full bg-lab-mint transition-all duration-300"
                 style={{ width: `${(matches / 64) * 100}%` }}
               />
             </div>
@@ -215,9 +215,9 @@ export const BruteForce = () => {
       )}
 
       {phase === "gaveUp" ? (
-        <div className="flex flex-col gap-2 text-sm leading-relaxed text-dark-text-muted">
+        <div className="flex flex-col gap-2 text-sm leading-relaxed text-lab-muted">
           <p className="m-0">
-            <strong className="font-semibold text-dark-text">
+            <strong className="font-semibold text-lab-text">
               You gave up after {realCount} {realCount === 1 ? "guess" : "guesses"}. Good call.
             </strong>
           </p>
@@ -233,7 +233,7 @@ export const BruteForce = () => {
           </p>
         </div>
       ) : (
-        <p className="m-0 min-h-[2.5rem] text-sm leading-relaxed text-dark-text-muted">{captionFor(phase, toyTried)}</p>
+        <p className="m-0 min-h-[2.5rem] text-sm leading-relaxed text-lab-muted">{captionFor(phase, toyTried)}</p>
       )}
 
       <div className="flex flex-wrap gap-2.5">
@@ -242,7 +242,7 @@ export const BruteForce = () => {
             type="button"
             onClick={startToy}
             disabled={!toyTarget}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Go
           </button>
@@ -251,7 +251,7 @@ export const BruteForce = () => {
           <button
             type="button"
             disabled
-            className="inline-flex items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent opacity-50"
           >
             guessing…
           </button>
@@ -260,7 +260,7 @@ export const BruteForce = () => {
           <button
             type="button"
             onClick={startReal}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90"
           >
             Crack a real key
           </button>
@@ -270,7 +270,7 @@ export const BruteForce = () => {
             type="button"
             onClick={() => setPhase("gaveUp")}
             disabled={!canGiveUp}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {canGiveUp ? "Give up" : `Give up (${Math.ceil(((GIVE_UP_AFTER - realCount) * ROLL_MS) / 1000)}s)`}
           </button>
