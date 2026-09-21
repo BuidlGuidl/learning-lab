@@ -343,8 +343,8 @@ const Home: NextPage = () => {
                 Continue learning with Speedrun Ethereum
               </h3>
               <p className="m-0 text-base leading-[1.6] text-onyx dark:text-dark-text">
-                Finished the labs? Keep learning Solidity by building Ethereum apps. Follow practical challenges to
-                write and deploy smart contracts, from Tokenization to Prediction Markets.
+                Finished the labs? Keep learning Solidity by building Ethereum apps. Follow hands-on challenges to write
+                and deploy your own smart contracts, from tokenization to prediction markets.
               </p>
               <MarketingButton href={MARKETING_ROUTES.speedrunEthereum} icon className="mt-2">
                 Start Speedrun Ethereum
