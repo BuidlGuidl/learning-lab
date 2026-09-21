@@ -112,7 +112,7 @@ const curriculumModules: ModuleCardProps[] = [
         contributions. Test what happens when the goal is reached and how refunds work when it is not.
       </>
     ),
-    action: "Start Crowdfunding",
+    action: "Start Crowdfunding Contract",
   },
 ];
 
@@ -317,7 +317,7 @@ const Home: NextPage = () => {
           </div>
           <aside
             aria-labelledby="continue-learning-title"
-            className="card relative isolate mt-10 min-h-[520px] overflow-hidden rounded-t-cards rounded-b-none bg-lavender sm:min-h-[400px]"
+            className="card relative isolate mt-10 min-h-[520px] overflow-hidden rounded-t-cards rounded-b-none bg-lavender sm:min-h-[400px] dark:bg-dark-surface"
           >
             {/* Original artwork: ethereum/ethereum-org-website, PR #12891. */}
             <Image
@@ -325,11 +325,11 @@ const Home: NextPage = () => {
               alt=""
               fill
               sizes="(max-width: 639px) 1600px, 1280px"
-              className="object-cover object-[35%_bottom] sm:object-center"
+              className="object-cover object-[35%_bottom] sm:object-center dark:brightness-60 dark:contrast-125 dark:saturate-150 dark:mask-[linear-gradient(to_bottom,black_90%,transparent_100%)]"
             />
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-linear-to-b from-lavender/90 via-lavender/30 to-transparent"
+              className="absolute inset-0 bg-linear-to-b from-lavender/90 via-lavender/30 to-transparent dark:from-dark-surface/95 dark:via-dark-surface/70 dark:to-dark-surface/20"
             />
             <div
               aria-hidden="true"
@@ -338,11 +338,11 @@ const Home: NextPage = () => {
             <div className="relative flex max-w-[600px] flex-col items-start gap-4 px-6 pt-7 pb-36 sm:px-10 sm:pt-10">
               <h3
                 id="continue-learning-title"
-                className="m-0 text-[28px] leading-tight font-black text-onyx sm:text-[32px]"
+                className="m-0 text-[28px] leading-tight font-black text-onyx sm:text-[32px] dark:text-dark-text"
               >
                 Continue learning with Speedrun Ethereum
               </h3>
-              <p className="m-0 text-base leading-[1.6] text-onyx">
+              <p className="m-0 text-base leading-[1.6] text-onyx dark:text-dark-text">
                 Finished the labs? Keep learning Solidity by building Ethereum apps. Follow practical challenges to
                 write and deploy smart contracts, from Tokenization to Prediction Markets.
               </p>
