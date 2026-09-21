@@ -3,8 +3,9 @@ import { IBM_Plex_Mono, Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import type { NextPage } from "next";
-import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, CheckIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { HeroShowcase } from "~~/app/_components/HeroShowcase";
+import { HeaderAuth } from "~~/components/HeaderAuth";
 import { SwitchTheme } from "~~/components/SwitchTheme";
 
 const inter = Inter({
@@ -23,7 +24,10 @@ const MARKETING_ROUTES = {
   home: "/",
   labs: "#labs",
   ethereum101: "/labs/ethereum-101",
-  tokenization: "/labs/tokenization",
+  wallets: "/labs/wallets",
+  crowdfunding: "/labs/crowdfunding",
+  speedrunEthereum: "https://speedrunethereum.com",
+  buidlGuidl: "https://buidlguidl.com",
 };
 
 const PRODUCT_COPY = {
@@ -65,33 +69,50 @@ const curriculumModules: ModuleCardProps[] = [
     artFill: true,
     imageSrc: "/ethereum-101-learning-lab.png",
     imageAlt: "",
-    meta: ["Beginner", "23 cards"],
+    level: "Beginner",
+    activity: "Concepts",
     title: "Ethereum 101",
     body: (
       <>
-        Go from &ldquo;what is Ethereum&rdquo; to deploying your own crowdfunding contract. Meet the world computer,
-        accounts, and gas, then write, deploy, and use a real contract that collects contributions and refunds them if
-        the goal falls short.
+        Meet the world computer. Learn what Ethereum is, what people build with it, and how it works. Explore wallets,
+        smart contracts, and transactions through interactive examples. No coding needed.
       </>
     ),
     action: "Start Ethereum 101",
   },
   {
-    href: MARKETING_ROUTES.tokenization,
+    href: MARKETING_ROUTES.wallets,
     artTint: "mint",
-    imageSrc: "/feature-global.png",
+    artFill: true,
+    imageSrc: "/wallets-final.webp",
     imageAlt: "",
-    meta: ["Intermediate", "ERC-721 · NFTs"],
-    mintMetaIndex: 0,
-    comingSoon: true,
-    title: "Tokenization",
+    level: "Beginner",
+    activity: "Transactions",
+    title: "Wallets",
     body: (
       <>
-        A token gives any item a digital passport: proof of ownership you carry in your wallet and apps can read. Create
-        your own ERC-721 token, mint it, send it to another account, and control who else can move it.
+        Set up a wallet, protect your recovery phrase, and get test ETH. Send a transaction, check it on a block
+        explorer, and use your wallet to interact with an app.
       </>
     ),
-    action: "Coming soon",
+    action: "Start Wallets",
+  },
+  {
+    href: MARKETING_ROUTES.crowdfunding,
+    artTint: "lavender",
+    artFill: true,
+    imageSrc: "/crowdfunding-final.webp",
+    imageAlt: "",
+    level: "Beginner",
+    activity: "Solidity coding",
+    title: "Crowdfunding Contract",
+    body: (
+      <>
+        Build your own crowdfunding contract in Solidity. Write the rules, deploy it in your browser, and collect
+        contributions. Test what happens when the goal is reached and how refunds work when it is not.
+      </>
+    ),
+    action: "Start Crowdfunding Contract",
   },
 ];
 
@@ -141,8 +162,8 @@ type ModuleCardProps = {
   artFill?: boolean;
   imageSrc: string;
   imageAlt: string;
-  meta: string[];
-  mintMetaIndex?: number;
+  level: string;
+  activity: string;
   title: string;
   body: ReactNode;
   action: string;
@@ -162,8 +183,8 @@ const ModuleCard = ({
   artFill,
   imageSrc,
   imageAlt,
-  meta,
-  mintMetaIndex,
+  level,
+  activity,
   title,
   body,
   action,
@@ -192,17 +213,8 @@ const ModuleCard = ({
       </div>
       <div className="flex flex-col gap-3 px-7 pt-7 pb-8">
         <div className="flex flex-wrap gap-2">
-          {meta.map((item, index) => (
-            <span
-              key={item}
-              className={cn(
-                "rounded-tags px-2.5 py-1 text-xs font-bold",
-                mintMetaIndex === index ? "bg-lp-pill-mint-bg text-lp-positive" : "bg-lp-pill-bg text-lp-pill-fg",
-              )}
-            >
-              {item}
-            </span>
-          ))}
+          <span className="rounded-tags bg-lp-pill-bg px-2.5 py-1 text-xs font-bold text-lp-pill-fg">{level}</span>
+          <span className="rounded-tags bg-lp-pill-bg px-2.5 py-1 text-xs font-bold text-lp-pill-fg">{activity}</span>
         </div>
         <h3 className="m-0 text-[28px] font-black text-lp-text-primary">{title}</h3>
         <p className="m-0 text-base leading-[1.6] text-lp-text-secondary">{body}</p>
@@ -252,11 +264,14 @@ const Home: NextPage = () => {
   return (
     <div className={`lp ${inter.variable} ${ibmPlexMono.variable}`}>
       <nav
-        className="flex h-[68px] items-center gap-10 border-b border-lp-border bg-lp-bg px-5 sm:px-8 min-[1100px]:px-12"
+        className="flex h-[68px] items-center gap-3 border-b border-lp-border bg-lp-bg px-5 sm:px-8 min-[1100px]:px-12"
         aria-label="Main navigation"
       >
         <Brand />
-        <SwitchTheme className="ml-auto site-theme-switch" />
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          <HeaderAuth />
+          <SwitchTheme className="site-theme-switch" />
+        </div>
       </nav>
 
       <header className="w-full max-w-[1280px] mx-auto px-5 sm:px-8 min-[1100px]:px-12 grid grid-cols-[1fr_1.2fr] items-center gap-10 pt-14 pb-16 min-[1101px]:gap-24 min-[901px]:pt-[72px] min-[901px]:pb-[84px] max-[900px]:grid-cols-1">
@@ -295,16 +310,52 @@ const Home: NextPage = () => {
             <Eyebrow>{PRODUCT_COPY.curriculum.eyebrow}</Eyebrow>
             <h2 className={lpH2}>{PRODUCT_COPY.curriculum.title}</h2>
           </div>
-          <div className="grid grid-cols-1 gap-6 min-[901px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 min-[901px]:grid-cols-3">
             {curriculumModules.map(module => (
               <ModuleCard key={module.title} {...module} />
             ))}
           </div>
+          <aside
+            aria-labelledby="continue-learning-title"
+            className="card relative isolate mt-10 min-h-[520px] overflow-hidden rounded-t-cards rounded-b-none bg-lavender sm:min-h-[400px] dark:bg-dark-surface"
+          >
+            {/* Original artwork: ethereum/ethereum-org-website, PR #12891. */}
+            <Image
+              src="/speedrun-ethereum-banner.png"
+              alt=""
+              fill
+              sizes="(max-width: 639px) 1600px, 1280px"
+              className="object-cover object-[35%_bottom] sm:object-center dark:brightness-60 dark:contrast-125 dark:saturate-150 dark:mask-[linear-gradient(to_bottom,black_90%,transparent_100%)]"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-linear-to-b from-lavender/90 via-lavender/30 to-transparent dark:from-dark-surface/95 dark:via-dark-surface/70 dark:to-dark-surface/20"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 bottom-6 z-10 rounded-t-cards border-x border-t border-lp-border"
+            />
+            <div className="relative flex max-w-[600px] flex-col items-start gap-4 px-6 pt-7 pb-36 sm:px-10 sm:pt-10">
+              <h3
+                id="continue-learning-title"
+                className="m-0 text-[28px] leading-tight font-black text-onyx sm:text-[32px] dark:text-dark-text"
+              >
+                Continue learning with Speedrun Ethereum
+              </h3>
+              <p className="m-0 text-base leading-[1.6] text-onyx dark:text-dark-text">
+                Finished the labs? Keep learning Solidity by building Ethereum apps. Follow hands-on challenges to write
+                and deploy your own smart contracts, from tokenization to prediction markets.
+              </p>
+              <MarketingButton href={MARKETING_ROUTES.speedrunEthereum} icon className="mt-2">
+                Start Speedrun Ethereum
+              </MarketingButton>
+            </div>
+          </aside>
         </div>
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-lp-border bg-lp-bg px-5 py-7 sm:px-8 min-[1100px]:px-12 max-sm:flex-col max-sm:items-start">
-        <div className="flex flex-col gap-2">
+      <footer className="flex items-center justify-center gap-4 border-t border-lp-border bg-lp-bg px-5 py-7 sm:gap-8 sm:px-8 min-[1100px]:px-12">
+        <div className="flex flex-col items-start gap-2 text-left">
           <span className="inline-flex items-center gap-[9px] text-base font-black leading-none text-lp-text-primary">
             <Image src="/eth-diamond-purple.svg" alt="" width={22} height={22} />
             Learning Lab
@@ -313,6 +364,17 @@ const Home: NextPage = () => {
             Interactive Ethereum labs, concepts to code.
           </small>
         </div>
+        <div aria-hidden="true" className="w-px shrink-0 self-stretch bg-lp-border" />
+        <p className="m-0 text-center text-sm text-lp-text-secondary">
+          Built with <HeartIcon aria-hidden="true" className="inline-block h-4 w-4 align-text-bottom" />
+          <span className="sr-only">love</span> by{" "}
+          <a
+            href={MARKETING_ROUTES.buidlGuidl}
+            className="font-bold text-lp-accent hover:underline focus-visible:underline"
+          >
+            BuidlGuidl
+          </a>
+        </p>
       </footer>
     </div>
   );

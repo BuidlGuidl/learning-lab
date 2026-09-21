@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
 import { InteractivePanel } from "./InteractivePanel";
@@ -16,6 +17,7 @@ import {
   CodeBracketIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { getLabSlug, registry } from "~~/labs/registry";
 import { useSession } from "~~/lib/auth-client";
 import { isCardCleared } from "~~/lib/grader/transcript";
 import { isGradable } from "~~/lib/lab/gradable";
@@ -44,6 +46,11 @@ const validPosition = (lab: LabType, pos: Position): Position | null => {
 // saved position can take over.
 const positionFromUrl = (lab: LabType): Position | null => {
   const params = new URLSearchParams(window.location.search);
+  // Cross-lab Back links resolve against the current content, so added cards stay reachable.
+  if (params.get("card") === "last") {
+    const chapterIndex = lab.chapters.length - 1;
+    return validPosition(lab, { chapterIndex, cardIndex: (lab.chapters[chapterIndex]?.cards.length ?? 0) - 1 });
+  }
   if (!params.has("ch") || !params.has("card")) return null;
   const chapterIndex = Number(params.get("ch"));
   const cardIndex = Number(params.get("card"));
@@ -172,6 +179,9 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   const progressPercent = totalLabCards > 0 ? (currentLabCard / totalLabCards) * 100 : 0;
   const atFirstCard = chapterIndex === 0 && cardIndex === 0;
   const atLastCard = chapterIndex === totalChapters - 1 && cardIndex === totalCards - 1;
+  const previousLabId = Object.keys(registry).find(id => registry[id].nextLabId === lab.id);
+  const nextLabId = registry[lab.id]?.nextLabId;
+  const nextLab = nextLabId ? registry[nextLabId] : undefined;
 
   // Gate: a gradable card locks forward nav until cleared (pass or skip). prev and
   // the sidebar's free-jump stay open — the gate is only on the Next button.
@@ -261,14 +271,24 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
               <CardRenderer key={card.id} card={card} chapterId={chapter.id} lab={lab} />
 
               <div className="grid grid-cols-[auto_minmax(72px,1fr)_auto] items-center gap-3 md:grid-cols-[auto_minmax(96px,1fr)_auto] md:gap-4">
-                <button
-                  className="btn btn-ghost min-h-0 min-w-[72px] gap-2 px-3 text-[15px] leading-none md:min-w-24 md:px-[18px]"
-                  onClick={() => prev(lab)}
-                  disabled={atFirstCard}
-                >
-                  <ArrowLeftIcon className="w-4 h-4" />
-                  back
-                </button>
+                {atFirstCard && previousLabId ? (
+                  <Link
+                    className="btn btn-ghost min-h-0 min-w-[72px] gap-2 px-3 text-[15px] leading-none md:min-w-24 md:px-[18px]"
+                    href={`/labs/${getLabSlug(previousLabId)}?card=last`}
+                  >
+                    <ArrowLeftIcon className="w-4 h-4" />
+                    back
+                  </Link>
+                ) : (
+                  <button
+                    className="btn btn-ghost min-h-0 min-w-[72px] gap-2 px-3 text-[15px] leading-none md:min-w-24 md:px-[18px]"
+                    onClick={() => prev(lab)}
+                    disabled={atFirstCard}
+                  >
+                    <ArrowLeftIcon className="w-4 h-4" />
+                    back
+                  </button>
+                )}
                 <div
                   className="relative h-1 overflow-hidden rounded bg-lab-track"
                   role="progressbar"
@@ -295,14 +315,28 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
                       skip for now
                     </button>
                   )}
-                  <button
-                    className="btn btn-primary min-h-0 min-w-[72px] gap-2 px-3 text-[15px] leading-none md:min-w-24 md:px-[18px]"
-                    onClick={() => next(lab)}
-                    disabled={atLastCard || gated}
-                  >
-                    next
-                    <ArrowRightIcon className="w-4 h-4" />
-                  </button>
+                  {atLastCard ? (
+                    nextLabId &&
+                    nextLab &&
+                    !gated && (
+                      <Link
+                        className="btn btn-primary min-h-0 min-w-[72px] gap-2 px-3 text-[15px] leading-none md:min-w-24 md:px-[18px]"
+                        href={`/labs/${getLabSlug(nextLabId)}?ch=0&card=0`}
+                      >
+                        <span className="normal-case">{nextLab.shortTitle ?? nextLab.title}</span>
+                        <ArrowRightIcon className="w-4 h-4" />
+                      </Link>
+                    )
+                  ) : (
+                    <button
+                      className="btn btn-primary min-h-0 min-w-[72px] gap-2 px-3 text-[15px] leading-none md:min-w-24 md:px-[18px]"
+                      onClick={() => next(lab)}
+                      disabled={gated}
+                    >
+                      next
+                      <ArrowRightIcon className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
               {gated && <p className="m-0 text-sm text-lab-muted">Pass this card to unlock the next one.</p>}
