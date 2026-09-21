@@ -3,7 +3,7 @@ import { IBM_Plex_Mono, Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import type { NextPage } from "next";
-import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, CheckIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { HeroShowcase } from "~~/app/_components/HeroShowcase";
 import { HeaderAuth } from "~~/components/HeaderAuth";
 import { SwitchTheme } from "~~/components/SwitchTheme";
@@ -26,6 +26,8 @@ const MARKETING_ROUTES = {
   ethereum101: "/labs/ethereum-101",
   wallets: "/labs/wallets",
   crowdfunding: "/labs/crowdfunding",
+  speedrunEthereum: "https://speedrunethereum.com",
+  buidlGuidl: "https://buidlguidl.com",
 };
 
 const PRODUCT_COPY = {
@@ -313,11 +315,47 @@ const Home: NextPage = () => {
               <ModuleCard key={module.title} {...module} />
             ))}
           </div>
+          <aside
+            aria-labelledby="continue-learning-title"
+            className="card relative isolate mt-10 min-h-[520px] overflow-hidden rounded-t-cards rounded-b-none bg-lavender sm:min-h-[400px]"
+          >
+            {/* Original artwork: ethereum/ethereum-org-website, PR #12891. */}
+            <Image
+              src="/speedrun-ethereum-banner.png"
+              alt=""
+              fill
+              sizes="(max-width: 639px) 1600px, 1280px"
+              className="object-cover object-[35%_bottom] sm:object-center"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-linear-to-b from-lavender/90 via-lavender/30 to-transparent"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 bottom-6 z-10 rounded-t-cards border-x border-t border-lp-border"
+            />
+            <div className="relative flex max-w-[600px] flex-col items-start gap-4 px-6 pt-7 pb-36 sm:px-10 sm:pt-10">
+              <h3
+                id="continue-learning-title"
+                className="m-0 text-[28px] leading-tight font-black text-onyx sm:text-[32px]"
+              >
+                Continue learning with Speedrun Ethereum
+              </h3>
+              <p className="m-0 text-base leading-[1.6] text-onyx">
+                Finished the labs? Keep learning Solidity by building Ethereum apps. Follow practical challenges to
+                write and deploy smart contracts, from Tokenization to Prediction Markets.
+              </p>
+              <MarketingButton href={MARKETING_ROUTES.speedrunEthereum} icon className="mt-2">
+                Start Speedrun Ethereum
+              </MarketingButton>
+            </div>
+          </aside>
         </div>
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-lp-border bg-lp-bg px-5 py-7 sm:px-8 min-[1100px]:px-12 max-sm:flex-col max-sm:items-start">
-        <div className="flex flex-col gap-2">
+      <footer className="flex items-center justify-center gap-4 border-t border-lp-border bg-lp-bg px-5 py-7 sm:gap-8 sm:px-8 min-[1100px]:px-12">
+        <div className="flex flex-col items-start gap-2 text-left">
           <span className="inline-flex items-center gap-[9px] text-base font-black leading-none text-lp-text-primary">
             <Image src="/eth-diamond-purple.svg" alt="" width={22} height={22} />
             Learning Lab
@@ -326,6 +364,17 @@ const Home: NextPage = () => {
             Interactive Ethereum labs, concepts to code.
           </small>
         </div>
+        <div aria-hidden="true" className="w-px shrink-0 self-stretch bg-lp-border" />
+        <p className="m-0 text-center text-sm text-lp-text-secondary">
+          Built with <HeartIcon aria-hidden="true" className="inline-block h-4 w-4 align-text-bottom" />
+          <span className="sr-only">love</span> by{" "}
+          <a
+            href={MARKETING_ROUTES.buidlGuidl}
+            className="font-bold text-lp-accent hover:underline focus-visible:underline"
+          >
+            BuidlGuidl
+          </a>
+        </p>
       </footer>
     </div>
   );
