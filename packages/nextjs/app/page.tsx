@@ -74,8 +74,8 @@ const curriculumModules: ModuleCardProps[] = [
     title: "Ethereum 101",
     body: (
       <>
-        Meet the world computer. Learn how Ethereum works, how accounts and wallets connect, and what happens when you
-        send a transaction. Explore smart contracts and gas through interactive examples. No coding needed.
+        Meet the world computer. Learn what Ethereum is, what people build with it, and how it works. Explore wallets,
+        smart contracts, and transactions through interactive examples. No coding needed.
       </>
     ),
     action: "Start Ethereum 101",
