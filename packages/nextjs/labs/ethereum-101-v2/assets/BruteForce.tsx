@@ -224,7 +224,7 @@ export const BruteForce = () => {
         {round.phase === "idle" && length < MAX_LENGTH && !hasStarted && (
           <p className="m-0">
             This example will brute force crack a vastly oversimplified key that&apos;s only one hex character long by
-            guessing a possible key value once per second. Press go to brute-force guess the key.
+            guessing a possible key value eight times per second. Press go to brute-force guess the key.
           </p>
         )}
         {showLengthHint && round.phase === "idle" && length < MAX_LENGTH && (
