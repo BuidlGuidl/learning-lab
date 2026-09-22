@@ -31,7 +31,7 @@ const tests: LabTests = {};
 
 export const lab = defineLab({
   id: "ethereum-101-v2",
-  title: "Ethereum 101 V2",
+  title: "Ethereum 101",
   overview:
     "The non-technical introduction to Ethereum: what it is, what it can do, why it isn't a bank, how you hold your own money, and how you use it.",
   contracts: {},
