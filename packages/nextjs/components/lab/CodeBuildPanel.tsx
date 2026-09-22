@@ -23,14 +23,15 @@ type BuildFocus = {
   label?: string;
 };
 
-const placeholderFor = (id: string) => `${id.replace(/-/g, " ")} · your current task`;
+const placeholderFor = (id: string, currentRegionId?: string) =>
+  `${id.replace(/-/g, " ")} · ${id === currentRegionId ? "your current task" : "unfinished task"}`;
 
 // The panel's view of renderProgram: filled/text lines pass through, unfilled
 // regions become a ghost line the JSX swaps for a badge. Marker-stripping and
 // focus-span tracking already happened in renderProgram (lib/lab/render.ts).
-function renderLines(segments: Segment[], fills: Record<string, string>): RenderedLine[] {
+function renderLines(segments: Segment[], fills: Record<string, string>, currentRegionId?: string): RenderedLine[] {
   return renderProgram(segments, fills).map(line => ({
-    text: line.placeholder ? `${line.indent}// ${placeholderFor(line.regionId as string)}` : line.text,
+    text: line.placeholder ? `${line.indent}// ${placeholderFor(line.regionId as string, currentRegionId)}` : line.text,
     regionId: line.regionId,
     ghost: line.placeholder,
     indent: line.indent,
@@ -149,8 +150,8 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
   );
 
   const renderedLines = useMemo(
-    () => (shownFile ? renderLines(labFiles[shownFile] ?? [], fills) : []),
-    [labFiles, shownFile, fills],
+    () => (shownFile ? renderLines(labFiles[shownFile] ?? [], fills, focus.regionId) : []),
+    [labFiles, shownFile, fills, focus.regionId],
   );
   const textLines = useMemo(() => renderedLines.map(line => line.text), [renderedLines]);
   const fullText = useMemo(() => textLines.join("\n"), [textLines]);
@@ -310,7 +311,7 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
                     <>
                       <span style={{ whiteSpace: "pre" }}>{line.indent}</span>
                       <span className="inline-flex items-center rounded-md border border-lab-code-panel-stub-border bg-lab-code-panel-stub px-[7px] font-normal italic text-lab-code-panel-stub-text shadow-[0_1px_4px_rgb(0_0_0/0.1)]">
-                        {placeholderFor(line.regionId ?? "task")}
+                        {placeholderFor(line.regionId ?? "task", focus.regionId)}
                       </span>
                     </>
                   ) : !lineTokens ? (
