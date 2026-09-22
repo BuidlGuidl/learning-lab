@@ -138,7 +138,7 @@ export const BruteForce = () => {
           step={1}
           value={length}
           onChange={event => changeLength(Number(event.target.value))}
-          className="range range-primary range-sm"
+          className="range range-primary range-sm w-full"
           aria-label="Key length"
           aria-valuetext={`${length} hexadecimal characters`}
         />
