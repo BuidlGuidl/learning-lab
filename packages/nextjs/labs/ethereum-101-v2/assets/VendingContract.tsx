@@ -23,7 +23,7 @@ const TRAY_X = 152; // the first bought snack slides all the way to the right of
 const TRAY_STEP = 32; // each later one stops one slot short, queueing leftwards
 const CHECK_STEP = 230; // ms between rules resolving, so they read one at a time
 
-// dark-panel palette (the rail is dark in both themes), aligned to the lab tokens
+// Theme-aware lab tokens: the rail follows light/dark like the rest of the lab.
 const COLOR = {
   bodyTop: "var(--color-lab-track)",
   bodyBottom: "var(--color-lab-inset)",

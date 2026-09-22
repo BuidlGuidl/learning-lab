@@ -30,6 +30,10 @@
   /* The rejected-path red in TransactionJourney: a distinct red rather than the
      magenta of lab-error, so the failed branch reads as failure, not accent. */
   --color-lab-reject: #c22f2f;
+  /* Matched characters in BruteForce's hex strings. Its own token rather than
+     lab-mint, whose light value is both under AA (3.3:1) and teal enough to read
+     as "dark" rather than "green" beside near-black body text. */
+  --color-lab-match: #15803d;
   /* WorldComputer's globe gradient, light -> dark stops. */
   --color-lab-globe-1: #ece0ff;
   --color-lab-globe-2: #d7c4f7;
@@ -486,6 +490,7 @@
   --color-lab-peach: var(--color-peach-bright);
   --color-lab-magenta: var(--color-magenta-bright);
   --color-lab-reject: #ff8a8a;
+  --color-lab-match: var(--color-mint-bright);
   --color-lab-globe-1: #3d2c61;
   --color-lab-globe-2: #241640;
   --color-lab-globe-3: #160e26;

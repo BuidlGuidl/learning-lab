@@ -61,7 +61,7 @@ const MatchedHex = ({
   <span className="break-all">
     <span className="text-lab-muted">0x</span>
     {value.split("").map((ch, i) => (
-      <span key={i} className={ch === target[i] ? "text-lab-mint" : missClass || undefined}>
+      <span key={i} className={ch === target[i] ? "font-bold text-lab-match" : missClass || undefined}>
         {ch}
       </span>
     ))}
@@ -145,19 +145,19 @@ export const BruteForce = () => {
 
   return (
     <div
-      className="flex flex-col gap-4 text-dark-text"
+      className="flex flex-col gap-4 text-lab-text"
       style={{
         fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
-          <span className="text-dark-text-muted">guesses</span>
-          <strong className="font-semibold text-dark-text">{round.guesses.toLocaleString("en-US")}</strong>
+        <span className="inline-flex items-center gap-2 rounded-full border border-lab-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
+          <span className="text-lab-muted">guesses</span>
+          <strong className="font-semibold text-lab-text">{round.guesses.toLocaleString("en-US")}</strong>
         </span>
         <button
           type="button"
-          className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-lab-muted transition-colors hover:text-lab-text"
           onClick={() => {
             setLength(1);
             setRound(newRound(1));
@@ -182,8 +182,8 @@ export const BruteForce = () => {
         {length === MAX_LENGTH && " · full-length key"}
       </p>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-dark-border bg-lab-code-panel-tint p-3 font-mono text-xs">
-        <span className="text-dark-text-muted">
+      <div className="flex flex-col gap-3 rounded-lg border border-lab-border bg-lab-code-panel-tint p-3 font-mono text-xs">
+        <span className="text-lab-muted">
           target key ·{" "}
           {length <= 8 ? (
             possibilities.toLocaleString("en-US")
@@ -195,24 +195,24 @@ export const BruteForce = () => {
           possibilities
         </span>
         <div
-          className={`break-all rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 ${length === MAX_LENGTH ? "text-xs" : "text-sm"}`}
+          className={`break-all rounded-md border border-lab-border bg-lab-inset px-2.5 py-2 ${length === MAX_LENGTH ? "text-xs" : "text-sm"}`}
         >
           {round.target ? <MatchedHex value={round.target} target={guess} missClass="" /> : "…"}
         </div>
-        <span className="text-dark-text-muted">current guess</span>
+        <span className="text-lab-muted">current guess</span>
         <div
-          className={`break-all rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 ${length === MAX_LENGTH ? "text-xs" : "text-sm"}`}
+          className={`break-all rounded-md border border-lab-border bg-lab-inset px-2.5 py-2 ${length === MAX_LENGTH ? "text-xs" : "text-sm"}`}
         >
           {guess ? <MatchedHex value={guess} target={round.target} /> : "—"}
         </div>
         {length === MAX_LENGTH && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-dark-text-muted">
+            <span className="text-lab-muted">
               {matches} of {length} characters match
             </span>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-dark-elevated">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-lab-track">
               <div
-                className="h-full rounded-full bg-mint-bright transition-all duration-300"
+                className="h-full rounded-full bg-lab-mint transition-all duration-300"
                 style={{ width: `${(matches / length) * 100}%` }}
               />
             </div>
@@ -220,7 +220,7 @@ export const BruteForce = () => {
         )}
       </div>
 
-      <div aria-live="polite" className="flex flex-col gap-2 text-sm leading-relaxed text-dark-text-muted empty:hidden">
+      <div aria-live="polite" className="flex flex-col gap-2 text-sm leading-relaxed text-lab-muted empty:hidden">
         {round.phase === "idle" && length < MAX_LENGTH && !hasStarted && (
           <p className="m-0">
             This example will brute force crack a vastly oversimplified key that&apos;s only one hex character long by
@@ -237,7 +237,7 @@ export const BruteForce = () => {
         {round.phase === "cracked" && (
           <p className="m-0">
             Cracked in{" "}
-            <strong className="font-semibold text-dark-text">
+            <strong className="font-semibold text-lab-text">
               {round.guesses} {round.guesses === 1 ? "guess" : "guesses"}!
             </strong>
             {length === 1 && " Add another character and run it again."}
@@ -256,15 +256,14 @@ export const BruteForce = () => {
           )}
       </div>
       {length < MAX_LENGTH && round.phase !== "idle" && (
-        <p className="m-0 text-sm leading-relaxed text-dark-text-muted">
-          Average time at 8 guesses/sec: <strong className="font-semibold text-dark-text">{averageTime(length)}</strong>
-          .
+        <p className="m-0 text-sm leading-relaxed text-lab-muted">
+          Average time at 8 guesses/sec: <strong className="font-semibold text-lab-text">{averageTime(length)}</strong>.
         </p>
       )}
       {length === MAX_LENGTH && round.phase === "stopped" && (
-        <div className="flex flex-col gap-2 text-sm leading-relaxed text-dark-text-muted">
+        <div className="flex flex-col gap-2 text-sm leading-relaxed text-lab-muted">
           <p className="m-0">
-            <strong className="font-semibold text-dark-text">
+            <strong className="font-semibold text-lab-text">
               You gave up after {round.guesses.toLocaleString("en-US")} {round.guesses === 1 ? "guess" : "guesses"}.
               Good call.
             </strong>

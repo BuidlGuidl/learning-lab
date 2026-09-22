@@ -26,15 +26,15 @@ const RIPPLE_STEP = 80; // ms between nodes adopting a broadcast
 const PULSE_MS = 700; // life of the mint "just adopted" ring
 const TILT = 0.42; // viewing the globe slightly from above, so it reads as a sphere
 
-// dark-panel palette (the rail is dark in both themes), aligned to the lab tokens
+// Theme-aware lab tokens: the rail follows light/dark like the rest of the lab.
 const COLOR = {
-  okFill: "rgb(168 125 255 / 0.16)",
+  okFill: "color-mix(in srgb, var(--color-lab-violet) 16%, transparent)",
   okStroke: "var(--color-lab-violet)",
   text: "var(--color-lab-text)",
   faint: "var(--color-lab-faint)",
-  faintFill: "rgb(118 104 146 / 0.10)",
+  faintFill: "color-mix(in srgb, var(--color-lab-faint) 10%, transparent)",
   rogue: "var(--color-lab-magenta)",
-  rogueFill: "rgb(255 124 203 / 0.16)",
+  rogueFill: "color-mix(in srgb, var(--color-lab-magenta) 16%, transparent)",
   mint: "var(--color-lab-mint)",
   globe: "var(--color-lab-violet)",
 };
