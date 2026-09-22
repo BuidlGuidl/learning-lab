@@ -7,8 +7,7 @@
 //     ("one computer, the same state everywhere").
 //   • Click a node → it drops offline, the rest carry on, it re-syncs on
 //     return ("no off switch").
-//   • Tamper a node → it turns rogue and the next broadcast overwrites it
-//     ("no one can rewrite history").
+//   • Tamper a node → its invalid copy is cleared by the next broadcast in this demo.
 // SVG with a viewBox so it stays crisp at any rail width; a gentle JS spin
 // (paused while the pointer is over the globe, so the blocks are easy to hit).
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,6 +17,12 @@ type Status = "ok" | "offline" | "tampered";
 type NodeState = { value: number; status: Status; pulseAt: number };
 
 const NODE_COUNT = 24;
+const MAX_TAMPERED = 3;
+const TAMPER_CAPTIONS = [
+  "You changed one node’s copy. The other nodes check it against Ethereum’s rules and reject the invalid change.",
+  "Two nodes now show false information. Repeating the same false claim doesn’t make it valid—the other nodes still check it for themselves.",
+  "These nodes have many independent operators. There’s no single administrator whose access lets you change every copy. Compromising a few nodes doesn’t give you control of the others.",
+];
 const START_VALUE = 7;
 const CENTER = 200;
 const RADIUS = 150;
@@ -141,6 +146,8 @@ export const WorldComputer = () => {
   const [consensus, setConsensus] = useState(START_VALUE);
   const [busy, setBusy] = useState(false);
   const [caption, setCaption] = useState(INTRO);
+  const tamperedCount = nodes.filter(node => node.status === "tampered").length;
+  const hasHealthyNode = nodes.some(node => node.status === "ok");
 
   const spinning = useRef(true);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -159,13 +166,13 @@ export const WorldComputer = () => {
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const broadcast = () => {
-    if (busy) return;
+    if (busy || !hasHealthyNode) return;
     setBusy(true);
     const next = consensus + 1;
     setConsensus(next);
 
     // ripple outward from a live node, nearest blocks adopting first
-    const live = nodes.map((n, i) => ({ n, i })).filter(o => o.n.status !== "offline");
+    const live = nodes.map((n, i) => ({ n, i })).filter(o => o.n.status === "ok");
     const origin = live.length ? live[Math.floor(Math.random() * live.length)].i : 0;
     const order = base
       .map((b, i) => ({ i, d: dist3(b, base[origin]) }))
@@ -188,11 +195,13 @@ export const WorldComputer = () => {
       () => {
         setBusy(false);
         setCaption(
-          offlineCount > 0
-            ? `Every live node now holds STATE ${next}. The ${offlineCount} offline node${
-                offlineCount > 1 ? "s" : ""
-              } will catch up on reconnect.`
-            : `Every node now holds STATE ${next}. Change it once, agreed everywhere.`,
+          tamperedCount > 0
+            ? `Every live node now holds STATE ${next}. This demo’s broadcast cleared the tampered copies; their false changes never became the shared state.${offlineCount > 0 ? " Offline nodes will catch up on reconnect." : ""}`
+            : offlineCount > 0
+              ? `Every live node now holds STATE ${next}. The ${offlineCount} offline node${
+                  offlineCount > 1 ? "s" : ""
+                } will catch up on reconnect.`
+              : `Every node now holds STATE ${next}. Change it once, agreed everywhere.`,
         );
       },
       order.length * RIPPLE_STEP + 150,
@@ -201,17 +210,18 @@ export const WorldComputer = () => {
   };
 
   const tamper = () => {
+    if (busy || tamperedCount >= MAX_TAMPERED) return;
     const candidates = nodes.map((n, i) => ({ n, i })).filter(o => o.n.status === "ok");
     if (!candidates.length) return;
     const pick = candidates[Math.floor(Math.random() * candidates.length)].i;
     setNodes(prev => prev.map((n, i) => (i === pick ? { ...n, status: "tampered" } : n)));
-    setCaption(
-      "One node faked its state. Its peers don't agree, so the network ignores it. Broadcast again and it's overwritten.",
-    );
+    setCaption(TAMPER_CAPTIONS[tamperedCount]);
   };
 
   const toggleNode = (i: number) => {
+    if (busy) return;
     const node = nodes[i];
+    if (node.status === "tampered") return;
     if (node.status === "offline") {
       setNodes(prev =>
         prev.map((n, j) => (j === i ? { value: consensus, status: "ok", pulseAt: performance.now() } : n)),
@@ -321,12 +331,18 @@ export const WorldComputer = () => {
               key={p.i}
               transform={`translate(${p.sx} ${p.sy})`}
               opacity={isOffline ? depthOpacity(p.depth) * 0.6 : depthOpacity(p.depth)}
-              className="cursor-pointer"
+              className={busy || isRogue ? "cursor-default" : "cursor-pointer"}
               onClick={() => toggleNode(p.i)}
               role="button"
-              aria-label={`Node ${p.i + 1}, ${isRogue ? "rogue" : isOffline ? "offline" : "in sync"}. Click to ${
-                isOffline ? "reconnect" : "take offline"
-              }.`}
+              tabIndex={0}
+              aria-disabled={busy || isRogue}
+              onKeyDown={event => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggleNode(p.i);
+                }
+              }}
+              aria-label={`Node ${p.i + 1}, ${isRogue ? "tampered. Broadcast a change to clear it." : isOffline ? "offline. Click to reconnect." : "in sync. Click to take offline."}`}
             >
               {showPulse && (
                 <rect
@@ -366,13 +382,15 @@ export const WorldComputer = () => {
         })}
       </svg>
 
-      <p className="m-0 min-h-[2.5rem] text-sm leading-relaxed text-dark-text-muted">{caption}</p>
+      <p aria-live="polite" className="m-0 min-h-[2.5rem] text-sm leading-relaxed text-dark-text-muted">
+        {caption}
+      </p>
 
       <div className="flex flex-wrap gap-2.5">
         <button
           type="button"
           onClick={broadcast}
-          disabled={busy}
+          disabled={busy || !hasHealthyNode}
           className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? "broadcasting…" : "Broadcast a change"}
@@ -380,7 +398,7 @@ export const WorldComputer = () => {
         <button
           type="button"
           onClick={tamper}
-          disabled={busy}
+          disabled={busy || tamperedCount >= MAX_TAMPERED || !hasHealthyNode}
           className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-4 py-2.5 text-sm font-semibold text-dark-text transition hover:border-violet-bright disabled:cursor-not-allowed disabled:opacity-50"
         >
           Tamper a node
@@ -390,8 +408,10 @@ export const WorldComputer = () => {
       <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-dark-text-muted">
         <LightBulbIcon className="h-4 w-4 shrink-0 text-violet-bright" />
         <span>
-          <strong className="font-semibold text-dark-text">Tip</strong>: click any node to drop it offline, then bring
-          it back.
+          <strong className="font-semibold text-dark-text">Tip</strong>:{" "}
+          {tamperedCount > 0
+            ? "broadcast a change to clear the tampered nodes and try again."
+            : "click a healthy node to drop it offline, then bring it back."}
         </span>
       </div>
     </div>
