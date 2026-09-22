@@ -1,31 +1,49 @@
 "use client";
 
-// Brute-forcing a private key, made playable — the concept card's "could
-// someone just guess your key?" question, answered in two rounds:
-//   • Toy key  → one hex character, 16 possibilities. A pre-shuffled deck of
-//                every value, one guess per second, never repeating — the
-//                mechanism visibly works, and cracks inside 16 seconds.
-//   • Real key → 64 hex characters, 2^256 possibilities. The same loop at the
-//                same pace. A "give up" button unlocks after 10 guesses, and
-//                the payoff is the math: ~1.16 × 10^77 keys, ~1.8 × 10^69
-//                years at this pace. Guessing isn't hard — it's hopeless.
 import { useEffect, useState } from "react";
+import { useLabStore } from "~~/services/store/lab-store";
 
-type Phase = "idle" | "toy" | "toyCracked" | "real" | "gaveUp";
+type Phase = "idle" | "running" | "cracked" | "stopped";
+type Round = { target: string; start: bigint; guess: string; guesses: number; phase: Phase };
 
-const ROLL_MS = 1000; // one guess per second, both rounds
-const GIVE_UP_AFTER = 10; // real-key guesses before "give up" unlocks
+const GUESSES_PER_SECOND = 8;
+const ROLL_MS = 1000 / GUESSES_PER_SECOND;
+const MAX_LENGTH = 64;
+const GIVE_UP_DELAY_SECONDS = 8;
+const SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60;
 
-const HEX = "0123456789abcdef".split("");
-const randomHex = (n: number) => Array.from({ length: n }, () => HEX[Math.floor(Math.random() * 16)]).join("");
+const randomValue = (length: number) => {
+  const bytes = crypto.getRandomValues(new Uint8Array(Math.ceil(length / 2)));
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, length);
+};
 
-const shuffled = <T,>(arr: T[]): T[] => {
-  const out = [...arr];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
+const newRound = (length: number): Round => ({
+  target: randomValue(length),
+  start: BigInt(`0x${randomValue(length)}`),
+  guess: "",
+  guesses: 0,
+  phase: "idle",
+});
+
+// The single-character example visits every value so it always finishes quickly.
+const guessAt = (start: bigint, attempt: number, length: number) =>
+  ((start + BigInt(attempt - 1)) % 16n ** BigInt(length)).toString(16).padStart(length, "0");
+
+const createGuessPicker = (length: number) => {
+  const tried = new Set<string>();
+  const possibilities = 16n ** BigInt(length);
+  return () => {
+    if (BigInt(tried.size) === possibilities) return null;
+    let guess = randomValue(length);
+    // Skip collisions without an unbounded random retry loop near exhaustion.
+    while (tried.has(guess)) {
+      guess = ((BigInt(`0x${guess}`) + 1n) % possibilities).toString(16).padStart(length, "0");
+    }
+    tried.add(guess);
+    return guess;
+  };
 };
 
 // A key rendered char-by-char against its counterpart: matches light up mint
@@ -50,229 +68,282 @@ const MatchedHex = ({
   </span>
 );
 
-const captionFor = (phase: Phase, toyGuesses: number) => {
-  switch (phase) {
-    case "idle":
-      return "This example will brute force crack a vastly oversimplified key that's only one hex character long by guessing a possible key value once per second. Press go to brute-force guess the key.";
-    case "toy":
-      return "Guessing one value per second.";
-    case "toyCracked":
-      return `Cracked in ${toyGuesses} ${toyGuesses === 1 ? "guess" : "guesses"}. With only 16 possibilities, brute force works great! Now run the exact same attack on a real 256-bit key.`;
-    case "real":
-      return "Now the key is 64 hex characters. Watch how few of them ever line up.";
-    case "gaveUp":
-      return "";
-  }
+const averageTime = (length: number) => {
+  const expectedGuesses = (16 ** length + 1) / 2;
+  const seconds = expectedGuesses / GUESSES_PER_SECOND;
+  if (seconds < 60) return `${seconds.toLocaleString("en-US", { maximumFractionDigits: 1 })} seconds`;
+  if (seconds < 3600) return `${(seconds / 60).toLocaleString("en-US", { maximumFractionDigits: 1 })} minutes`;
+  if (seconds < 86400) return `${(seconds / 3600).toLocaleString("en-US", { maximumFractionDigits: 1 })} hours`;
+  if (seconds < SECONDS_PER_YEAR)
+    return `${(seconds / 86400).toLocaleString("en-US", { maximumFractionDigits: 1 })} days`;
+  const years = seconds / SECONDS_PER_YEAR;
+  return `${years < 1000000 ? years.toLocaleString("en-US", { maximumFractionDigits: 1 }) : years.toExponential(2)} years`;
 };
 
 export const BruteForce = () => {
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [toyTarget, setToyTarget] = useState("");
-  const [toyDeck, setToyDeck] = useState<string[]>([]);
-  const [toyTried, setToyTried] = useState(0); // guesses made = toyDeck.slice(0, toyTried)
-  const [realTarget, setRealTarget] = useState("");
-  const [realGuess, setRealGuess] = useState("");
-  const [realCount, setRealCount] = useState(0);
+  const setInteractiveOpen = useLabStore(state => state.setInteractiveOpen);
+  const [length, setLength] = useState(1);
+  const [multiCharacterRuns, setMultiCharacterRuns] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [hasCrackedSingleCharacter, setHasCrackedSingleCharacter] = useState(false);
+  const [hasAttemptedTwoCharacters, setHasAttemptedTwoCharacters] = useState(false);
+  const [hasIncreasedLength, setHasIncreasedLength] = useState(false);
+  const [showLengthHint, setShowLengthHint] = useState(false);
+  const [giveUpSecondsLeft, setGiveUpSecondsLeft] = useState(0);
+  const [round, setRound] = useState<Round>({ target: "", start: 0n, guess: "", guesses: 0, phase: "idle" });
 
-  // targets are random, so they're picked after mount (not during render) to
-  // keep server and client markup identical
-  const deal = () => {
-    setToyTarget(HEX[Math.floor(Math.random() * 16)]);
-    setToyDeck(shuffled(HEX));
-    const bytes = crypto.getRandomValues(new Uint8Array(32));
-    setRealTarget(
-      Array.from(bytes)
-        .map(b => b.toString(16).padStart(2, "0"))
-        .join(""),
-    );
-  };
-  useEffect(deal, []);
+  useEffect(() => setRound(newRound(1)), []);
 
   useEffect(() => {
-    if (phase !== "toy") return;
-    const id = setInterval(() => {
-      // toyTried is the single source of progress, so a re-run of this effect
-      // can never replay the round
-      setToyTried(t => {
-        const tried = t + 1;
-        if (toyDeck[tried - 1] === toyTarget) {
-          clearInterval(id);
-          setPhase("toyCracked");
-        }
-        return tried;
+    if (length === 1 && round.phase === "cracked") setHasCrackedSingleCharacter(true);
+  }, [length, round.phase]);
+
+  useEffect(() => {
+    if (length === 2 && round.guesses > 0 && (round.phase === "cracked" || round.phase === "stopped")) {
+      setHasAttemptedTwoCharacters(true);
+    }
+  }, [length, round.phase, round.guesses]);
+
+  useEffect(() => {
+    if (round.phase !== "running") return;
+    const pickGuess = createGuessPicker(length);
+    const timer = setInterval(() => {
+      const randomGuess = length > 1 ? pickGuess() : "";
+      if (randomGuess === null) return;
+      setRound(current => {
+        if (current.phase !== "running") return current;
+        const guesses = current.guesses + 1;
+        const guess = length === 1 ? guessAt(current.start, guesses, length) : randomGuess;
+        const cracked = guess === current.target;
+        return { ...current, guess, guesses, phase: cracked ? "cracked" : "running" };
       });
     }, ROLL_MS);
-    return () => clearInterval(id);
-  }, [phase, toyDeck, toyTarget]);
+    return () => clearInterval(timer);
+  }, [round.phase, length]);
 
   useEffect(() => {
-    if (phase !== "real") return;
-    const id = setInterval(() => {
-      setRealGuess(randomHex(64));
-      setRealCount(c => c + 1);
-    }, ROLL_MS);
-    return () => clearInterval(id);
-  }, [phase]);
+    if (length !== MAX_LENGTH || round.phase !== "running") return;
+    const deadline = performance.now() + GIVE_UP_DELAY_SECONDS * 1000;
+    const timer = setInterval(() => {
+      const secondsLeft = Math.max(0, Math.ceil((deadline - performance.now()) / 1000));
+      setGiveUpSecondsLeft(secondsLeft);
+      if (secondsLeft === 0) clearInterval(timer);
+    }, 100);
+    return () => clearInterval(timer);
+  }, [length, round.phase]);
 
-  const reset = () => {
-    setPhase("idle");
-    setToyTried(0);
-    setRealGuess("");
-    setRealCount(0);
-    deal();
+  const changeLength = (value: number) => {
+    setShowLengthHint(value > length && !hasIncreasedLength);
+    if (value > length) setHasIncreasedLength(true);
+    setLength(value);
+    setRound(newRound(value));
   };
-
-  // the first guess of each round lands on the click itself; the intervals
-  // above only carry on from there
-  const startToy = () => {
-    setToyTried(1);
-    setPhase(toyDeck[0] === toyTarget ? "toyCracked" : "toy");
-  };
-
-  const startReal = () => {
-    setRealGuess(randomHex(64));
-    setRealCount(1);
-    setPhase("real");
-  };
-
-  const toyGuess = toyTried > 0 ? toyDeck[toyTried - 1] : "";
-  const onRealKey = phase === "real" || phase === "gaveUp";
-  const guesses = onRealKey ? realCount : toyTried;
-  const canGiveUp = realCount >= GIVE_UP_AFTER;
-  const matches = realGuess ? realGuess.split("").filter((ch, i) => ch === realTarget[i]).length : 0;
+  const guess = round.guess;
+  const matches = guess.split("").filter((character, index) => character === round.target[index]).length;
+  const possibilities = 16n ** BigInt(length);
+  const running = round.phase === "running";
 
   return (
-    <div className="flex flex-col gap-4 text-lab-text">
+    <div
+      className="flex flex-col gap-4 text-dark-text"
+      style={{
+        fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      }}
+    >
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-lab-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
-          <span className="text-lab-muted">guesses</span>
-          <strong className="font-semibold text-lab-text">{guesses}</strong>
+        <span className="inline-flex items-center gap-2 rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
+          <span className="text-dark-text-muted">guesses</span>
+          <strong className="font-semibold text-dark-text">{round.guesses.toLocaleString("en-US")}</strong>
         </span>
         <button
           type="button"
-          onClick={reset}
-          className="cursor-pointer font-mono text-xs text-lab-muted transition-colors hover:text-lab-text"
+          className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+          onClick={() => {
+            setLength(1);
+            setRound(newRound(1));
+            setMultiCharacterRuns(0);
+            setHasStarted(false);
+            setHasCrackedSingleCharacter(false);
+            setHasAttemptedTwoCharacters(false);
+            setHasIncreasedLength(false);
+            setShowLengthHint(false);
+            setGiveUpSecondsLeft(0);
+          }}
         >
-          reset
+          Reset
         </button>
       </div>
 
-      {!onRealKey ? (
-        <div className="flex flex-col gap-3 rounded-lg border border-lab-border bg-lab-code-panel-tint p-3 font-mono text-xs">
-          <div className="flex flex-col gap-1">
-            <span className="text-lab-muted">target key · 16 possibilities</span>
-            <span className="rounded-md border border-lab-border bg-lab-inset px-2.5 py-2 text-sm">
-              {toyTarget ? (
-                <MatchedHex value={toyTarget} target={toyGuess} missClass="" />
-              ) : (
-                <>
-                  <span className="text-lab-muted">0x</span>…
-                </>
-              )}
-            </span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="rounded-md border border-lab-border bg-lab-inset px-2.5 py-2 text-sm">
-              {toyGuess ? (
-                <MatchedHex value={toyGuess} target={toyTarget} />
-              ) : (
-                <>
-                  <span className="text-lab-muted">0x</span>—
-                </>
-              )}
-            </span>
-          </div>
+      <p className="m-0 text-sm">
+        Key length:{" "}
+        <strong>
+          {length} {length === 1 ? "character" : "characters"}
+        </strong>
+        {length === MAX_LENGTH && " · full-length key"}
+      </p>
+
+      <div className="flex flex-col gap-3 rounded-lg border border-dark-border bg-lab-code-panel-tint p-3 font-mono text-xs">
+        <span className="text-dark-text-muted">
+          target key ·{" "}
+          {length <= 8 ? (
+            possibilities.toLocaleString("en-US")
+          ) : (
+            <>
+              2<sup>{length * 4}</sup>
+            </>
+          )}{" "}
+          possibilities
+        </span>
+        <div
+          className={`break-all rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 ${length === MAX_LENGTH ? "text-xs" : "text-sm"}`}
+        >
+          {round.target ? <MatchedHex value={round.target} target={guess} missClass="" /> : "…"}
         </div>
-      ) : (
-        <div className="flex flex-col gap-3 rounded-lg border border-lab-border bg-lab-code-panel-tint p-3 font-mono text-xs">
-          <div className="flex flex-col gap-1">
-            <span className="text-lab-muted">target key · 2²⁵⁶ possibilities</span>
-            <span className="break-all rounded-md border border-lab-border bg-lab-inset px-2.5 py-2">
-              <MatchedHex value={realTarget} target={realGuess} missClass="" />
-            </span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="rounded-md border border-lab-border bg-lab-inset px-2.5 py-2">
-              {realGuess ? (
-                <MatchedHex value={realGuess} target={realTarget} />
-              ) : (
-                <>
-                  <span className="text-lab-muted">0x</span>—
-                </>
-              )}
-            </span>
-          </div>
+        <span className="text-dark-text-muted">current guess</span>
+        <div
+          className={`break-all rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 ${length === MAX_LENGTH ? "text-xs" : "text-sm"}`}
+        >
+          {guess ? <MatchedHex value={guess} target={round.target} /> : "—"}
+        </div>
+        {length === MAX_LENGTH && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-lab-muted">{matches} of 64 characters match</span>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-lab-track">
+            <span className="text-dark-text-muted">
+              {matches} of {length} characters match
+            </span>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-dark-elevated">
               <div
-                className="h-full rounded-full bg-lab-mint transition-all duration-300"
-                style={{ width: `${(matches / 64) * 100}%` }}
+                className="h-full rounded-full bg-mint-bright transition-all duration-300"
+                style={{ width: `${(matches / length) * 100}%` }}
               />
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {phase === "gaveUp" ? (
-        <div className="flex flex-col gap-2 text-sm leading-relaxed text-lab-muted">
+      <div aria-live="polite" className="flex flex-col gap-2 text-sm leading-relaxed text-dark-text-muted empty:hidden">
+        {round.phase === "idle" && length < MAX_LENGTH && !hasStarted && (
           <p className="m-0">
-            <strong className="font-semibold text-lab-text">
-              You gave up after {realCount} {realCount === 1 ? "guess" : "guesses"}. Good call.
+            This example will brute force crack a vastly oversimplified key that&apos;s only one hex character long by
+            guessing a possible key value once per second. Press go to brute-force guess the key.
+          </p>
+        )}
+        {showLengthHint && round.phase === "idle" && length < MAX_LENGTH && (
+          <p className="m-0">Each extra character adds 16 times as many possibilities.</p>
+        )}
+        {running && <p className="m-0">Eight guesses per second.</p>}
+        {running && length > 1 && multiCharacterRuns === 1 && (
+          <p className="m-0">Each guess is tried only once. The entire key must match.</p>
+        )}
+        {round.phase === "cracked" && (
+          <p className="m-0">
+            Cracked in{" "}
+            <strong className="font-semibold text-dark-text">
+              {round.guesses} {round.guesses === 1 ? "guess" : "guesses"}!
+            </strong>
+            {length === 1 && " Add another character and run it again."}
+          </p>
+        )}
+        {hasAttemptedTwoCharacters &&
+          length < MAX_LENGTH &&
+          (round.phase === "stopped" || (round.phase === "cracked" && length > 1)) && (
+            <p className="m-0">
+              {round.phase === "stopped" &&
+                `You stopped after ${round.guesses.toLocaleString("en-US")} ${round.guesses === 1 ? "guess" : "guesses"}. `}
+              {length === 2
+                ? "Add another character or jump right to the full-length key to see how long that would take."
+                : "Try the full-length key to see how long that would take."}
+            </p>
+          )}
+      </div>
+      {length < MAX_LENGTH && round.phase !== "idle" && (
+        <p className="m-0 text-sm leading-relaxed text-dark-text-muted">
+          Average time at 8 guesses/sec: <strong className="font-semibold text-dark-text">{averageTime(length)}</strong>
+          .
+        </p>
+      )}
+      {length === MAX_LENGTH && round.phase === "stopped" && (
+        <div className="flex flex-col gap-2 text-sm leading-relaxed text-dark-text-muted">
+          <p className="m-0">
+            <strong className="font-semibold text-dark-text">
+              You gave up after {round.guesses.toLocaleString("en-US")} {round.guesses === 1 ? "guess" : "guesses"}.
+              Good call.
             </strong>
           </p>
           <p className="m-0">
             A real key has 2²⁵⁶ possible values, about 1.16 × 10⁷⁷ different combinations. Cracking one takes around 5.8
-            × 10⁷⁶ guesses on average. At one guess per second, that’s roughly 1.8 × 10⁶⁹ years. The universe is about
-            14 billion years old. It works out that you’d have to watch this example spin for around 10⁵⁹ lifetimes of
-            the universe to guess the correct key!
+            × 10⁷⁶ guesses on average. At eight guesses per second, that’s roughly 2.3 × 10⁶⁸ years. The universe is
+            about 14 billion years old. It works out that you’d have to watch this example spin for around 1.6 × 10⁵⁸
+            lifetimes of the universe to guess the correct key!
           </p>
           <p className="m-0">
             Compute speed wouldn’t help either. A supercomputer trying a quintillion (10¹⁸) keys every second still
             needs about 10⁵¹ years. Nobody guesses a private key. The only way to lose yours is to give it away.
           </p>
         </div>
-      ) : (
-        <p className="m-0 min-h-[2.5rem] text-sm leading-relaxed text-lab-muted">{captionFor(phase, toyTried)}</p>
       )}
 
       <div className="flex flex-wrap gap-2.5">
-        {phase === "idle" && (
+        {running ? (
           <button
             type="button"
-            onClick={startToy}
-            disabled={!toyTarget}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn btn-primary h-auto px-4 py-2.5 text-sm font-semibold!"
+            disabled={length === 1 || (length === MAX_LENGTH && giveUpSecondsLeft > 0)}
+            onClick={() => {
+              if (length === 1 || (length === MAX_LENGTH && giveUpSecondsLeft > 0)) return;
+              setRound(current => ({ ...current, phase: "stopped" }));
+            }}
           >
-            Go
+            <span className="text-sm font-semibold normal-case">
+              {length === 1
+                ? "Guessing..."
+                : length === MAX_LENGTH
+                  ? giveUpSecondsLeft > 0
+                    ? `Give Up (${giveUpSecondsLeft}s)`
+                    : "Give Up"
+                  : "Give Up"}
+            </span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-primary h-auto px-4 py-2.5 text-sm font-semibold!"
+            disabled={!round.target}
+            onClick={() => {
+              setHasStarted(true);
+              setGiveUpSecondsLeft(length === MAX_LENGTH ? GIVE_UP_DELAY_SECONDS : 0);
+              setShowLengthHint(false);
+              if (length > 1) setMultiCharacterRuns(count => count + 1);
+              setRound({ ...(round.phase === "idle" ? round : newRound(length)), phase: "running" });
+            }}
+          >
+            <span className="text-sm font-semibold normal-case">{round.phase === "idle" ? "Go" : "Try again"}</span>
           </button>
         )}
-        {phase === "toy" && (
+        {length === MAX_LENGTH && round.phase === "stopped" && (
           <button
             type="button"
-            disabled
-            className="inline-flex items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent opacity-50"
+            className="btn btn-outline h-auto px-4 py-2.5 text-sm font-semibold!"
+            onClick={() => setInteractiveOpen(false)}
           >
-            guessing…
+            <span className="text-sm font-semibold normal-case">Done</span>
           </button>
         )}
-        {phase === "toyCracked" && (
+        {hasCrackedSingleCharacter && length < MAX_LENGTH && (length === 1 || hasAttemptedTwoCharacters) && (
           <button
             type="button"
-            onClick={startReal}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90"
+            className="btn btn-outline h-auto px-4 py-2.5 text-sm font-semibold!"
+            onClick={() => changeLength(length + 1)}
           >
-            Crack a real key
+            <span className="text-sm font-semibold normal-case">Add a character</span>
           </button>
         )}
-        {phase === "real" && (
+        {hasAttemptedTwoCharacters && length < MAX_LENGTH && (
           <button
             type="button"
-            onClick={() => setPhase("gaveUp")}
-            disabled={!canGiveUp}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn btn-outline h-auto px-4 py-2.5 text-sm font-semibold!"
+            onClick={() => changeLength(MAX_LENGTH)}
           >
-            {canGiveUp ? "Give up" : `Give up (${Math.ceil(((GIVE_UP_AFTER - realCount) * ROLL_MS) / 1000)}s)`}
+            <span className="text-sm font-semibold normal-case">Try a full-length key</span>
           </button>
         )}
       </div>
