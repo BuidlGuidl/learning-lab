@@ -346,7 +346,6 @@ export const VendingContract = () => {
         </text>
 
         <rect x={18} y={190} width={164} height={52} rx={7} fill={COLOR.inset} stroke={COLOR.line} strokeWidth={1.4} />
-        <rect x={18} y={190} width={164} height={7} rx={3} fill={COLOR.bodyBottom} />
         {Array.from({ length: dispensed }, (_, i) => (
           <rect key={i} x={TRAY_X - i * TRAY_STEP} y={TRAY_Y} width={26} height={18} rx={4} fill={COLOR.mint} />
         ))}
