@@ -174,7 +174,7 @@ export const WalletSort = () => {
     preview.setAttribute("data-wallet-drag-preview", "");
     preview.tabIndex = -1;
     preview.className =
-      "pointer-events-none fixed left-0 top-0 z-[1000] inline-flex select-none items-center gap-2 rounded-lg border border-violet-bright/80 bg-dark-bg/95 px-3 py-2 text-left text-xs font-semibold text-dark-text shadow-2xl shadow-violet-bright/25 ring-2 ring-violet-bright/25 backdrop-blur-sm will-change-transform";
+      "pointer-events-none fixed left-0 top-0 z-[1000] inline-flex select-none items-center gap-2 rounded-lg border border-lab-accent/80 bg-lab-canvas/95 px-3 py-2 text-left text-xs font-semibold text-lab-text shadow-2xl shadow-lab-violet/25 ring-2 ring-lab-violet/25 backdrop-blur-sm will-change-transform";
     preview.style.width = `${drag.width}px`;
     preview.style.minHeight = `${drag.height}px`;
     preview.style.opacity = "1";
@@ -379,34 +379,34 @@ export const WalletSort = () => {
 
   return (
     <div
-      className="flex flex-col gap-4 text-dark-text"
+      className="flex flex-col gap-4 text-lab-text"
       onPointerMove={handlePointerMove}
       onPointerUp={finishPointerDrag}
       onPointerCancel={cancelPointerDrag}
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="font-mono text-xs text-dark-text-muted">
+        <span className="font-mono text-xs text-lab-muted">
           wallet sort · {sortedCount}/{ITEMS.length} sorted
           {mistakes > 0 && ` · ${mistakes} miss${mistakes === 1 ? "" : "es"}`}
         </span>
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer font-mono text-xs text-dark-text-muted hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-lab-muted hover:text-lab-text"
         >
           reset
         </button>
       </div>
 
       <div>
-        <h3 className="m-0 text-lg font-semibold text-dark-text">What&apos;s actually inside the wallet?</h3>
-        <p className="mb-0 mt-1 text-sm leading-relaxed text-dark-text-muted">
+        <h3 className="m-0 text-lg font-semibold text-lab-text">What&apos;s actually inside the wallet?</h3>
+        <p className="mb-0 mt-1 text-sm leading-relaxed text-lab-muted">
           Sort each item by where it actually lives. Careful: some of these things exist nowhere at all.
         </p>
       </div>
 
-      <div className="rounded-xl border border-dashed border-dark-border bg-dark-surface/40 p-3">
-        <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-dark-text-faint">
+      <div className="rounded-xl border border-dashed border-lab-border bg-lab-surface/40 p-3">
+        <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-lab-faint">
           Items to sort
         </span>
         <div className="flex flex-wrap gap-2">
@@ -430,8 +430,8 @@ export const WalletSort = () => {
                 aria-describedby="wallet-sort-instructions"
                 className={`group inline-flex min-h-11 touch-none select-none items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs font-semibold transition-[color,background-color,border-color,box-shadow,opacity,transform] active:cursor-grabbing active:scale-[0.98] ${
                   selectedIndex === itemIndex
-                    ? "cursor-grab border-violet-bright bg-violet-bright/15 text-violet-bright ring-2 ring-violet-bright/20"
-                    : "cursor-grab border-dark-border bg-dark-bg text-dark-text hover:border-violet-bright/70 hover:bg-dark-surface"
+                    ? "cursor-grab border-lab-accent bg-lab-accent/15 text-lab-violet ring-2 ring-lab-violet/20"
+                    : "cursor-grab border-lab-border bg-lab-canvas text-lab-text hover:border-lab-accent/70 hover:bg-lab-surface"
                 } ${draggedIndex === itemIndex ? "scale-[0.97] border-dashed opacity-25" : ""}`}
               >
                 <span
@@ -446,11 +446,11 @@ export const WalletSort = () => {
               </button>
             ) : null,
           )}
-          {complete && <span className="py-2 text-xs text-mint-bright">All items placed.</span>}
+          {complete && <span className="py-2 text-xs text-lab-mint">All items placed.</span>}
         </div>
       </div>
 
-      <p id="wallet-sort-instructions" className="m-0 text-xs text-dark-text-faint">
+      <p id="wallet-sort-instructions" className="m-0 text-xs text-lab-faint">
         Drag a card to a destination, or tap to select it and then tap a destination.
       </p>
       <p className="sr-only" aria-live="assertive">
@@ -478,25 +478,25 @@ export const WalletSort = () => {
               aria-label={`${zone.title}. ${zoneItems.length} item${zoneItems.length === 1 ? "" : "s"} placed.${
                 isReady ? " Activate to place the selected item here." : ""
               }`}
-              className={`relative min-h-36 w-full rounded-xl border border-dashed p-4 text-left transition-[border-color,background-color,box-shadow,transform] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-bright ${
+              className={`relative min-h-36 w-full rounded-xl border border-dashed p-4 text-left transition-[border-color,background-color,box-shadow,transform] focus:outline-none focus-visible:ring-2 focus-visible:ring-lab-violet ${
                 isActive
-                  ? "scale-[1.01] border-violet-bright bg-violet-bright/15 shadow-lg shadow-violet-bright/10 ring-1 ring-violet-bright/30"
+                  ? "scale-[1.01] border-lab-accent bg-lab-accent/15 shadow-lg shadow-lab-violet/10 ring-1 ring-lab-violet/30"
                   : isReady
-                    ? "cursor-pointer border-violet-bright/60 bg-lab-code-panel-tint"
-                    : "border-dark-border bg-dark-surface"
+                    ? "cursor-pointer border-lab-accent/60 bg-lab-code-panel-tint"
+                    : "border-lab-border bg-lab-surface"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="block text-xs font-semibold uppercase tracking-wide text-violet-bright">
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-lab-violet">
                     {zone.title}
                   </span>
                 </div>
                 <span
                   className={`rounded-full border px-2 py-1 font-mono text-[10px] uppercase tracking-wide transition-colors ${
                     isActive
-                      ? "border-violet-bright/60 bg-violet-bright/20 text-violet-bright"
-                      : "border-dark-border text-dark-text-faint"
+                      ? "border-lab-accent/60 bg-lab-accent/20 text-lab-violet"
+                      : "border-lab-border text-lab-faint"
                   }`}
                 >
                   {isActive ? "release" : zoneItems.length}
@@ -506,13 +506,13 @@ export const WalletSort = () => {
                 {zoneItems.map(({ item }) => (
                   <span
                     key={item.label}
-                    className="rounded-lg border border-mint-bright/40 bg-mint-bright/10 px-2.5 py-1.5 text-xs font-semibold text-mint-bright"
+                    className="rounded-lg border border-lab-mint/40 bg-lab-mint/10 px-2.5 py-1.5 text-xs font-semibold text-lab-mint"
                   >
                     ✓ {item.label}
                   </span>
                 ))}
                 {zoneItems.length === 0 && (
-                  <span className={`text-xs ${isActive ? "font-semibold text-violet-bright" : "text-dark-text-faint"}`}>
+                  <span className={`text-xs ${isActive ? "font-semibold text-lab-violet" : "text-lab-faint"}`}>
                     {isActive ? "Release to place here" : "Drop or place items here"}
                   </span>
                 )}
@@ -524,22 +524,22 @@ export const WalletSort = () => {
 
       {!complete && feedback && (
         <div
-          className="rounded-lg border border-dark-border bg-dark-surface p-3 text-sm leading-relaxed"
+          className="rounded-lg border border-lab-border bg-lab-surface p-3 text-sm leading-relaxed"
           aria-live="polite"
         >
-          <strong className={feedback.correct ? "text-mint-bright" : "text-peach-bright"}>
+          <strong className={feedback.correct ? "text-lab-mint" : "text-lab-peach"}>
             {feedback.correct ? "Correct." : "Not there."}
           </strong>{" "}
-          <span className="text-dark-text-muted">{feedback.message}</span>
+          <span className="text-lab-muted">{feedback.message}</span>
         </div>
       )}
 
       {complete && (
         <div
-          className="rounded-xl border border-mint-bright/30 bg-mint-bright/10 p-4 text-sm leading-relaxed text-dark-text-muted"
+          className="rounded-xl border border-lab-mint/30 bg-lab-mint/10 p-4 text-sm leading-relaxed text-lab-muted"
           aria-live="polite"
         >
-          <strong className="text-dark-text">Wallet sort complete</strong>
+          <strong className="text-lab-text">Wallet sort complete</strong>
           <p className="mb-0 mt-2">
             Your wallet guards your key and its recovery backup. Ethereum records your address, ETH balance, and
             transaction history. And two things exist nowhere: a copy of your recovery phrase held by someone else, and

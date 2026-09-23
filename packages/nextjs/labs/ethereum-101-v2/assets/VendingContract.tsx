@@ -23,18 +23,18 @@ const TRAY_X = 152; // the first bought snack slides all the way to the right of
 const TRAY_STEP = 32; // each later one stops one slot short, queueing leftwards
 const CHECK_STEP = 230; // ms between rules resolving, so they read one at a time
 
-// dark-panel palette (the rail is dark in both themes), aligned to the lab tokens
+// Theme-aware lab tokens: the rail follows light/dark like the rest of the lab.
 const COLOR = {
-  bodyTop: "#2a2340",
-  bodyBottom: "#1b1528",
-  line: "#3a3158",
-  inset: "#14111c",
-  faint: "#857c9e",
-  muted: "#b3aac9",
-  mint: "#54d6a8",
-  peach: "#f0a868",
-  magenta: "#ff7ccb",
-  violet: "#a87dff",
+  bodyTop: "var(--color-lab-track)",
+  bodyBottom: "var(--color-lab-inset)",
+  line: "var(--color-lab-border-strong)",
+  inset: "var(--color-lab-canvas)",
+  faint: "var(--color-lab-faint)",
+  muted: "var(--color-lab-muted)",
+  mint: "var(--color-lab-mint)",
+  peach: "var(--color-lab-peach)",
+  magenta: "var(--color-lab-magenta)",
+  violet: "var(--color-lab-violet)",
 };
 
 type Mark = "idle" | "dim" | "pass" | "fail";
@@ -70,13 +70,13 @@ const INTRO = (
 const failCaption = (index: number, amount: number): ReactNode =>
   [
     <>
-      You sent <strong className="text-peach-bright">{eth(amount)}</strong> but the minimum price is{" "}
+      You sent <strong className="text-lab-peach">{eth(amount)}</strong> but the minimum price is{" "}
       <strong>0.05 ETH</strong>. So your money was never sent and the vending machine stock remains the same.
     </>,
     <>
-      You sent <strong className="text-peach-bright">{eth(amount)}</strong> but the machine is out of stock. Your
-      payment was fine, but the second rule failed, and a failed rule undoes everything. Your money came straight back
-      and the vending machine stock remains the same.
+      You sent <strong className="text-lab-peach">{eth(amount)}</strong> but the machine is out of stock. Your payment
+      was fine, but the second rule failed, and a failed rule undoes everything. Your money came straight back and the
+      vending machine stock remains the same.
     </>,
   ][index];
 
@@ -224,14 +224,14 @@ export const VendingContract = () => {
       amount > PRICE ? (
         <>
           Both rules passed, so the machine finished the job: stock dropped to <strong>{nextStock}</strong> and the
-          contract now holds <strong className="text-mint-bright">{eth(nextBalance)}</strong>. Notice it kept your whole{" "}
+          contract now holds <strong className="text-lab-mint">{eth(nextBalance)}</strong>. Notice it kept your whole{" "}
           <strong>{eth(amount)}</strong>. The rule only says pay <strong>at least 0.05 ETH</strong>, and the machine
           gives no change.
         </>
       ) : (
         <>
           Both rules passed, so the machine finished the job: stock dropped to <strong>{nextStock}</strong> and the
-          contract now holds <strong className="text-mint-bright">{eth(nextBalance)}</strong>.
+          contract now holds <strong className="text-lab-mint">{eth(nextBalance)}</strong>.
         </>
       ),
     );
@@ -239,29 +239,29 @@ export const VendingContract = () => {
   };
 
   const markClass: Record<Mark, string> = {
-    idle: "text-dark-text-muted",
-    dim: "text-dark-text-muted opacity-40",
-    pass: "bg-mint-bright/10 text-dark-text",
-    fail: "bg-magenta-bright/10 text-dark-text",
+    idle: "text-lab-muted",
+    dim: "text-lab-muted opacity-40",
+    pass: "bg-lab-mint/10 text-lab-text",
+    fail: "bg-lab-magenta/10 text-lab-text",
   };
   const glyphClass: Record<Mark, string> = {
-    idle: "text-dark-text-faint",
-    dim: "text-dark-text-faint",
-    pass: "text-mint-bright",
-    fail: "text-magenta-bright",
+    idle: "text-lab-faint",
+    dim: "text-lab-faint",
+    pass: "text-lab-mint",
+    fail: "text-lab-magenta",
   };
 
   return (
-    <div className="flex flex-col gap-4 text-dark-text">
+    <div className="flex flex-col gap-4 text-lab-text">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
-          <span className="text-dark-text-muted">contract holds</span>
-          <strong className="font-semibold text-dark-text">{eth(balance)}</strong>
+        <span className="inline-flex items-center gap-2 rounded-full border border-lab-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs">
+          <span className="text-lab-muted">contract holds</span>
+          <strong className="font-semibold text-lab-text">{eth(balance)}</strong>
         </span>
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+          className="cursor-pointer font-mono text-xs text-lab-muted transition-colors hover:text-lab-text"
         >
           reset
         </button>
@@ -346,7 +346,6 @@ export const VendingContract = () => {
         </text>
 
         <rect x={18} y={190} width={164} height={52} rx={7} fill={COLOR.inset} stroke={COLOR.line} strokeWidth={1.4} />
-        <rect x={18} y={190} width={164} height={7} rx={3} fill={COLOR.bodyBottom} />
         {Array.from({ length: dispensed }, (_, i) => (
           <rect key={i} x={TRAY_X - i * TRAY_STEP} y={TRAY_Y} width={26} height={18} rx={4} fill={COLOR.mint} />
         ))}
@@ -372,10 +371,10 @@ export const VendingContract = () => {
       </svg>
 
       <div
-        className="rounded-xl border border-dark-border bg-dark-bg/60 p-3 text-xs leading-relaxed"
+        className="rounded-xl border border-lab-border bg-lab-canvas/60 p-3 text-xs leading-relaxed"
         aria-label="The machine's rules, with each one checked as it runs."
       >
-        <div className="text-dark-text-faint">The vending machine&apos;s rules:</div>
+        <div className="text-lab-faint">The vending machine&apos;s rules:</div>
         {RULES.map((rule, i) => (
           <div key={rule} className={`-mx-1 flex items-center gap-2 rounded px-1 ${markClass[marks[i]]}`}>
             <span className={`w-3 shrink-0 text-center font-bold ${glyphClass[marks[i]]}`}>{MARK_GLYPH[marks[i]]}</span>
@@ -395,25 +394,22 @@ export const VendingContract = () => {
             type="button"
             onClick={() => buy(amount)}
             disabled={busy}
-            className="cursor-pointer rounded-lg bg-violet-bright px-4 py-2 font-mono text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-lg bg-lab-accent px-4 py-2 font-mono text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Insert {eth(amount)}
           </button>
         ))}
       </div>
 
-      <p
-        key={captionKey}
-        className="m-0 min-h-[3.5rem] animate-caption-in text-sm leading-relaxed text-dark-text-muted"
-      >
+      <p key={captionKey} className="m-0 min-h-[3.5rem] animate-caption-in text-sm leading-relaxed text-lab-muted">
         {caption}
       </p>
 
-      <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-dark-text-muted">
-        <LightBulbIcon className="h-4 w-4 shrink-0 text-violet-bright" />
+      <div className="flex items-center gap-2 rounded-lg border border-lab-border bg-lab-code-panel-tint px-3 py-2 text-xs leading-snug text-lab-muted">
+        <LightBulbIcon className="h-4 w-4 shrink-0 text-lab-violet" />
         <span>
-          <strong className="font-semibold text-dark-text">Tip</strong>: try underpaying, overpaying, and buying when
-          the machine is empty to see how it responds.
+          <strong className="font-semibold text-lab-text">Tip</strong>: try underpaying, overpaying, and buying when the
+          machine is empty to see how it responds.
         </span>
       </div>
     </div>

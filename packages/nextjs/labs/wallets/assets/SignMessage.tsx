@@ -32,9 +32,9 @@ const readableError = (error: unknown) => {
 // its line breaks, so what's on screen is exactly what they signed
 const Field = ({ label, prose, children }: { label: string; prose?: boolean; children: React.ReactNode }) => (
   <div className="flex flex-col gap-1">
-    <span className="font-mono text-xs text-dark-text-muted">{label}</span>
+    <span className="font-mono text-xs text-lab-muted">{label}</span>
     <span
-      className={`rounded-md border border-dark-border bg-dark-subtle px-2.5 py-2 text-xs ${
+      className={`rounded-md border border-lab-border bg-lab-inset px-2.5 py-2 text-xs ${
         prose ? "whitespace-pre-wrap break-words" : "break-all font-mono"
       }`}
     >
@@ -75,14 +75,14 @@ export const SignMessage = () => {
   const matches = Boolean(signer && address && signer.toLowerCase() === address.toLowerCase());
 
   return (
-    <div className="flex flex-col gap-4 text-dark-text">
-      <span className="self-start rounded-full border border-dark-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs text-dark-text-muted">
+    <div className="flex flex-col gap-4 text-lab-text">
+      <span className="self-start rounded-full border border-lab-border bg-lab-code-panel-tint px-3 py-1 font-mono text-xs text-lab-muted">
         no chain · no gas · nothing broadcast
       </span>
 
       {!isConnected ? (
         <>
-          <p className="m-0 text-sm leading-relaxed text-dark-text-muted">
+          <p className="m-0 text-sm leading-relaxed text-lab-muted">
             Connect a wallet to sign something yourself. Nothing here spends money or sends a transaction — the wallet
             is only being asked to prove it holds a key.
           </p>
@@ -90,19 +90,19 @@ export const SignMessage = () => {
             type="button"
             onClick={openConnectModal}
             disabled={!openConnectModal}
-            className="inline-flex cursor-pointer items-center gap-2 self-start rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 self-start rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Connect wallet
           </button>
-          <p className="m-0 text-xs leading-relaxed text-dark-text-faint">
+          <p className="m-0 text-xs leading-relaxed text-lab-faint">
             No wallet installed? Read on — the next cards don&apos;t need one.
           </p>
         </>
       ) : (
         <>
           <div className="flex items-center justify-between gap-3">
-            <span className="font-mono text-xs text-dark-text-muted">
-              signing as <span className="text-dark-text">{short(address ?? "")}</span>
+            <span className="font-mono text-xs text-lab-muted">
+              signing as <span className="text-lab-text">{short(address ?? "")}</span>
             </span>
             <button
               type="button"
@@ -110,7 +110,7 @@ export const SignMessage = () => {
                 clearResult();
                 disconnect();
               }}
-              className="cursor-pointer font-mono text-xs text-dark-text-muted transition-colors hover:text-dark-text"
+              className="cursor-pointer font-mono text-xs text-lab-muted transition-colors hover:text-lab-text"
             >
               disconnect
             </button>
@@ -124,21 +124,21 @@ export const SignMessage = () => {
             type="button"
             onClick={sign}
             disabled={isPending}
-            className="inline-flex cursor-pointer items-center gap-2 self-start rounded-lg bg-violet-bright px-4 py-2.5 text-sm font-semibold text-[#1a102c] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 self-start rounded-lg bg-lab-accent px-4 py-2.5 text-sm font-semibold text-lab-on-accent transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isPending ? "Check your wallet…" : "Sign message"}
           </button>
 
-          {error && <p className="m-0 text-sm leading-relaxed text-peach-bright">{error}</p>}
+          {error && <p className="m-0 text-sm leading-relaxed text-lab-peach">{error}</p>}
 
           {signature && (
-            <div className="flex flex-col gap-3 rounded-lg border border-dark-border bg-lab-code-panel-tint p-3">
-              <span className="font-mono text-xs text-dark-text-muted">message + signature → address</span>
+            <div className="flex flex-col gap-3 rounded-lg border border-lab-border bg-lab-code-panel-tint p-3">
+              <span className="font-mono text-xs text-lab-muted">message + signature → address</span>
               <Field label="signature">{signature}</Field>
               <Field label="address recovered">
-                <span className={matches ? "text-mint-bright" : "text-peach-bright"}>{signer}</span>
+                <span className={matches ? "text-lab-mint" : "text-lab-peach"}>{signer}</span>
               </Field>
-              <p className="m-0 text-sm leading-relaxed text-dark-text-muted">
+              <p className="m-0 text-sm leading-relaxed text-lab-muted">
                 {matches ? (
                   <>
                     That&apos;s your address, worked out from those two inputs alone. Your key never left the wallet,
