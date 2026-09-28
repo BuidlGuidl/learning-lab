@@ -542,8 +542,8 @@ export const WalletSort = () => {
           <strong className="text-lab-text">Wallet sort complete</strong>
           <p className="mb-0 mt-2">
             Your wallet guards your key and its recovery backup. Ethereum records your address, ETH balance, and
-            transaction history. And two things exist nowhere: a copy of your recovery phrase held by someone else, and
-            a way to reset your key. Your wallet holds your key, not your money
+            transaction history. And two things exist nowhere: an undo button for ETH you already sent, and a way to
+            reset your key. Your wallet holds your key, not your money
             {mistakes === 0 ? ". Sorted with no misses." : "."}
           </p>
         </div>
