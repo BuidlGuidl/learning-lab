@@ -88,6 +88,36 @@ export const tests: LabTests = {
         "funding still open",
       );
     }),
+    test("refund() reverts when the goal was reached", async ({ contracts, write, accounts, client }) => {
+      // fund exactly 10 ether so the goal is met
+      expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 6n * ETHER }), "fund(6 ether)");
+      expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[2], value: 4n * ETHER }), "fund(4 ether)");
+
+      await passDeadline(client);
+
+      expectRevert(
+        await write(contracts.Crowdfund, "refund", { from: accounts[1] }),
+        "refund() when goal was reached",
+        "goal was reached",
+      );
+    }),
+    test("second refund() reverts because there is nothing to refund", async ({
+      contracts,
+      write,
+      accounts,
+      client,
+    }) => {
+      expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 1n * ETHER }), "fund(1 ether)");
+
+      await passDeadline(client);
+
+      expectOk(await write(contracts.Crowdfund, "refund", { from: accounts[1] }), "first refund()");
+      expectRevert(
+        await write(contracts.Crowdfund, "refund", { from: accounts[1] }),
+        "second refund()",
+        "nothing to refund",
+      );
+    }),
     test("refund() pays back and zeroes the ledger after deadline", async ({
       contracts,
       read,
@@ -119,36 +149,6 @@ export const tests: LabTests = {
       const args = refunded!.args as unknown as Record<string, unknown>;
       expectEq(args["contributor"], accounts[1], "Refunded.contributor");
       expectEq(args["amount"], 1n * ETHER, "Refunded.amount");
-    }),
-    test("second refund() reverts because there is nothing to refund", async ({
-      contracts,
-      write,
-      accounts,
-      client,
-    }) => {
-      expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 1n * ETHER }), "fund(1 ether)");
-
-      await passDeadline(client);
-
-      expectOk(await write(contracts.Crowdfund, "refund", { from: accounts[1] }), "first refund()");
-      expectRevert(
-        await write(contracts.Crowdfund, "refund", { from: accounts[1] }),
-        "second refund()",
-        "nothing to refund",
-      );
-    }),
-    test("refund() reverts when the goal was reached", async ({ contracts, write, accounts, client }) => {
-      // fund exactly 10 ether so the goal is met
-      expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 6n * ETHER }), "fund(6 ether)");
-      expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[2], value: 4n * ETHER }), "fund(4 ether)");
-
-      await passDeadline(client);
-
-      expectRevert(
-        await write(contracts.Crowdfund, "refund", { from: accounts[1] }),
-        "refund() when goal was reached",
-        "goal was reached",
-      );
     }),
     // Ordering is invisible to every assertion above: zeroing after the send
     // leaves byte-identical storage, and only a caller that runs code mid-
