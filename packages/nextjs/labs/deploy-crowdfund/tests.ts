@@ -88,7 +88,7 @@ export const tests: LabTests = {
         "funding still open",
       );
     }),
-    test("refund pays back and zeroes the ledger after deadline", async ({
+    test("refund() pays back and zeroes the ledger after deadline", async ({
       contracts,
       read,
       write,
@@ -120,7 +120,12 @@ export const tests: LabTests = {
       expectEq(args["contributor"], accounts[1], "Refunded.contributor");
       expectEq(args["amount"], 1n * ETHER, "Refunded.amount");
     }),
-    test("second refund() after a successful one reverts", async ({ contracts, write, accounts, client }) => {
+    test("second refund() reverts because there is nothing to refund", async ({
+      contracts,
+      write,
+      accounts,
+      client,
+    }) => {
       expectOk(await write(contracts.Crowdfund, "fund", { from: accounts[1], value: 1n * ETHER }), "fund(1 ether)");
 
       await passDeadline(client);
