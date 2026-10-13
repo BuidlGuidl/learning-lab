@@ -39,9 +39,16 @@ export const WalletSignIn = () => {
   const sawConnectModal = useRef(false);
 
   useEffect(() => {
-    if (!callbackURL || signing.current) return;
+    if (!callbackURL) {
+      // Nothing in flight: forget any connect modal seen during the last request, or the next
+      // click would read its closed modal as "dismissed" and cancel itself.
+      sawConnectModal.current = false;
+      return;
+    }
+    if (signing.current) return;
 
     if (isConnected && address) {
+      sawConnectModal.current = false;
       // The wallet's actual chain, not wagmi's configured one: a smart-contract wallet only
       // verifies on the chain it is deployed on, so an unsupported chain is a switch, not a guess.
       if (chainId === undefined || !isEnabledChain(chainId)) {
