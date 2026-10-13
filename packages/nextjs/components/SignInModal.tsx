@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { WalletIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { signIn } from "~~/lib/auth-client";
+import { useWalletSignInStore } from "~~/services/store/wallet-sign-in";
 import { notification } from "~~/utils/scaffold-eth";
 
 // Google's own G, four paths, unaltered. Their branding rules forbid recoloring or flattening it,
@@ -40,33 +41,31 @@ const GitHubMark = () => (
   </svg>
 );
 
-// Both providers share one shape so neither reads as the primary. Not `btn` — base.css gives every
+// All providers share one shape so none reads as the primary. Not `btn` — base.css gives every
 // .btn a 9999rem pill from outside a cascade layer, which no radius utility can beat here.
+// The fills are Google's neutral light and dark button specs, hard-coded because they are their
+// colors, not ours (hover is their 8% state layer resolved against each background). Google's three
+// sanctioned backgrounds are a hard rule and ours is not, so GitHub and the wallet take the same
+// fills and the set reads as one. GitHub only forbids recoloring the mark, which stays black/white.
 const PROVIDER_BUTTON =
-  "flex h-10 w-full cursor-pointer items-center justify-center gap-3 rounded border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-violet focus-visible:ring-offset-2 focus-visible:ring-offset-lab-surface";
-// Google's neutral light and dark button specs, hard-coded because they are their colors, not ours.
-// Hover is their 8% state layer resolved against each background.
-const GOOGLE_BUTTON =
-  "border-[#747775] bg-[#FFFFFF] text-[#1F1F1F] hover:bg-[#EBEEF0] dark:border-[#8E918F] dark:bg-[#131314] dark:text-[#E3E3E3] dark:hover:bg-[#232324]";
-// Same fills as the Google button (its three sanctioned backgrounds are a hard rule, ours is not),
-// so the pair reads as one set. GitHub only forbids recoloring the mark, which stays black/white.
-const GITHUB_BUTTON =
-  "border-[#747775] bg-[#FFFFFF] text-[#1F1F1F] hover:bg-[#EBEEF0] dark:border-[#8E918F] dark:bg-[#131314] dark:text-[#E3E3E3] dark:hover:bg-[#232324]";
+  "flex h-10 w-full cursor-pointer items-center justify-center gap-3 rounded border border-[#747775] bg-[#FFFFFF] px-4 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#EBEEF0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-violet focus-visible:ring-offset-2 focus-visible:ring-offset-lab-surface disabled:cursor-wait disabled:opacity-60 dark:border-[#8E918F] dark:bg-[#131314] dark:text-[#E3E3E3] dark:hover:bg-[#232324]";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  // Where the OAuth redirect lands. Callers pass the current URL so sign-in returns to the same card.
+  // Where sign-in lands afterwards. Callers pass the current URL so sign-in returns to the same card.
   callbackURL: string;
 };
 
 /**
- * Sign-in dialog with Google and GitHub as equal options. Native <dialog>, so Escape, the top layer
- * and the focus trap come from the platform; `open` drives showModal/close and every dismissal path
- * funnels through the element's own close event into onClose.
+ * Sign-in dialog with Google, GitHub and an Ethereum wallet as equal options. Native <dialog>, so
+ * Escape, the top layer and the focus trap come from the platform; `open` drives showModal/close and
+ * every dismissal path funnels through the element's own close event into onClose.
  */
 export const SignInModal = ({ open, onClose, callbackURL }: Props) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const startWalletSignIn = useWalletSignInStore(state => state.start);
+  const isWalletPending = useWalletSignInStore(state => state.callbackURL !== null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -79,6 +78,13 @@ export const SignInModal = ({ open, onClose, callbackURL }: Props) => {
     // On success better-auth navigates to the provider; only a failure leaves us here to tell.
     const { error } = await signIn.social({ provider, callbackURL });
     if (error) notification.error(error.message ?? "Sign-in failed, please try again.");
+  };
+
+  const handleWalletSignIn = () => {
+    // A modal <dialog> owns the top layer and makes everything else inert, so RainbowKit's connect
+    // modal would be unreachable behind it: close first, then hand the flow to WalletSignIn.
+    dialogRef.current?.close();
+    startWalletSignIn(callbackURL);
   };
 
   return (
@@ -108,21 +114,17 @@ export const SignInModal = ({ open, onClose, callbackURL }: Props) => {
         <p className="mb-6 mt-1 text-sm text-lab-muted">Keep your progress on any device.</p>
 
         <div className="flex flex-col gap-3">
-          <button
-            type="button"
-            className={`${PROVIDER_BUTTON} ${GOOGLE_BUTTON}`}
-            onClick={() => handleSocialSignIn("google")}
-          >
+          <button type="button" className={PROVIDER_BUTTON} onClick={() => handleSocialSignIn("google")}>
             <GoogleMark />
             Continue with Google
           </button>
-          <button
-            type="button"
-            className={`${PROVIDER_BUTTON} ${GITHUB_BUTTON}`}
-            onClick={() => handleSocialSignIn("github")}
-          >
+          <button type="button" className={PROVIDER_BUTTON} onClick={() => handleSocialSignIn("github")}>
             <GitHubMark />
             Continue with GitHub
+          </button>
+          <button type="button" className={PROVIDER_BUTTON} onClick={handleWalletSignIn} disabled={isWalletPending}>
+            <WalletIcon className="h-5 w-5 flex-none" aria-hidden="true" />
+            Continue with Wallet
           </button>
         </div>
       </div>

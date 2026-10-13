@@ -13,7 +13,7 @@ Built on [Scaffold-ETH 2](https://scaffoldeth.io).
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/) (v1 or v2+)
 - [Git](https://git-scm.com/downloads)
 - An [OpenRouter API key](https://openrouter.ai/keys) that powers the AI grader
-- Google and GitHub OAuth apps for sign-in (see [OAuth credentials](#oauth-credentials))
+- Google and GitHub OAuth apps for sign-in (see [OAuth credentials](#oauth-credentials)). Wallet sign-in needs no credentials, only the database schema from `yarn drizzle-kit push`.
 
 ## Local Setup
 
@@ -49,9 +49,9 @@ Open [http://localhost:3000](http://localhost:3000) and pick a lab. Labs compile
 
 ### OAuth credentials
 
-Sign-in with Google and GitHub is handled by [Better Auth](https://www.better-auth.com).
+Sign-in with Google, GitHub and an Ethereum wallet is handled by [Better Auth](https://www.better-auth.com). The wallet option uses Sign-In with Ethereum through Better Auth's `siwe` plugin and works out of the box.
 
-Each provider needs an OAuth app that points back at `http://localhost:3000`.
+Each OAuth provider needs an app that points back at `http://localhost:3000`.
 
 **GitHub**: [Settings → Developer settings → OAuth Apps → New OAuth App](https://github.com/settings/applications/new).
 

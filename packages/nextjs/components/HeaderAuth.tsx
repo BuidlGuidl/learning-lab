@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { MENU, MENU_ITEM, SUMMARY, SignInMenu } from "~~/components/SignInMenu";
+import { UserAvatar } from "~~/components/UserAvatar";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 import { signOut, useSession } from "~~/lib/auth-client";
+import { userDisplayName } from "~~/lib/user-display";
 import { clearLocalProgress } from "~~/services/store/lab-persistence";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -46,21 +47,13 @@ export const HeaderAuth = () => {
 
   if (!user) return <SignInMenu callbackURL={pathname ?? "/"} summaryClassName={CONTROL_FRAME} />;
 
-  const firstName = user.name?.trim().split(/\s+/)[0] ?? "";
-  const initial = (firstName || user.email || "?").charAt(0).toUpperCase();
+  const label = userDisplayName(user, { firstWordOnly: true });
 
   return (
     <details ref={dropdownRef} className="dropdown dropdown-end">
       <summary className={`${SUMMARY} ${CONTROL_FRAME} gap-2 px-2`}>
-        {user.image ? (
-          // unoptimized: provider avatars are remote and next.config declares no images.remotePatterns.
-          <Image src={user.image} alt="" width={24} height={24} className="rounded-full" unoptimized />
-        ) : (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-lab-violet text-xs font-bold text-pure-white dark:text-dark-bg">
-            {initial}
-          </span>
-        )}
-        {firstName ? <span className="max-w-24 truncate">{firstName}</span> : null}
+        <UserAvatar user={user} size={24} />
+        {label ? <span className="max-w-24 truncate">{label}</span> : null}
         <ChevronDownIcon className="h-4 w-4 opacity-60" />
       </summary>
       <ul className={MENU}>
