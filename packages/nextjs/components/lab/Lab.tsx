@@ -387,7 +387,7 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <CodeBuildPanel lab={lab} />
+              <CodeBuildPanel lab={lab} onCollapse={() => setCodeSheetOpen(false)} />
             </div>
           </>
         )}
