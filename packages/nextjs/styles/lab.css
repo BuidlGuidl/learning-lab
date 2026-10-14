@@ -75,9 +75,18 @@
 .lab-header {
   /* Layout tokens stay local; colors/shadows live in @theme (--color-lab-*). */
   --lab-header-height: 52px;
-  /* The code panel docks beside the lesson at lg+, so it is sized to leave room for a full card:
-     about a third of the viewport, never narrower than a readable contract. */
-  --lab-build-panel-width: clamp(420px, 32vw, 520px);
+  /* Lesson gutter, shared with the panel sizing below. */
+  --lab-content-pad: clamp(16px, 4vw, 64px);
+  /* What the chapter rail takes at lg+ while open (Sidebar's w-80); set below, 0 while folded. */
+  --lab-rail-width: 0px;
+  /* The code panel docks beside the lesson at lg+. The card keeps its 760px and the panel takes
+     what is left (less the 32px gap and the lesson's scrollbar), never narrower than a readable
+     contract and capped before it outgrows one. */
+  --lab-build-panel-width: clamp(
+    420px,
+    calc(100vw - var(--lab-rail-width) - 760px - 2 * var(--lab-content-pad) - 32px - 16px),
+    48rem
+  );
   /* The interactive peek still overlays the lesson, so it can take half the viewport. */
   --lab-interactive-panel-width: min(50vw, 42rem);
   /* Shared open/close motion for the code peek, in one place so the backdrop fade and panel slide
@@ -111,7 +120,7 @@
 
 .lab__content {
   min-height: 100%;
-  padding: 32px clamp(16px, 4vw, 64px);
+  padding: 32px var(--lab-content-pad);
   /* Matches the docked code panel's slide (lg+ below) so the lesson re-centres in step with it. */
   transition: padding-right var(--lab-code-motion);
   background:
@@ -333,6 +342,11 @@
 
   .lab--code-open .lab__content {
     padding-right: calc(var(--lab-build-panel-width) + 32px);
+  }
+
+  /* Tailwind's lg:drawer-open, which Lab.tsx sets while the rail is open. */
+  .lab[class~="lg:drawer-open"] {
+    --lab-rail-width: 20rem;
   }
 
   .lab-build-panel {

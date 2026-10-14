@@ -90,8 +90,9 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   const setInteractiveOpen = useLabStore(s => s.setInteractiveOpen);
 
   const isDesktop = useMediaQuery("(min-width: 1024px)"); // Tailwind's lg, matching the code-peek CSS
-  // Tailwind's 2xl: the narrowest width where the chapter rail, a full card and the docked code panel fit together.
-  const isWide = useMediaQuery("(min-width: 1536px)");
+  // Where the chapter rail (320), a full card (760), the lesson gutters and a wrap-free contract panel
+  // (about 600) all fit at once; see --lab-build-panel-width in lab.css for the panel's own sizing.
+  const isWide = useMediaQuery("(min-width: 1856px)");
 
   // Chapter rail: open on desktop, a closed overlay drawer on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -151,7 +152,7 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
 
   // On desktop the docked code panel is the exercise's other half: arriving at a code exercise opens
   // it and arriving anywhere else closes it. Keyed on navigation, so a manual toggle holds within a
-  // card. Below 2xl the rail, the card and the panel don't all fit, so the rail gives way for the
+  // card. Below isWide the rail, the card and the panel don't all fit, so the rail gives way for the
   // exercise and comes back on the next card. Mobile keeps the sheet manual; there is no room for both.
   const currentCardType = lab.chapters[chapterIndex]?.cards[cardIndex]?.type;
   const railFoldedForCode = useRef(false);
