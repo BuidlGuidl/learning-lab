@@ -99,6 +99,9 @@ export const WalletSignIn = () => {
         const verified = await authClient.siwe.verify({ message, signature });
         if (verified.error) throw new Error(verified.error.message ?? "Signature was not accepted.");
 
+        // End the request before navigating: wallets emit chainChanged/accountsChanged right after
+        // signing, which re-runs the effect while the page is still unloading.
+        finish();
         window.location.assign(landingURL);
       } catch (error) {
         notification.error(readableError(error));

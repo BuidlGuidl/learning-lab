@@ -9,11 +9,13 @@ export const PRODUCTION_URL = "https://lab.buidlguidl.com";
  * The host a signed SIWE message must name. Better Auth's plugin compares it against a fixed
  * string, not the request's Host header, so it is derived per deployment: production's custom
  * domain, a preview's branch alias (the link Vercel posts on the PR; the per-deployment URL
- * fails the check), or BETTER_AUTH_URL locally.
+ * fails the check), or BETTER_AUTH_URL locally. viem only builds messages for dotted hosts,
+ * localhost and IP addresses, so a bare dev hostname such as devbox:3000 cannot sign in.
  */
 export const siweDomain = () => {
   if (process.env.VERCEL_ENV === "production") return new URL(PRODUCTION_URL).host;
-  const vercelHost = process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL;
+  // ||, not ??: CLI deploys set the Git-derived VERCEL_BRANCH_URL to an empty string.
+  const vercelHost = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL;
   if (vercelHost) return vercelHost;
   return new URL(process.env.BETTER_AUTH_URL ?? "http://localhost:3000").host;
 };
@@ -57,9 +59,8 @@ export const verifySiweSignature = async ({ message, signature, address, chainId
   }
 };
 
-// The plugin awaits this before creating the user, so the whole lookup gets one deadline: the
-// RPC calls are already short, but an NFT avatar record makes viem fetch a user-controlled
-// token URI with no timeout at all.
+// The plugin awaits this before creating the user, so the whole lookup gets one deadline on top
+// of the per-transport timeout.
 const ENS_TIMEOUT_MS = 5_000;
 
 const withDeadline = <T>(promise: Promise<T>, ms: number) => {
@@ -71,8 +72,10 @@ const withDeadline = <T>(promise: Promise<T>, ms: number) => {
 };
 
 /**
- * Names a first-time wallet user after their ENS record when they have one. Only runs once, at
- * account creation, and any lookup failure or timeout falls back to the bare address.
+ * Names a first-time wallet user after their ENS name when they have one. Only runs once, at
+ * account creation, and any lookup failure or timeout falls back to the bare address. The avatar
+ * is deliberately left empty: resolving it makes viem fetch whatever URL the ENS record points
+ * at, from this server, so UserAvatar's fallback is used instead.
  */
 export const lookupEns = async ({ walletAddress }: { walletAddress: string }) => {
   const fallbackResult = { name: walletAddress, avatar: "" };
@@ -80,15 +83,9 @@ export const lookupEns = async ({ walletAddress }: { walletAddress: string }) =>
   const client = publicClientFor(mainnet.id);
   if (!client) return fallbackResult;
 
-  const resolve = async () => {
-    const name = await client.getEnsName({ address: walletAddress });
-    if (!name) return fallbackResult;
-    const avatar = await client.getEnsAvatar({ name });
-    return { name, avatar: avatar ?? "" };
-  };
-
   try {
-    return await withDeadline(resolve(), ENS_TIMEOUT_MS);
+    const name = await withDeadline(client.getEnsName({ address: walletAddress }), ENS_TIMEOUT_MS);
+    return name ? { name, avatar: "" } : fallbackResult;
   } catch (error) {
     console.error("ENS lookup failed:", error);
     return fallbackResult;

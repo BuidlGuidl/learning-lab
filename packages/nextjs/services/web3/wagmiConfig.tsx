@@ -5,8 +5,6 @@ import { hardhat } from "viem/chains";
 import { createConfig } from "wagmi";
 import scaffoldConfig from "~~/scaffold.config";
 
-export { enabledChains };
-
 export const wagmiConfig = createConfig({
   chains: enabledChains,
   connectors: wagmiConnectors(),
