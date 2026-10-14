@@ -90,10 +90,13 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   const setInteractiveOpen = useLabStore(s => s.setInteractiveOpen);
 
   const isDesktop = useMediaQuery("(min-width: 1024px)"); // Tailwind's lg, matching the code-peek CSS
+  // Tailwind's 2xl: the narrowest width where the chapter rail, a full card and the docked code panel fit together.
+  const isWide = useMediaQuery("(min-width: 1536px)");
 
   // Chapter rail: open on desktop, a closed overlay drawer on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // Code panel: collapsed until peeked (topbar toggle or `c`); its responsive layout lives behind .lab--code-open.
+  // Code panel: on desktop it opens with code-exercise cards (effect below), elsewhere it's peeked via the
+  // topbar toggle or `c`; its responsive layout lives behind .lab--code-open.
   const [codeSheetOpen, setCodeSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -145,6 +148,27 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
 
   // Mirror the rail to the viewport; re-runs only on crossing lg, so a manual toggle sticks within a breakpoint.
   useEffect(() => setSidebarOpen(isDesktop), [isDesktop]);
+
+  // On desktop the docked code panel is the exercise's other half: arriving at a code exercise opens
+  // it and arriving anywhere else closes it. Keyed on navigation, so a manual toggle holds within a
+  // card. Below 2xl the rail, the card and the panel don't all fit, so the rail gives way for the
+  // exercise and comes back on the next card. Mobile keeps the sheet manual; there is no room for both.
+  const currentCardType = lab.chapters[chapterIndex]?.cards[cardIndex]?.type;
+  const railFoldedForCode = useRef(false);
+  useEffect(() => {
+    if (!isDesktop) return;
+    const open = currentCardType === "code-exercise";
+    setCodeSheetOpen(open);
+    if (open && !isWide) {
+      setSidebarOpen(wasOpen => {
+        if (wasOpen) railFoldedForCode.current = true;
+        return false;
+      });
+    } else if (!open && railFoldedForCode.current) {
+      railFoldedForCode.current = false;
+      setSidebarOpen(true);
+    }
+  }, [isDesktop, isWide, chapterIndex, cardIndex, currentCardType]);
 
   // `c` toggles the code panel, Esc closes either peek — global, except while a text field has focus (isEditable).
   useEffect(() => {

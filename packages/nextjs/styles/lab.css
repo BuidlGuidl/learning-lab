@@ -75,8 +75,11 @@
 .lab-header {
   /* Layout tokens stay local; colors/shadows live in @theme (--color-lab-*). */
   --lab-header-height: 52px;
-  /* Half the viewport, capped — wide now that the code panel overlays rather than reflowing beside the lesson. */
-  --lab-build-panel-width: min(50vw, 42rem);
+  /* The code panel docks beside the lesson at lg+, so it is sized to leave room for a full card:
+     about a third of the viewport, never narrower than a readable contract. */
+  --lab-build-panel-width: clamp(420px, 32vw, 520px);
+  /* The interactive peek still overlays the lesson, so it can take half the viewport. */
+  --lab-interactive-panel-width: min(50vw, 42rem);
   /* Shared open/close motion for the code peek, in one place so the backdrop fade and panel slide
      stay in lockstep. Snappy ease-out (matches the original code-peek feel). */
   --lab-code-motion: 200ms ease-out;
@@ -109,6 +112,8 @@
 .lab__content {
   min-height: 100%;
   padding: 32px clamp(16px, 4vw, 64px);
+  /* Matches the docked code panel's slide (lg+ below) so the lesson re-centres in step with it. */
+  transition: padding-right var(--lab-code-motion);
   background:
     radial-gradient(80% 54% at 50% -18%, color-mix(in srgb, var(--color-lilac) 18%, transparent), transparent 70%),
     var(--color-lab-canvas);
@@ -263,9 +268,10 @@
   color: var(--color-lab-gutter);
 }
 
-/* Code peek panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet below lg, a right
-   sheet at lg+. Both overlay the lesson over .lab-code-backdrop, so opening never reflows the layout.
-   The lg split must stay in sync with the chapter drawer so the whole view flips at one width. */
+/* Code panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet over .lab-code-backdrop
+   below lg; a docked right-hand panel at lg+, with the lesson still usable beside it so an exercise
+   and the contract can be read together. The lg split must stay in sync with the chapter drawer so
+   the whole view flips at one width. */
 .lab-code-backdrop {
   position: fixed;
   inset: 0;
@@ -317,10 +323,16 @@
 }
 
 @media (width >= 64rem) {
-  /* A right-side sheet that overlays the lesson (above the shared backdrop), so it never reflows the
-     page — the panel itself slides; the lesson's box is untouched. The grab handle is mobile-only. */
-  .lab-code-sheet__handle {
+  /* Docked: the panel slides in on the right and the lesson gives up that much width, so the card
+     stays clickable and typeable while the contract is open. No backdrop, so nothing dims or closes
+     on a click into the editor. The grab handle is mobile-only. */
+  .lab-code-sheet__handle,
+  .lab-code-backdrop {
     display: none;
+  }
+
+  .lab--code-open .lab__content {
+    padding-right: calc(var(--lab-build-panel-width) + 32px);
   }
 
   .lab-build-panel {
@@ -406,7 +418,7 @@
     right: 0;
     bottom: 0;
     z-index: 35;
-    width: var(--lab-build-panel-width);
+    width: var(--lab-interactive-panel-width);
     flex: none;
     border-left: 1px solid var(--color-lab-border);
     box-shadow: var(--shadow-lab);
