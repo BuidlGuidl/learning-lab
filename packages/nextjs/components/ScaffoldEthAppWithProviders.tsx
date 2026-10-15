@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 import { WagmiProvider } from "wagmi";
 import { Header } from "~~/components/Header";
 import { ProgressSync } from "~~/components/ProgressSync";
+import { WalletSignIn } from "~~/components/WalletSignIn";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
@@ -50,6 +51,7 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
         >
           <ProgressBar height="3px" color="#2299dd" />
           <ProgressSync />
+          <WalletSignIn />
           <ScaffoldEthApp>{children}</ScaffoldEthApp>
         </RainbowKitProvider>
       </QueryClientProvider>

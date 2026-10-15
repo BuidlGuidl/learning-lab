@@ -8,7 +8,7 @@ import { join } from "path";
 dotenv.config({ path: join(__dirname, ".env.local"), quiet: true });
 dotenv.config({ path: join(__dirname, ".env.development"), quiet: true });
 
-const databaseUrl = requireDatabaseUrl();
+const databaseUrl = process.env.DATABASE_URL_UNPOOLED || requireDatabaseUrl();
 const SKIP_PROMPT = process.env.VERCEL === "1";
 
 // Anything that is not a local database gets a confirm, so the guard fails closed.
@@ -28,6 +28,7 @@ if (!SKIP_PROMPT && !isLocalUrl(databaseUrl)) {
 
 export default defineConfig({
   schema: "./services/database/config/schema.ts",
+  out: "./services/database/migrations",
   dialect: "postgresql",
   casing: "snake_case",
   dbCredentials: {

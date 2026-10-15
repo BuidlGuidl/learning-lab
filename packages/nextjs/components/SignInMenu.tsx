@@ -14,14 +14,14 @@ export const MENU =
 export const MENU_ITEM = "rounded text-lab-text hover:bg-lab-inset hover:text-lab-text";
 
 type Props = {
-  // Where the OAuth redirect lands. Callers pass the current URL so sign-in returns to the same card.
+  // Where sign-in lands afterwards. Callers pass the current URL so sign-in returns to the same card.
   callbackURL: string;
   summaryClassName?: string;
 };
 
 /**
  * "Sign in" button that opens the provider modal. Shared by the header and the in-lab nudge so both
- * entry points get the same dialog and the two providers are never ranked against each other.
+ * entry points get the same dialog and the three providers are never ranked against each other.
  * The provider buttons follow Google's sign-in branding rules; see SignInModal.
  */
 export const SignInMenu = ({ callbackURL, summaryClassName = "" }: Props) => {
