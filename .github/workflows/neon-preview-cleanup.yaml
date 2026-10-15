@@ -2,24 +2,50 @@ name: Neon preview cleanup
 
 # Neon's Vercel integration makes a preview/<branch> database for every preview, but only deletes it
 # once Vercel deletes the deployment, which can take months. This deletes it when the PR closes.
+# Reopening the PR doesn't bring it back: push a commit and the next preview gets a fresh copy.
 #
-# pull_request_target runs main's copy of this file, so a PR can't edit it to read the key. It never
-# checks out PR code. The key lives in the neon-cleanup environment, limited to main.
+# pull_request_target runs main's copy of this file and hands it the key, even for PRs from forks.
+# So the job skips forks, the branch name reaches the shell only as an env var (never pasted into
+# the script), and the token gets no permissions. The key lives in the neon-cleanup environment,
+# limited to main, so a workflow on any other branch can't read it.
 on:
   pull_request_target:
     types: [closed]
+  # Run by hand from the Actions tab, for a branch the PR trigger missed.
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Git branch name; the workflow adds "preview/" in front
+        required: true
+
+permissions: {}
 
 jobs:
   delete-branch:
+    # A fork could name its branch after a teammate's and delete their preview database.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     environment: neon-cleanup
 
     steps:
       - name: Delete Neon preview branch
-        uses: neondatabase/delete-branch-action@v3
-        # A PR whose preview never got a Neon branch has nothing to delete.
-        continue-on-error: true
-        with:
-          project_id: ${{ secrets.NEON_PROJECT_ID }}
-          branch: preview/${{ github.head_ref }}
-          api_key: ${{ secrets.NEON_API_KEY }}
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          BRANCH: preview/${{ github.head_ref || inputs.branch }}
+        run: |
+          set -euo pipefail
+          api="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
+          auth="Authorization: Bearer $NEON_API_KEY"
+
+          # search also matches partial names, so keep only the exact one. 10000 is the most per page.
+          id=$(curl -fsS -G "$api" -H "$auth" -d limit=10000 --data-urlencode "search=$BRANCH" \
+            | jq -r --arg name "$BRANCH" '.branches[] | select(.name == $name) | .id')
+
+          if [ -z "$id" ]; then
+            echo "No Neon branch named $BRANCH, nothing to delete."
+            exit 0
+          fi
+
+          curl -fsS -X DELETE "$api/$id" -H "$auth" > /dev/null
+          echo "Deleted Neon branch $BRANCH ($id)."
