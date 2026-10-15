@@ -1,0 +1,25 @@
+name: Neon preview cleanup
+
+# Neon's Vercel integration makes a preview/<branch> database for every preview, but only deletes it
+# once Vercel deletes the deployment, which can take months. This deletes it when the PR closes.
+#
+# pull_request_target runs main's copy of this file, so a PR can't edit it to read the key. It never
+# checks out PR code. The key lives in the neon-cleanup environment, limited to main.
+on:
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    environment: neon-cleanup
+
+    steps:
+      - name: Delete Neon preview branch
+        uses: neondatabase/delete-branch-action@v3
+        # A PR whose preview never got a Neon branch has nothing to delete.
+        continue-on-error: true
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/${{ github.head_ref }}
+          api_key: ${{ secrets.NEON_API_KEY }}
