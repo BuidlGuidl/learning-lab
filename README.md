@@ -13,7 +13,7 @@ Built on [Scaffold-ETH 2](https://scaffoldeth.io).
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/) (v1 or v2+)
 - [Git](https://git-scm.com/downloads)
 - An [OpenRouter API key](https://openrouter.ai/keys) that powers the AI grader
-- Google and GitHub OAuth apps for sign-in (see [OAuth credentials](#oauth-credentials))
+- Google and GitHub OAuth apps for sign-in (see [OAuth credentials](#oauth-credentials)). Wallet sign-in needs no credentials, only the database schema from `yarn drizzle-kit migrate`.
 
 ## Local Setup
 
@@ -31,11 +31,11 @@ Built on [Scaffold-ETH 2](https://scaffoldeth.io).
 
    Set `OPENROUTER_API_KEY`, `BETTER_AUTH_SECRET` ( you can use `openssl rand -base64 32`) and the four OAuth vars from the section below. `DATABASE_URL` and `BETTER_AUTH_URL` already point at localhost in the committed `.env.development`.
 
-3. Start Postgres, push the schema and seed it:
+3. Start Postgres, apply the migrations and seed it:
 
    ```
    docker compose up -d
-   yarn drizzle-kit push
+   yarn drizzle-kit migrate
    yarn db:seed
    ```
 
@@ -49,9 +49,9 @@ Open [http://localhost:3000](http://localhost:3000) and pick a lab. Labs compile
 
 ### OAuth credentials
 
-Sign-in with Google and GitHub is handled by [Better Auth](https://www.better-auth.com).
+Sign-in with Google, GitHub and an Ethereum wallet is handled by [Better Auth](https://www.better-auth.com). The wallet option uses Sign-In with Ethereum through Better Auth's `siwe` plugin and works out of the box.
 
-Each provider needs an OAuth app that points back at `http://localhost:3000`.
+Each OAuth provider needs an app that points back at `http://localhost:3000`.
 
 **GitHub**: [Settings → Developer settings → OAuth Apps → New OAuth App](https://github.com/settings/applications/new).
 
@@ -68,6 +68,8 @@ Each provider needs an OAuth app that points back at `http://localhost:3000`.
 
 Drizzle + Postgres: schemas in `packages/nextjs/services/database/config/`, queries in `repositories/`. Run `drizzle-kit` from the root with `yarn drizzle-kit`.
 
-- Our tables live in `schema.ts`. After editing it, `yarn drizzle-kit push` applies the change (no migrations yet).
+- Our tables live in `schema.ts`. After editing the schema, run `yarn drizzle-kit generate`, then `yarn drizzle-kit migrate`. Commit the migration files.
 - `auth-schema.ts` is generated from `packages/nextjs/lib/auth.ts` by `yarn workspace @se-2/nextjs auth:generate`.
 - `yarn db:seed` inserts one user and one lab progress row; it refuses to run against anything but localhost.
+
+Vercel applies migrations at the end of each build. Preview builds use their own Neon database copy; builds on main use production.

@@ -1,9 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { UserAvatar } from "~~/components/UserAvatar";
 import { getLabSlug, registry } from "~~/labs/registry";
 import { flatIndex, totalCards } from "~~/lib/lab/position";
 import { getServerSession } from "~~/lib/session";
+import { userDisplayName } from "~~/lib/user-display";
 import { getLabProgressByUser } from "~~/services/database/repositories/labProgress";
 
 export const dynamic = "force-dynamic";
@@ -46,8 +47,7 @@ const ProfilePage = async () => {
       }),
   );
 
-  const name = session.user.name?.trim() || session.user.email;
-  const initial = (name || "?").charAt(0).toUpperCase();
+  const name = userDisplayName(session.user);
 
   return (
     // flex-1 + bg-lab-canvas so the page reads as lab chrome rather than the daisyUI base canvas
@@ -55,14 +55,7 @@ const ProfilePage = async () => {
     <div className="flex-1 bg-lab-canvas">
       <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
         <div className="flex items-center gap-3">
-          {session.user.image ? (
-            // unoptimized: provider avatars are remote and next.config declares no images.remotePatterns.
-            <Image src={session.user.image} alt="" width={48} height={48} className="rounded-full" unoptimized />
-          ) : (
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-lab-violet text-lg font-bold text-pure-white dark:text-dark-bg">
-              {initial}
-            </span>
-          )}
+          <UserAvatar user={session.user} size={48} />
           <h1 className="m-0 truncate text-2xl font-bold text-lab-text">{name}</h1>
         </div>
 
