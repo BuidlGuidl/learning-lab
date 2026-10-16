@@ -7,7 +7,7 @@ import { CodeBuildPanel } from "./CodeBuildPanel";
 import { InteractivePanel } from "./InteractivePanel";
 import { Sidebar } from "./Sidebar";
 import { SignInNudge } from "./SignInNudge";
-import { useMediaQuery } from "usehooks-ts";
+import { useEventListener, useMediaQuery } from "usehooks-ts";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -90,11 +90,17 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   const setInteractiveOpen = useLabStore(s => s.setInteractiveOpen);
 
   const isDesktop = useMediaQuery("(min-width: 1024px)"); // Tailwind's lg, matching the code-peek CSS
+  // Where the chapter rail (320), a full card (760), the lesson gutters and a wrap-free contract panel
+  // (about 600) all fit at once; see --lab-build-panel-width in lab.css for the panel's own sizing.
+  const isWide = useMediaQuery("(min-width: 1856px)");
 
   // Chapter rail: open on desktop, a closed overlay drawer on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // Code panel: collapsed until peeked (topbar toggle or `c`); its responsive layout lives behind .lab--code-open.
+  // Code panel: only the learner opens or closes it (topbar toggle or `c`), so it holds across cards;
+  // its responsive layout lives behind .lab--code-open.
   const [codeSheetOpen, setCodeSheetOpen] = useState(false);
+  // Set when opening the code panel folded the rail away, so closing it can put the rail back.
+  const railFoldedForCode = useRef(false);
 
   useEffect(() => {
     // Read before init: init resets progress/transcript, and the persist subscriber writes that
@@ -144,24 +150,48 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   }, [chapterIndex, cardIndex]);
 
   // Mirror the rail to the viewport; re-runs only on crossing lg, so a manual toggle sticks within a breakpoint.
-  useEffect(() => setSidebarOpen(isDesktop), [isDesktop]);
+  useEffect(() => {
+    railFoldedForCode.current = false;
+    setSidebarOpen(isDesktop);
+  }, [isDesktop]);
+
+  // The learner showing or hiding the rail is a choice that closing the code panel must not undo.
+  const setRailOpen = (open: boolean) => {
+    railFoldedForCode.current = false;
+    setSidebarOpen(open);
+  };
+
+  // On a laptop (lg up to isWide) the rail, the card and the docked panel don't all fit, so opening
+  // the code folds the rail and closing it restores the rail. Wide screens fit all three; on mobile
+  // the rail is an overlay drawer, so neither touches it.
+  const openCode = () => {
+    if (isDesktop && !isWide && sidebarOpen) {
+      railFoldedForCode.current = true;
+      setSidebarOpen(false);
+    }
+    setCodeSheetOpen(true);
+  };
+  const closeCode = () => {
+    setCodeSheetOpen(false);
+    if (railFoldedForCode.current) {
+      railFoldedForCode.current = false;
+      setSidebarOpen(true);
+    }
+  };
+  const toggleCode = () => (codeSheetOpen ? closeCode() : openCode());
 
   // `c` toggles the code panel, Esc closes either peek — global, except while a text field has focus (isEditable).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setCodeSheetOpen(false);
-        setInteractiveOpen(false);
-        return;
-      }
-      if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey && !isEditable(e.target)) {
-        e.preventDefault();
-        setCodeSheetOpen(open => !open);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [setInteractiveOpen]);
+  useEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      if (codeSheetOpen) closeCode();
+      setInteractiveOpen(false);
+      return;
+    }
+    if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey && !isEditable(e.target)) {
+      e.preventDefault();
+      toggleCode();
+    }
+  });
 
   const chapter = lab.chapters[chapterIndex];
   const card = chapter?.cards[cardIndex];
@@ -194,6 +224,10 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   );
   const showSignInNudge = !isPending && !session && clearedAnyGradable;
 
+  // A code exercise is written against the contract, so while the panel is shut its toggle becomes a
+  // filled button rather than opening the panel for the learner.
+  const callForCode = card.type === "code-exercise" && !codeSheetOpen;
+
   // On mobile the drawer overlays the lesson, so dismiss it after a jump; on desktop the rail stays put.
   const handleNavigate = () => {
     if (!isDesktop) setSidebarOpen(false);
@@ -211,14 +245,14 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
         type="checkbox"
         className="drawer-toggle"
         checked={sidebarOpen}
-        onChange={e => setSidebarOpen(e.target.checked)}
+        onChange={e => setRailOpen(e.target.checked)}
       />
 
       {!sidebarOpen && (
         <button
           type="button"
           className="btn btn-sm absolute left-0 top-4 z-10 h-10 w-8 border-l-0 bg-lab-surface px-0 text-lab-violet"
-          onClick={() => setSidebarOpen(true)}
+          onClick={() => setRailOpen(true)}
           aria-label="Expand chapter navigation"
           aria-expanded={false}
           title="Expand chapter navigation"
@@ -234,7 +268,7 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
               className={`w-full max-w-3xl mx-auto shrink-0 relative z-[1] flex items-center justify-between gap-3 ${sidebarOpen ? "" : "pl-8 lg:pl-0"}`}
             >
               <button
-                onClick={() => setSidebarOpen(o => !o)}
+                onClick={() => setRailOpen(!sidebarOpen)}
                 className="flex min-w-0 cursor-pointer items-center gap-2 text-sm font-medium text-lab-muted transition-colors hover:text-lab-violet"
                 aria-label={sidebarOpen ? "Hide chapters" : "Show chapters"}
                 aria-expanded={sidebarOpen}
@@ -250,8 +284,13 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
               </button>
               {hasContracts && (
                 <button
-                  onClick={() => setCodeSheetOpen(o => !o)}
-                  className="flex shrink-0 cursor-pointer items-center gap-2 text-sm font-medium text-lab-muted transition-colors hover:text-lab-violet"
+                  onClick={toggleCode}
+                  // Same box in both states, so calling for code only recolours it.
+                  className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm font-medium transition-colors ${
+                    callForCode
+                      ? "bg-lab-accent text-lab-on-accent hover:bg-lab-iris"
+                      : "text-lab-muted hover:text-lab-violet"
+                  }`}
                   aria-label={codeSheetOpen ? "Hide code" : "Show code"}
                   aria-expanded={codeSheetOpen}
                   aria-controls="lab-code-sheet"
@@ -346,7 +385,7 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
         {hasContracts && (
           <>
             {/* Backdrop dismisses the mobile sheet; hidden on desktop where the panel sits beside the lesson. */}
-            <div className="lab-code-backdrop" onClick={() => setCodeSheetOpen(false)} aria-hidden />
+            <div className="lab-code-backdrop" onClick={closeCode} aria-hidden />
 
             {/* Positioning wrapper only — not a modal (no focus trap), so the inner <aside> owns the landmark. */}
             <div id="lab-code-sheet" className="lab-code-host">
@@ -356,13 +395,13 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
                 <button
                   type="button"
                   className="absolute top-1/2 right-2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[10px] text-lab-muted hover:bg-lab-inset hover:text-lab-text"
-                  onClick={() => setCodeSheetOpen(false)}
+                  onClick={closeCode}
                   aria-label="Close code"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <CodeBuildPanel lab={lab} />
+              <CodeBuildPanel lab={lab} onCollapse={closeCode} />
             </div>
           </>
         )}
@@ -392,7 +431,7 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
 
       <div className="z-20 drawer-side lg:h-full!">
         <label htmlFor={DRAWER_ID} aria-label="close chapters" className="drawer-overlay"></label>
-        <Sidebar lab={lab} onNavigate={handleNavigate} onClose={() => setSidebarOpen(false)} />
+        <Sidebar lab={lab} onNavigate={handleNavigate} onClose={() => setRailOpen(false)} />
       </div>
     </div>
   );
