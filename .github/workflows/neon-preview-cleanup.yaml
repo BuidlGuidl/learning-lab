@@ -1,0 +1,52 @@
+name: Neon preview cleanup
+
+# Neon's Vercel integration makes a preview/<branch> database for every preview, but only deletes it
+# once Vercel deletes the deployment, which can take months. This deletes it when the git branch is
+# deleted, which GitHub does on merge ("Automatically delete head branches" is on). A PR closed
+# without merging keeps its branch: delete the branch or run this by hand. Branches deleted after a
+# merge made with GITHUB_TOKEN don't trigger it. Restoring a branch doesn't bring its database back:
+# push a commit and the next preview gets a fresh copy.
+#
+# delete runs main's copy of this file, and deleting a branch in a fork doesn't trigger it. The branch
+# name reaches the shell only as an env var (never pasted into the script), and the token gets no
+# permissions. The key lives in the neon-cleanup environment, limited to main, so a workflow on any
+# other branch can't read it.
+on:
+  delete:
+  # Run by hand from the Actions tab, for a branch that wasn't deleted.
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Git branch name; the workflow adds "preview/" in front
+        required: true
+
+permissions: {}
+
+jobs:
+  delete-branch:
+    if: github.event_name == 'workflow_dispatch' || github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    environment: neon-cleanup
+
+    steps:
+      - name: Delete Neon preview branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          BRANCH: preview/${{ inputs.branch || github.event.ref }}
+        run: |
+          set -euo pipefail
+          api="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
+          auth="Authorization: Bearer $NEON_API_KEY"
+
+          # search also matches partial names, so keep only the exact one. 10000 is the most per page.
+          id=$(curl -fsS -G "$api" -H "$auth" -d limit=10000 --data-urlencode "search=$BRANCH" \
+            | jq -r --arg name "$BRANCH" '.branches[] | select(.name == $name) | .id')
+
+          if [ -z "$id" ]; then
+            echo "No Neon branch named $BRANCH, nothing to delete."
+            exit 0
+          fi
+
+          curl -fsS -X DELETE "$api/$id" -H "$auth" > /dev/null
+          echo "Deleted Neon branch $BRANCH ($id)."
