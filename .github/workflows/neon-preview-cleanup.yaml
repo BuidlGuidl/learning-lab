@@ -1,17 +1,19 @@
 name: Neon preview cleanup
 
 # Neon's Vercel integration makes a preview/<branch> database for every preview, but only deletes it
-# once Vercel deletes the deployment, which can take months. This deletes it when the PR closes.
-# Reopening the PR doesn't bring it back: push a commit and the next preview gets a fresh copy.
+# once Vercel deletes the deployment, which can take months. This deletes it when the git branch is
+# deleted, which GitHub does on merge ("Automatically delete head branches" is on). A PR closed
+# without merging keeps its branch: delete the branch or run this by hand. Branches deleted after a
+# merge made with GITHUB_TOKEN don't trigger it. Restoring a branch doesn't bring its database back:
+# push a commit and the next preview gets a fresh copy.
 #
-# pull_request_target runs main's copy of this file and hands it the key, even for PRs from forks.
-# So the job skips forks, the branch name reaches the shell only as an env var (never pasted into
-# the script), and the token gets no permissions. The key lives in the neon-cleanup environment,
-# limited to main, so a workflow on any other branch can't read it.
+# delete runs main's copy of this file, and deleting a branch in a fork doesn't trigger it. The branch
+# name reaches the shell only as an env var (never pasted into the script), and the token gets no
+# permissions. The key lives in the neon-cleanup environment, limited to main, so a workflow on any
+# other branch can't read it.
 on:
-  pull_request_target:
-    types: [closed]
-  # Run by hand from the Actions tab, for a branch the PR trigger missed.
+  delete:
+  # Run by hand from the Actions tab, for a branch that wasn't deleted.
   workflow_dispatch:
     inputs:
       branch:
@@ -22,8 +24,7 @@ permissions: {}
 
 jobs:
   delete-branch:
-    # A fork could name its branch after a teammate's and delete their preview database.
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch' || github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     environment: neon-cleanup
 
@@ -32,7 +33,7 @@ jobs:
         env:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
-          BRANCH: preview/${{ github.head_ref || inputs.branch }}
+          BRANCH: preview/${{ inputs.branch || github.event.ref }}
         run: |
           set -euo pipefail
           api="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
