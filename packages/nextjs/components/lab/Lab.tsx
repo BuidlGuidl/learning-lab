@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { CardRenderer } from "./CardRenderer";
 import { CodeBuildPanel } from "./CodeBuildPanel";
@@ -90,9 +90,10 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   const setInteractiveOpen = useLabStore(s => s.setInteractiveOpen);
 
   const isDesktop = useMediaQuery("(min-width: 1024px)"); // Tailwind's lg, matching the code-peek CSS
-  // Where the chapter rail (320), a full card (760), the lesson gutters and a wrap-free contract panel
-  // (about 600) all fit at once; see --lab-build-panel-width in lab.css for the panel's own sizing.
-  const isWide = useMediaQuery("(min-width: 1856px)");
+  // Where the chapter rail (320), a full card (760), the lesson's left gutter (64), the panel gap and
+  // scrollbar (48) and a wrap-free contract panel (600) all fit at once; see --lab-build-panel-width in
+  // lab.css for the panel's own sizing.
+  const isWide = useMediaQuery("(min-width: 1792px)");
 
   // Chapter rail: open on desktop, a closed overlay drawer on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -101,6 +102,9 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   const [codeSheetOpen, setCodeSheetOpen] = useState(false);
   // Set when opening the code panel folded the rail away, so closing it can put the rail back.
   const railFoldedForCode = useRef(false);
+  // The topbar "code" toggle: where focus lands when the panel closes from a control inside it.
+  const codeToggleRef = useRef<HTMLButtonElement>(null);
+  const hasContracts = Object.keys(lab.files).length > 0;
 
   useEffect(() => {
     // Read before init: init resets progress/transcript, and the persist subscriber writes that
@@ -149,11 +153,37 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
   }, [chapterIndex, cardIndex]);
 
-  // Mirror the rail to the viewport; re-runs only on crossing lg, so a manual toggle sticks within a breakpoint.
-  useEffect(() => {
-    railFoldedForCode.current = false;
-    setSidebarOpen(isDesktop);
-  }, [isDesktop]);
+  // Mirror the rail to the viewport; runs only on crossing lg or the wide threshold, so a manual toggle
+  // sticks within a breakpoint. An effect event so it can read the panel and rail state without re-running
+  // every time they change.
+  const fitRailToViewport = useEffectEvent((crossedLg: boolean) => {
+    if (crossedLg) {
+      railFoldedForCode.current = false;
+      if (!isDesktop) {
+        setSidebarOpen(false);
+      } else if (codeSheetOpen && !isWide) {
+        // Arriving on a laptop with the panel already open: the rail would squeeze the card, so it
+        // waits folded until the panel closes.
+        railFoldedForCode.current = true;
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+      return;
+    }
+    if (!isDesktop || !codeSheetOpen) return;
+    // Crossing the wide threshold with the panel open: fold the rail on the way down and, if the
+    // panel was what folded it, put it back on the way up.
+    if (!isWide && sidebarOpen) {
+      railFoldedForCode.current = true;
+      setSidebarOpen(false);
+    } else if (isWide && railFoldedForCode.current) {
+      railFoldedForCode.current = false;
+      setSidebarOpen(true);
+    }
+  });
+  useEffect(() => fitRailToViewport(true), [isDesktop]);
+  useEffect(() => fitRailToViewport(false), [isWide]);
 
   // The learner showing or hiding the rail is a choice that closing the code panel must not undo.
   const setRailOpen = (open: boolean) => {
@@ -177,8 +207,19 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
       railFoldedForCode.current = false;
       setSidebarOpen(true);
     }
+    // Closed from a control inside the panel (its chevron, the mobile X), focus would stay on a button
+    // that just slid offscreen; hand it to the toggle that reopens the panel instead.
+    if (document.getElementById("lab-code-sheet")?.contains(document.activeElement)) {
+      codeToggleRef.current?.focus();
+    }
   };
-  const toggleCode = () => (codeSheetOpen ? closeCode() : openCode());
+  // Labs without contracts render no panel, so `c` must not set the open class (it would still pad the
+  // lesson and fold the rail).
+  const toggleCode = () => {
+    if (!hasContracts) return;
+    if (codeSheetOpen) closeCode();
+    else openCode();
+  };
 
   // `c` toggles the code panel, Esc closes either peek — global, except while a text field has focus (isEditable).
   useEventListener("keydown", e => {
@@ -201,7 +242,6 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
   const totalChapters = lab.chapters.length;
   const totalCards = chapter.cards.length;
   const totalLabCards = lab.chapters.reduce((sum, item) => sum + item.cards.length, 0);
-  const hasContracts = Object.keys(lab.files).length > 0;
   // The widget this card opens in the interactive peek, if any (concept/question/summary carry it).
   const currentInteractive = "interactive" in card ? card.interactive : undefined;
   const completedBeforeCurrent = lab.chapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.cards.length, 0);
@@ -238,7 +278,7 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
     // can't resolve against main's flex-grow height). The drawer-side override below
     // then caps daisyUI's 100vh rail so it fills the slot instead of overflowing.
     <div
-      className={`lab flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open" : ""} ${codeSheetOpen ? "lab--code-open" : ""} ${interactiveOpen ? "lab--interactive-open" : ""}`}
+      className={`lab flex-1 min-h-0 drawer ${sidebarOpen ? "lg:drawer-open lab--rail-open" : ""} ${codeSheetOpen ? "lab--code-open" : ""} ${interactiveOpen ? "lab--interactive-open" : ""}`}
     >
       <input
         id={DRAWER_ID}
@@ -284,6 +324,7 @@ export const Lab = ({ lab, initialSnapshot }: Props) => {
               </button>
               {hasContracts && (
                 <button
+                  ref={codeToggleRef}
                   onClick={toggleCode}
                   // Same box in both states, so calling for code only recolours it.
                   className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm font-medium transition-colors ${

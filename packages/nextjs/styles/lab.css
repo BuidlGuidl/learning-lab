@@ -80,11 +80,12 @@
   /* What the chapter rail takes at lg+ while open (Sidebar's w-80); set below, 0 while folded. */
   --lab-rail-width: 0px;
   /* The code panel docks beside the lesson at lg+. The card keeps its 760px and the panel takes
-     what is left (less the 32px gap and the lesson's scrollbar), never narrower than a readable
-     contract and capped before it outgrows one. */
+     what is left (less the left gutter, the 32px gap and the lesson's scrollbar; the open panel
+     replaces the right gutter), never narrower than a readable contract and capped before it
+     outgrows one. */
   --lab-build-panel-width: clamp(
     420px,
-    calc(100vw - var(--lab-rail-width) - 760px - 2 * var(--lab-content-pad) - 32px - 16px),
+    calc(100vw - var(--lab-rail-width) - 760px - var(--lab-content-pad) - 32px - 16px),
     48rem
   );
   /* The interactive peek still overlays the lesson, so it can take half the viewport. */
@@ -344,8 +345,8 @@
     padding-right: calc(var(--lab-build-panel-width) + 32px);
   }
 
-  /* Tailwind's lg:drawer-open, which Lab.tsx sets while the rail is open. */
-  .lab[class~="lg:drawer-open"] {
+  /* Set in Lab.tsx alongside lg:drawer-open while the rail is open. */
+  .lab--rail-open {
     --lab-rail-width: 20rem;
   }
 
