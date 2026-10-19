@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ThemedToken } from "shiki";
-import { CodeBracketIcon } from "@heroicons/react/24/outline";
+import { ChevronDoubleRightIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
 import { decodeFontStyle, getHighlighter } from "~~/components/code/highlighter";
 import type { Segment } from "~~/lib/lab/regions";
 import { renderProgram } from "~~/lib/lab/render";
@@ -124,7 +124,13 @@ function focusForCard(card: Card | undefined, lab: Lab): BuildFocus {
   return {};
 }
 
-export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
+type Props = {
+  lab: Lab;
+  // Collapses the docked panel. Desktop only: the mobile sheet has its own close in the handle (Lab.tsx).
+  onCollapse?: () => void;
+};
+
+export const CodeBuildPanel = ({ lab, onCollapse }: Props) => {
   const labFiles = useLabStore(s => s.files);
   const regions = useLabStore(s => s.regions);
   const progress = useLabStore(s => s.progress);
@@ -217,6 +223,20 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
 
   if (!shownFile || renderedLines.length === 0) return null;
 
+  // Top-left of the header, the mirror of the chapter rail's collapse chevron on the other edge.
+  const collapseButton = onCollapse ? (
+    <button
+      type="button"
+      onClick={onCollapse}
+      className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-dark-text-muted hover:bg-lab-code-panel-tint hover:text-dark-text max-lg:hidden"
+      aria-label="Hide code"
+      aria-controls="lab-code-sheet"
+      title="Hide code (Esc)"
+    >
+      <ChevronDoubleRightIcon className="h-4 w-4" />
+    </button>
+  ) : null;
+
   return (
     <aside
       className="lab-build-panel box-border flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-dark-surface text-dark-text"
@@ -225,6 +245,7 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
       <div className="shrink-0 border-b border-dark-border bg-dark-bg px-[18px] pt-4 pb-3.5">
         {files.length > 1 ? (
           <div className="flex items-center gap-2">
+            {collapseButton}
             <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
               {files.map(f => (
                 <button
@@ -253,6 +274,7 @@ export const CodeBuildPanel = ({ lab }: { lab: Lab }) => {
         ) : (
           <div className="flex items-center justify-between gap-3">
             <span className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm text-dark-text">
+              {collapseButton}
               <CodeBracketIcon className="h-4 w-4 shrink-0 text-violet-bright" />
               <span className="overflow-hidden text-ellipsis">{shownFile}</span>
               {fileRegions.length > 0 && (
