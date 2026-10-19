@@ -75,8 +75,21 @@
 .lab-header {
   /* Layout tokens stay local; colors/shadows live in @theme (--color-lab-*). */
   --lab-header-height: 52px;
-  /* Half the viewport, capped — wide now that the code panel overlays rather than reflowing beside the lesson. */
-  --lab-build-panel-width: min(50vw, 42rem);
+  /* Lesson gutter, shared with the panel sizing below. */
+  --lab-content-pad: clamp(16px, 4vw, 64px);
+  /* What the chapter rail takes at lg+ while open (Sidebar's w-80); set below, 0 while folded. */
+  --lab-rail-width: 0px;
+  /* The code panel docks beside the lesson at lg+. The card keeps its 760px and the panel takes
+     what is left (less the left gutter, the 32px gap and the lesson's scrollbar; the open panel
+     replaces the right gutter), never narrower than a readable contract and capped before it
+     outgrows one. */
+  --lab-build-panel-width: clamp(
+    420px,
+    calc(100vw - var(--lab-rail-width) - 760px - var(--lab-content-pad) - 32px - 16px),
+    48rem
+  );
+  /* The interactive peek still overlays the lesson, so it can take half the viewport. */
+  --lab-interactive-panel-width: min(50vw, 42rem);
   /* Shared open/close motion for the code peek, in one place so the backdrop fade and panel slide
      stay in lockstep. Snappy ease-out (matches the original code-peek feel). */
   --lab-code-motion: 200ms ease-out;
@@ -108,7 +121,9 @@
 
 .lab__content {
   min-height: 100%;
-  padding: 32px clamp(16px, 4vw, 64px);
+  padding: 32px var(--lab-content-pad);
+  /* Matches the docked code panel's slide (lg+ below) so the lesson re-centres in step with it. */
+  transition: padding-right var(--lab-code-motion);
   background:
     radial-gradient(80% 54% at 50% -18%, color-mix(in srgb, var(--color-lilac) 18%, transparent), transparent 70%),
     var(--color-lab-canvas);
@@ -263,9 +278,10 @@
   color: var(--color-lab-gutter);
 }
 
-/* Code peek panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet below lg, a right
-   sheet at lg+. Both overlay the lesson over .lab-code-backdrop, so opening never reflows the layout.
-   The lg split must stay in sync with the chapter drawer so the whole view flips at one width. */
+/* Code panel, shown when .lab--code-open is set (in Lab.tsx): a bottom sheet over .lab-code-backdrop
+   below lg; a docked right-hand panel at lg+, with the lesson still usable beside it so an exercise
+   and the contract can be read together. The lg split must stay in sync with the chapter drawer so
+   the whole view flips at one width. */
 .lab-code-backdrop {
   position: fixed;
   inset: 0;
@@ -317,10 +333,21 @@
 }
 
 @media (width >= 64rem) {
-  /* A right-side sheet that overlays the lesson (above the shared backdrop), so it never reflows the
-     page — the panel itself slides; the lesson's box is untouched. The grab handle is mobile-only. */
-  .lab-code-sheet__handle {
+  /* Docked: the panel slides in on the right and the lesson gives up that much width, so the card
+     stays clickable and typeable while the contract is open. No backdrop, so nothing dims or closes
+     on a click into the editor. The grab handle is mobile-only. */
+  .lab-code-sheet__handle,
+  .lab-code-backdrop {
     display: none;
+  }
+
+  .lab--code-open .lab__content {
+    padding-right: calc(var(--lab-build-panel-width) + 32px);
+  }
+
+  /* Set in Lab.tsx alongside lg:drawer-open while the rail is open. */
+  .lab--rail-open {
+    --lab-rail-width: 20rem;
   }
 
   .lab-build-panel {
@@ -406,7 +433,7 @@
     right: 0;
     bottom: 0;
     z-index: 35;
-    width: var(--lab-build-panel-width);
+    width: var(--lab-interactive-panel-width);
     flex: none;
     border-left: 1px solid var(--color-lab-border);
     box-shadow: var(--shadow-lab);
