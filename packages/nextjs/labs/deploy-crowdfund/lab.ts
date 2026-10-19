@@ -204,9 +204,7 @@ export const lab = defineLab({
           question:
             "You just recorded each contribution in `contributions`, keyed by who sent it. The contract also knows `address(this).balance`, the total it holds. Why keep the per-person record when the total is already there?",
           rubricConcepts: [
-            "the balance is only a total: it says how much was raised, never who contributed what",
-            "a failed campaign has to return each contributor their exact amount, which the total can't give you",
-            "the mapping is the per-contributor record the rest of the contract reads, refunds now and accounting later",
+            "the total can't say who contributed what, so a failed campaign couldn't refund each contributor their exact amount without the mapping",
           ],
           hints: ["Think back to the deal: what did we promise contributors if the goal isn't reached?"],
         },
@@ -270,9 +268,7 @@ export const lab = defineLab({
             "A malicious contract calls `refund()`, and the moment the ETH arrives it calls `refund()` again. Quote the one line of your `refund()` that stops that second call from taking anything, then walk through why it works.",
           rubricConcepts: [
             "quotes the line that zeroes the caller's row: `contributions[msg.sender] = 0;` — an answer that never produces this line has not answered the question, however well it describes the attack",
-            "that line runs before any ETH is sent, so the nested call already sees a zero",
-            "the nested call then fails the `amount > 0` require and reverts",
-            "updating state before the external call is the general defense, not a quirk of this one contract",
+            "that line runs before any ETH is sent, so the nested call sees a zero and gets nothing; naming the `amount > 0` require that makes it revert is a bonus, not required",
           ],
           hints: [
             "Follow your lines in order: what is `contributions[attacker]` by the time the second call runs?",

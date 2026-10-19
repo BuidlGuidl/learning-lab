@@ -128,7 +128,6 @@ export const lab = defineLab({
             "Alex accepts gatekeeper risk: the institution can delay, freeze, or fail",
             "Sam may prefer self-custody because access is theirs alone, not granted by a company",
             "Sam accepts full responsibility: there is no reset, and a loss or leak can be permanent",
-            "there is no universally best custody model; the choice trades recovery and convenience against direct control",
           ],
           hints: [
             "What does each person have to trust, and what do they have to protect?",
@@ -212,7 +211,7 @@ export const lab = defineLab({
           label: "CONCEPT",
           title: "The Blockchain",
           illustrations: [PublicLedger],
-          body: "Confirmed transactions are bundled into **blocks**, and each block is added after the last, forming a single chain: the **blockchain**. That's the shared history every node keeps, the record you met in the very first card.\n\nThe design of the blockchain has two important implications for users.\n\nFirst: activity is public by default. Anyone who knows your address can see your account balance and its entire history.\n\nSecond: confirmed actions are forever. There's no chargeback line, no undo, and no one to appeal to. The permanence that stops anyone from rewriting history is the same permanence that makes your mistakes stick.",
+          body: "Confirmed transactions are bundled into **blocks**, and each block is added after the last, forming a single chain: the **blockchain**. That's the shared history every node keeps, the record you met in the very first card.\n\nThe design of the blockchain has two important implications for users.\n\nFirst: activity is public by default. Anyone who knows your address can see your account balance and its entire history.\n\nSecond: confirmed actions are forever. There's no chargeback line, no undo, and no one to appeal to. The permanence that stops anyone from rewriting history is the same permanence that makes your mistakes stick. That is why you copy and paste an address instead of typing it, and check it before you confirm.",
         },
         {
           type: "question",
@@ -220,21 +219,12 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "One wrong character",
           question:
-            "You send 0.1 ETH to a friend. The wallet says it went through, but your friend keeps refreshing and nothing arrives. Looking closer, you typed one character of their address wrong. Where is the ETH now and what did the mistake cost you? Is there any way to fix it, and what could you have done differently?",
+            "You send 0.1 ETH to a friend. The wallet says it went through, but your friend keeps refreshing and nothing arrives. Looking closer, you typed one character of their address wrong. Where is the ETH now, and is there any way to get it back?",
           rubricConcepts: [
             "the transaction was valid, so the network carried it out: the ETH now sits in the mistyped address",
-            "the transfer is recorded in a block for good; there is no administrator or support desk who can reverse it",
-            "the ETH is gone unless whoever controls that address chooses to send it back, and most mistyped addresses belong to no one",
-            "gas was paid as well, because the network did the work",
-            "addresses are meant to be copied and pasted, never typed by hand",
-            "the address is public and visible before signing, so checking it before you confirm (or sending a tiny test amount first) is the final protection",
+            "nobody can reverse it: the transfer is recorded for good, and the ETH is gone unless whoever controls that address chooses to send it back",
           ],
-          hints: [
-            "Did the network do anything wrong here?",
-            "Is there anyone you could ask to reverse it?",
-            "Which of the two amounts you lost is bigger, and which was avoidable?",
-            "How did the wrong character get into the address field in the first place?",
-          ],
+          hints: ["Did the network do anything wrong here?", "Is there anyone you could ask to reverse it?"],
         },
       ],
     },
@@ -251,10 +241,8 @@ export const lab = defineLab({
             "A friend hears you've been learning about Ethereum and says: \"So it's basically an online bank for crypto, right?\" Set the picture straight in your own words. What actually runs Ethereum? What can it do that a bank app can't? And what happens between you pressing Confirm and the action becoming permanent?",
           rubricConcepts: [
             "Ethereum is run by thousands of independent computers (nodes) that each verify and agree on one shared history, not by a company",
-            "it runs programs (smart contracts), so it hosts apps beyond payments",
+            "what a bank can't: it runs programs (smart contracts) so it hosts apps beyond payments, or nobody can freeze you out because you hold your own keys; either angle answers this",
             "an action is a transaction: the wallet signs it with your private key, the nodes check it, and it lands permanently on the blockchain",
-            "every action pays a small gas fee, which covers the network's work and keeps spam out",
-            "unlike a bank, no small group can rewrite the rules or freeze you out, and you hold your own keys instead of trusting a custodian",
           ],
           hints: [
             "Start with who runs the machine: how many computers, and who owns them?",
