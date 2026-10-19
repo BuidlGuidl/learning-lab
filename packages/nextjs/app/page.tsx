@@ -26,7 +26,8 @@ const MARKETING_ROUTES = {
   ethereum101: "/labs/ethereum-101",
   wallets: "/labs/wallets",
   crowdfunding: "/labs/crowdfunding",
-  speedrunEthereum: "https://speedrunethereum.com",
+  speedrunEthereum:
+    "https://speedrunethereum.com/?utm_source=learning_lab&utm_medium=referral&utm_campaign=homepage&utm_content=continue_learning_cta",
   buidlGuidl: "https://buidlguidl.com",
 };
 
