@@ -7,7 +7,6 @@ import { ArrowRightIcon, CheckIcon, HeartIcon } from "@heroicons/react/24/outlin
 import { HeroShowcase } from "~~/app/_components/HeroShowcase";
 import { HeaderAuth } from "~~/components/HeaderAuth";
 import { SwitchTheme } from "~~/components/SwitchTheme";
-import { getSpeedrunEthereumUrl } from "~~/utils/speedrunEthereum";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,7 +26,8 @@ const MARKETING_ROUTES = {
   ethereum101: "/labs/ethereum-101",
   wallets: "/labs/wallets",
   crowdfunding: "/labs/crowdfunding",
-  speedrunEthereum: getSpeedrunEthereumUrl({ campaign: "homepage", content: "continue_learning_cta" }),
+  speedrunEthereum:
+    "https://speedrunethereum.com/?utm_source=learning_lab&utm_medium=referral&utm_campaign=homepage&utm_content=continue_learning_cta",
   buidlGuidl: "https://buidlguidl.com",
 };
 
