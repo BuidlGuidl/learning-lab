@@ -265,7 +265,7 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "Walk through the attack",
           question:
-            "A malicious contract calls `refund()`, and the moment the ETH arrives it calls `refund()` again. Look back at the `refund()` you wrote. Which line stops that second call from getting any ETH, and what does the second call run into because of it?",
+            "A malicious contract calls `refund()`, and the moment the ETH arrives it calls `refund()` again. Look back at the `refund()` you wrote. Which line stops that second call from getting any ETH, and how does this affect the second `refund()` call?",
           rubricConcepts: [
             "points at the line that zeroes the caller's contribution (`contributions[msg.sender] = 0;`), either by quoting it or by saying what it does; describing the attack in general without landing on this line is not enough",
             "that line runs before any ETH is sent, so the nested call sees a zero and gets nothing; naming the `amount > 0` require that makes it revert is a bonus, not required",
