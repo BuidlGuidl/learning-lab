@@ -27,6 +27,8 @@ type Props = {
   error?: Error;
   verdict?: GradingOutcome;
   feedback?: string;
+  // Rendered by the coach only. The grader view folds gaps into the feedback paragraph instead;
+  // the list still reaches the transcript, where the history projection reads it (#94).
   missedConcepts?: string[];
   // "grader" owns the verdict (question cards); "coach" never shows a chip —
   // the test panel above it already decided, these are just the words.
@@ -89,7 +91,6 @@ export const GradeFeedback = ({ pending, error, verdict, feedback, missedConcept
             </div>
           )}
           {feedback && <p className="text-base-content/90 leading-relaxed whitespace-pre-wrap m-0">{feedback}</p>}
-          {missedConcepts && missedConcepts.length > 0 && <MissedConcepts concepts={missedConcepts} />}
         </div>
       )}
     </div>

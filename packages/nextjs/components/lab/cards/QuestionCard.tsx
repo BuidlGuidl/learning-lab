@@ -36,7 +36,6 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
 
   const verdict: GradingOutcome | undefined = isLoading ? object?.verdict : latest?.outcome;
   const feedback = isLoading ? object?.feedback : latest?.feedback;
-  const missed = (isLoading ? object?.missedConcepts : latest?.missedConcepts)?.filter((c): c is string => Boolean(c));
 
   return (
     <CardFrame card={card}>
@@ -94,7 +93,7 @@ export const QuestionCard = ({ card, chapterId }: Props) => {
         </ul>
       )}
 
-      <GradeFeedback pending={isLoading} error={error} verdict={verdict} feedback={feedback} missedConcepts={missed} />
+      <GradeFeedback pending={isLoading} error={error} verdict={verdict} feedback={feedback} />
     </CardFrame>
   );
 };
