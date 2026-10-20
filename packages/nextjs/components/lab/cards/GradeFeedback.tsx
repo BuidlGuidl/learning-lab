@@ -1,10 +1,13 @@
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import type { GradingOutcome } from "~~/lib/grader/transcript";
 
-// Plain pass/fail chip; the "you can recover" tone lives in the feedback, not the label.
+// The transcript stores "fail", but the learner reads "try again": the verdict is a "not yet",
+// never a judgment, and the label should say so before the feedback does.
+const VERDICT_LABEL: Record<GradingOutcome, string> = { pass: "pass", fail: "try again", skipped: "skipped" };
+
 const VerdictChip = ({ verdict }: { verdict: GradingOutcome }) => {
   const tone = verdict === "pass" ? "badge-success" : verdict === "fail" ? "badge-error" : "badge-ghost";
-  return <span className={`badge ${tone} font-mono uppercase text-xs tracking-wider`}>{verdict}</span>;
+  return <span className={`badge ${tone} font-mono uppercase text-xs tracking-wider`}>{VERDICT_LABEL[verdict]}</span>;
 };
 
 // A missed concept is a sentence the model wrote, not a one-word tag, so these
