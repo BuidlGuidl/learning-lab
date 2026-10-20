@@ -221,8 +221,8 @@ export const lab = defineLab({
           question:
             "You send 0.1 ETH to a friend. The wallet says it went through, but your friend keeps refreshing and nothing arrives. Looking closer, you typed one character of their address wrong. Where is the ETH now, and is there any way to get it back?",
           rubricConcepts: [
-            "the transaction was valid, so the network carried it out: the ETH now sits in the mistyped address",
-            "nobody can reverse it: the transfer is recorded for good, and the ETH is gone unless whoever controls that address chooses to send it back",
+            "the ETH is sitting in the mistyped address",
+            "no, nobody can reverse it; it only comes back if whoever controls that address chooses to send it. Saying where it is and that it is gone is the whole bar: explaining why (a valid instruction the network carried out, a permanent record) is a bonus, never required",
           ],
           hints: ["Did the network do anything wrong here?", "Is there anyone you could ask to reverse it?"],
         },
