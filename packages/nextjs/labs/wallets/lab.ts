@@ -109,10 +109,7 @@ export const lab = defineLab({
             "Faucets have to guard against bots taking advantage of their goodwill by sending numerous requests to drain their testnet ETH balance. Faucets confirm that requests come from real people in a number of ways: a Google login, an active social media account, or a requirement that the requesting account already holds a small amount of mainnet ETH.\n\nImagine you find a faucet asking for a different kind of verification. It instructs you to send it **0.1 mainnet ETH** to prove you are a human, and promises to return that ETH once it has issued your testnet ETH.\n\nShould you do it?",
           rubricConcepts: [
             "no, don't send it",
-            "testnet ETH has no real value, so paying real ETH for it makes no sense",
-            "nothing obliges them to send it back once they have it",
-            "balances are public on chain, so a faucet can already see your mainnet ETH",
-            "a real check reads your address; it never requires you to part with funds",
+            "any one sound reason is enough: nothing obliges them to send it back once they have it, or testnet ETH has no real value so paying real ETH for it makes no sense",
           ],
           hints: [
             "Weigh what you would be handing over against what you would be getting back.",
@@ -156,13 +153,10 @@ export const lab = defineLab({
           label: "QUESTION",
           title: "What did that cost?",
           question:
-            "Your second vote was rejected, so nothing changed in the poll. Open `Activity` in MetaMask and look closely at that failed transaction.\n\nDid it cost you anything? Explain why or why not, and what that tells you about failed transactions on mainnet.",
+            "Your second vote was rejected, so nothing changed in the poll. Open `Activity` in MetaMask and look closely at that failed transaction.\n\nDid it cost you anything? Explain why or why not.",
           rubricConcepts: [
             "yes, the failed transaction still cost gas",
-            "the network still did the work of running the vote function up to the point where it was rejected, and that work has to be paid for",
-            "the contract's rule (one vote per address) is what rejected it, not the wallet",
-            "the poll itself did not change: nothing was recorded for the second vote",
-            "on mainnet a failed transaction still costs real ETH, so it's worth understanding what a transaction does before confirming it",
+            "the network still did the work of running the vote up to the point where it was rejected, and that work has to be paid for",
           ],
           hints: [
             "Compare your SepoliaETH balance before and after the failed vote.",
