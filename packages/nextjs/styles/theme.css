@@ -77,7 +77,6 @@
   --color-dark-feat-pink: #2a1826;
 
   /* Editor one-offs (github-dark-dimmed accents; intentional, TODO-flagged). */
-  --color-editor-focus: #539bf5;
   --color-editor-placeholder: #768390;
   --color-editor-line-number: #545d68;
 
@@ -95,22 +94,25 @@
     dark --prefersdark;
 }
 
+/* daisyUI's semantic colors mirror the lab tokens (lab.css): base-100 is the
+   card surface, base-200 the page canvas, base-300 the border, primary the
+   violet accent. Components outside .lab then share the lab's purple palette. */
 @plugin "daisyui/theme" {
   name: "light";
 
-  --color-primary: #93bbfb;
-  --color-primary-content: #212638;
-  --color-secondary: #dae8ff;
-  --color-secondary-content: #212638;
-  --color-accent: #93bbfb;
-  --color-accent-content: #212638;
-  --color-neutral: #212638;
-  --color-neutral-content: #ffffff;
-  --color-base-100: #ffffff;
-  --color-base-200: #f4f8ff;
-  --color-base-300: #dae8ff;
-  --color-base-content: #212638;
-  --color-info: #93bbfb;
+  --color-primary: var(--color-ethereum-violet);
+  --color-primary-content: var(--color-pure-white);
+  --color-secondary: var(--color-lavender);
+  --color-secondary-content: var(--color-deep-iris);
+  --color-accent: var(--color-ethereum-violet);
+  --color-accent-content: var(--color-pure-white);
+  --color-neutral: var(--color-onyx);
+  --color-neutral-content: var(--color-pure-white);
+  --color-base-100: var(--color-pure-white);
+  --color-base-200: var(--color-lavender);
+  --color-base-300: var(--color-border-violet);
+  --color-base-content: var(--color-onyx);
+  --color-info: var(--color-lilac);
   --color-success: #34eeb6;
   --color-warning: #ffcf72;
   --color-error: #ff8863;
@@ -123,19 +125,19 @@
 @plugin "daisyui/theme" {
   name: "dark";
 
-  --color-primary: #212638;
-  --color-primary-content: #f9fbff;
-  --color-secondary: #323f61;
-  --color-secondary-content: #f9fbff;
-  --color-accent: #4969a6;
-  --color-accent-content: #f9fbff;
-  --color-neutral: #f9fbff;
-  --color-neutral-content: #385183;
-  --color-base-100: #385183;
-  --color-base-200: #2a3655;
-  --color-base-300: #212638;
-  --color-base-content: #f9fbff;
-  --color-info: #385183;
+  --color-primary: var(--color-violet-bright);
+  --color-primary-content: var(--color-dark-bg);
+  --color-secondary: var(--color-dark-elevated);
+  --color-secondary-content: var(--color-dark-text);
+  --color-accent: var(--color-violet-bright);
+  --color-accent-content: var(--color-dark-bg);
+  --color-neutral: var(--color-dark-text);
+  --color-neutral-content: var(--color-dark-bg);
+  --color-base-100: var(--color-dark-surface);
+  --color-base-200: var(--color-dark-bg);
+  --color-base-300: var(--color-dark-border);
+  --color-base-content: var(--color-dark-text);
+  --color-info: var(--color-violet-bright);
   --color-success: #34eeb6;
   --color-warning: #ffcf72;
   --color-error: #ff8863;
